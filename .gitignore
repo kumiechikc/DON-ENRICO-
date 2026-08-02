@@ -4,6 +4,10 @@ package-lock.json
 pnpm-lock.yaml
 yarn.lock
 
+# Next.js build output
+.next/
+out/
+
 # Audit / Playwright output (regenerate locally; examples/ is committed on purpose)
 audit-output/
 test-results/

@@ -30,11 +30,24 @@ jobs:
           npm install
           npx playwright install --with-deps chromium
 
-      # Point --url at your preview/deploy URL, or --file at a built static entry point.
-      # Replace the target below with how your app serves a page in CI.
+      - name: Build Next.js
+        run: npm run build
+
       - name: Run design audit
         run: |
-          node scripts/design-audit.mjs --file ./index.html --out audit-output || true
+          npm run start &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 | grep -q "200"; then
+              break
+            fi
+            sleep 1
+          done
+          node scripts/design-audit.mjs --url http://localhost:3000 --out audit-output
+          EXIT_CODE=$?
+          kill $SERVER_PID 2>/dev/null || true
+          wait $SERVER_PID 2>/dev/null || true
+          exit $EXIT_CODE
 
       - name: Upload audit report + screenshots
         if: always()
@@ -42,6 +55,3 @@ jobs:
         with:
           name: design-audit
           path: audit-output/
-
-      - name: Fail on high-severity findings
-        run: node scripts/design-audit.mjs --file ./index.html --out audit-output
