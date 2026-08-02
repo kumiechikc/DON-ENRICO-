@@ -12,8 +12,8 @@ export function SobreSection() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8 md:gap-12 items-center">
           <motion.div
             className="md:col-span-3 space-y-5"
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
@@ -36,8 +36,8 @@ export function SobreSection() {
 
           <motion.div
             className="md:col-span-2"
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.15 }}
           >

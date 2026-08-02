@@ -85,9 +85,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+a:focus,
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+[tabindex]:focus,
 *:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

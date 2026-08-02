@@ -33,28 +33,7 @@ jobs:
       - name: Build Next.js
         run: npm run build
 
-      - name: Start server and run design audit
-        run: |
-          npm run start &
-          SERVER_PID=$!
-          # Wait for server to be ready
-          for i in $(seq 1 30); do
-            if curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 | grep -q "200"; then
-              break
-            fi
-            sleep 1
-          done
-          node scripts/design-audit.mjs --url http://localhost:3000 --out audit-output || true
-          kill $SERVER_PID 2>/dev/null || true
-
-      - name: Upload audit report + screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: design-audit
-          path: audit-output/
-
-      - name: Fail on high-severity findings
+      - name: Run design audit
         run: |
           npm run start &
           SERVER_PID=$!
@@ -65,4 +44,14 @@ jobs:
             sleep 1
           done
           node scripts/design-audit.mjs --url http://localhost:3000 --out audit-output
+          EXIT_CODE=$?
           kill $SERVER_PID 2>/dev/null || true
+          wait $SERVER_PID 2>/dev/null || true
+          exit $EXIT_CODE
+
+      - name: Upload audit report + screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-audit
+          path: audit-output/

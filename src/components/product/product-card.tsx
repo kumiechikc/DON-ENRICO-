@@ -49,7 +49,7 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
           <button
             onClick={handleAdd}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
               added
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-foreground border border-white/10 hover:border-primary hover:text-primary"

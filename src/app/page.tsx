@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <CartProvider>
       <Navbar onCartOpen={() => setCartOpen(true)} />
-      <main>
+      <main className="overflow-x-hidden">
         <HeroSection />
         <CardapioSection />
         <BoxSection />

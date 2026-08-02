@@ -79,11 +79,21 @@ function inPageChecks() {
     if (small.length) push('medium', 'tap-target', `${small.length} interactive targets < 44×44px on mobile.`);
   }
 
-  // 4. Focus visibility (sample of focusables)
-  const focusables = [...document.querySelectorAll('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')].slice(0, 25);
+  // 4. Focus visibility (sample of focusables — skip hidden/inert elements)
+  const focusables = [...document.querySelectorAll('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')]
+    .filter((el) => {
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) return false;
+      if (el.closest('[inert]')) return false;
+      const s = getComputedStyle(el);
+      if (s.display === 'none' || s.visibility === 'hidden') return false;
+      return true;
+    })
+    .slice(0, 25);
   let noFocus = 0;
   for (const el of focusables) {
     el.focus();
+    if (document.activeElement !== el) continue;
     const s = getComputedStyle(el);
     const hasOutline = s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) > 0;
     const hasShadow = s.boxShadow && s.boxShadow !== 'none';

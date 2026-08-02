@@ -16,10 +16,23 @@ const navLinks = [
   { label: "Contato", href: "#contato" },
 ]
 
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)")
+    setIsDesktop(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
+    mq.addEventListener("change", handler)
+    return () => mq.removeEventListener("change", handler)
+  }, [])
+  return isDesktop
+}
+
 export function Navbar({ onCartOpen }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const { totalItems } = useCart()
+  const isDesktop = useIsDesktop()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80)
@@ -43,7 +56,7 @@ export function Navbar({ onCartOpen }: NavbarProps) {
           <span className="text-primary">Enrico</span>
         </a>
 
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-8" {...(!isDesktop ? { inert: true as unknown as boolean } : {})}>
           {navLinks.map((link) => (
             <a
               key={link.href}
@@ -58,12 +71,12 @@ export function Navbar({ onCartOpen }: NavbarProps) {
         <div className="flex items-center gap-3">
           <button
             onClick={onCartOpen}
-            className="relative p-2 rounded-lg hover:bg-white/5 transition-colors"
+            className="relative p-2.5 rounded-lg hover:bg-white/5 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label={`Carrinho com ${totalItems} itens`}
           >
             <ShoppingBag className="w-5 h-5" />
             {totalItems > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+              <span className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
                 {totalItems}
               </span>
             )}
@@ -71,8 +84,9 @@ export function Navbar({ onCartOpen }: NavbarProps) {
 
           <button
             onClick={() => setMenuOpen(true)}
-            className="p-2 rounded-lg hover:bg-white/5 transition-colors md:hidden"
+            className="p-2.5 rounded-lg hover:bg-white/5 transition-colors md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label="Abrir menu"
+            {...(isDesktop ? { inert: true as unknown as boolean } : {})}
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -83,7 +97,7 @@ export function Navbar({ onCartOpen }: NavbarProps) {
         <div className="fixed inset-0 z-50 bg-[#0A0A0A]/98 backdrop-blur-xl flex flex-col items-center justify-center gap-8 md:hidden">
           <button
             onClick={() => setMenuOpen(false)}
-            className="absolute top-5 right-5 p-2"
+            className="absolute top-5 right-5 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label="Fechar menu"
           >
             <X className="w-6 h-6" />

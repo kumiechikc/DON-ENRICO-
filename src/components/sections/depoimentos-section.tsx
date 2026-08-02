@@ -91,14 +91,14 @@ export function DepoimentosSection() {
           <div className="flex justify-center gap-3 mt-6">
             <button
               onClick={() => scroll("left")}
-              className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+              className="p-3 rounded-full bg-muted hover:bg-muted/80 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Depoimento anterior"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={() => scroll("right")}
-              className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+              className="p-3 rounded-full bg-muted hover:bg-muted/80 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Próximo depoimento"
             >
               <ChevronRight className="w-5 h-5" />
