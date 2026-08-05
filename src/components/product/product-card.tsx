@@ -1,74 +1,45 @@
 "use client"
 
-import { useState } from "react"
-import { Plus, Check } from "lucide-react"
 import { motion } from "framer-motion"
-import { useCart } from "@/lib/cart/cart-context"
+import { ProductImage } from "@/components/ui/product-image"
+import { AddToCartButton } from "@/components/ui/add-to-cart-button"
 import { formatPrice } from "@/lib/utils"
-import type { Product } from "@/lib/data/products"
+import type { FlavorPack } from "@/lib/data/menu"
 
-export function ProductCard({ product }: { product: Product }) {
-  const { addItem } = useCart()
-  const [added, setAdded] = useState(false)
-
-  const handleAdd = () => {
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.emoji,
-    })
-    setAdded(true)
-    setTimeout(() => setAdded(false), 1200)
-  }
-
+export function ProductCard({ pack, index = 0 }: { pack: FlavorPack; index?: number }) {
   return (
-    <motion.div
-      className="group bg-card border border-white/[0.06] rounded-xl overflow-hidden hover:border-primary/30 hover:shadow-[0_8px_32px_rgba(234,88,12,0.08)] transition-all duration-250"
-      initial={{ opacity: 0, y: 24 }}
+    <motion.article
+      className="flex items-center gap-4 rounded-xl border border-white/[0.08] bg-card p-3 sm:p-4"
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.3 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.3, delay: (index % 3) * 0.04 }}
     >
-      <div className="aspect-[4/3] bg-muted flex items-center justify-center">
-        <span className="text-5xl">{product.emoji}</span>
-      </div>
+      <ProductImage
+        src={pack.image}
+        alt={`${pack.name} congelado — pacote com ${pack.packSize} unidades`}
+        className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg shrink-0"
+        sizes="80px"
+      />
 
-      <div className="p-5">
-        <h3 className="font-heading text-base font-bold leading-tight">
-          {product.name}
-        </h3>
-        <p className="mt-1.5 text-sm text-muted-foreground line-clamp-2">
-          {product.description}
+      <div className="min-w-0 flex-1">
+        <h4 className="font-heading text-sm sm:text-base font-bold leading-tight">
+          {pack.name}
+        </h4>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          {pack.packSize} unidades
         </p>
-
-        <div className="mt-4 flex items-center justify-between">
-          <span className="text-lg font-bold text-primary">
-            {formatPrice(product.price)}
-          </span>
-          <button
-            onClick={handleAdd}
-            className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
-              added
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-foreground border border-white/10 hover:border-primary hover:text-primary"
-            }`}
-          >
-            {added ? (
-              <>
-                <Check className="w-4 h-4" />
-                Adicionado
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4" />
-                Adicionar
-              </>
-            )}
-          </button>
-        </div>
+        <p className="mt-1 text-base font-bold text-primary">{formatPrice(pack.price)}</p>
       </div>
-    </motion.div>
+
+      <AddToCartButton
+        id={pack.id}
+        name={`${pack.name} — pacote ${pack.packSize} un`}
+        price={pack.price}
+        iconOnly
+        variant="quiet"
+        className="shrink-0"
+      />
+    </motion.article>
   )
 }

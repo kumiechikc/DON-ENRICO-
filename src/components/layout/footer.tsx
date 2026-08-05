@@ -11,7 +11,7 @@ export function Footer() {
             <p className="font-heading text-lg font-bold tracking-widest uppercase">
               <span className="text-foreground">Don </span>
               <span className="text-primary">Enrico</span>
-              <span className="text-foreground"> Salgados</span>
+              <span className="text-foreground"> Lanches</span>
             </p>
             <p className="mt-2 text-sm text-muted-foreground italic">
               O Sabor que Impõe Respeito
@@ -19,13 +19,19 @@ export function Footer() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold mb-3 text-foreground">Links</p>
-            <div className="flex flex-col gap-2">
-              {["Cardápio", "Sobre", "Depoimentos", "Contato"].map((label) => (
+            <p className="text-sm font-semibold mb-1 text-foreground">Links</p>
+            <div className="flex flex-col">
+              {[
+                { label: "Box Degustação", href: "#box" },
+                { label: "Encomendas para festa", href: "#cardapio" },
+                { label: "Congelados", href: "#congelados" },
+                { label: "Sobre", href: "#sobre" },
+                { label: "Contato", href: "#contato" },
+              ].map(({ label, href }) => (
                 <a
-                  key={label}
-                  href={`#${label.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")}`}
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  key={href}
+                  href={href}
+                  className="flex min-h-[44px] items-center text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   {label}
                 </a>
@@ -34,22 +40,27 @@ export function Footer() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold mb-3 text-foreground">Contato</p>
+            <p className="text-sm font-semibold mb-1 text-foreground">Contato</p>
             <a
               href={getWhatsAppDirectUrl()}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              className="flex min-h-[44px] items-center text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               Peça pelo WhatsApp
             </a>
-            <p className="mt-2 text-sm text-muted-foreground">(51) 99015-6798</p>
+            <a
+              href="tel:+5551990156798"
+              className="flex min-h-[44px] items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              (51) 99015-6798
+            </a>
           </div>
         </div>
 
         <div className="border-t border-white/5 pt-6 text-center">
           <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Don Enrico Salgados. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} Don Enrico Lanches. Todos os direitos reservados.
           </p>
         </div>
       </div>

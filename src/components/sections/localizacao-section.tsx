@@ -40,11 +40,9 @@ export function LocalizacaoSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <div className="aspect-video bg-muted rounded-xl flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <span className="text-4xl block mb-2">📍</span>
-                <span className="text-sm">Google Maps</span>
-              </div>
+            <div className="aspect-video rounded-2xl border border-white/[0.08] bg-card flex flex-col items-center justify-center gap-3 text-muted-foreground">
+              <MapPin className="w-7 h-7 text-primary/50" strokeWidth={1.5} aria-hidden="true" />
+              <span className="text-sm">Atendemos toda a região de Porto Alegre</span>
             </div>
           </motion.div>
         </div>

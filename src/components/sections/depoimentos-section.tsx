@@ -65,7 +65,10 @@ export function DepoimentosSection() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.08 }}
               >
-                <span className="absolute top-3 left-5 text-5xl text-primary/20 font-serif leading-none select-none">
+                <span
+                  aria-hidden="true"
+                  className="absolute top-3 left-5 text-5xl text-primary/20 font-serif leading-none select-none"
+                >
                   &ldquo;
                 </span>
                 <p className="text-sm md:text-base text-foreground italic leading-relaxed mt-6">

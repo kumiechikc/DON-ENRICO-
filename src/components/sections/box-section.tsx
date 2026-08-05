@@ -1,86 +1,76 @@
 "use client"
 
-import { useState } from "react"
-import { Check, ShoppingBag } from "lucide-react"
 import { motion } from "framer-motion"
 import { SectionHeading } from "@/components/ui/section-heading"
-import { useCart } from "@/lib/cart/cart-context"
+import { ProductImage } from "@/components/ui/product-image"
+import { AddToCartButton } from "@/components/ui/add-to-cart-button"
 import { formatPrice } from "@/lib/utils"
-import { boxes } from "@/lib/data/products"
-
-function BoxCard({ box, bestValue }: { box: (typeof boxes)[0]; bestValue?: boolean }) {
-  const { addItem } = useCart()
-  const [added, setAdded] = useState(false)
-
-  const handleAdd = () => {
-    addItem({ id: box.id, name: box.name, price: box.price, image: "📦" })
-    setAdded(true)
-    setTimeout(() => setAdded(false), 1200)
-  }
-
-  return (
-    <motion.div
-      className="relative bg-card border border-white/[0.06] rounded-xl p-6 md:p-8 text-center hover:border-primary/30 transition-all duration-300"
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      whileHover={{ y: -4 }}
-    >
-      {bestValue && (
-        <span className="absolute -top-3 right-4 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold">
-          Melhor Custo-Benefício
-        </span>
-      )}
-
-      <p className="font-heading text-[clamp(3rem,8vw,4.5rem)] font-black text-primary leading-none">
-        {box.quantity}
-      </p>
-      <p className="font-body text-sm text-muted-foreground mt-1 uppercase tracking-wider">
-        unidades
-      </p>
-
-      <p className="font-heading text-2xl md:text-3xl font-bold mt-4">
-        {formatPrice(box.price)}
-      </p>
-
-      <p className="text-sm text-muted-foreground mt-3">{box.description}</p>
-
-      <button
-        onClick={handleAdd}
-        className={`mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-lg font-bold text-sm transition-all duration-200 ${
-          added
-            ? "bg-primary text-primary-foreground"
-            : "fire-gradient text-white hover:opacity-90"
-        }`}
-      >
-        {added ? (
-          <>
-            <Check className="w-4 h-4" />
-            Adicionado!
-          </>
-        ) : (
-          <>
-            <ShoppingBag className="w-4 h-4" />
-            Adicionar Box
-          </>
-        )}
-      </button>
-    </motion.div>
-  )
-}
+import { boxDegustacao } from "@/lib/data/menu"
 
 export function BoxSection() {
   return (
-    <section id="box" className="py-16 md:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="box" className="py-20 md:py-28">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           title="Box Degustação"
-          subtitle="Monte seu box com salgados sortidos — fritos na hora!"
+          subtitle="Um box de salgados sortidos, fritos na hora — do jeito que a gente entrega desde sempre."
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-          <BoxCard box={boxes[0]} />
-          <BoxCard box={boxes[1]} bestValue />
-        </div>
+
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5 }}
+        >
+          <ProductImage
+            src={boxDegustacao.image}
+            alt="Box degustação de salgados sortidos da Don Enrico"
+            className="aspect-[4/3] rounded-2xl"
+            sizes="(min-width: 768px) 45vw, 90vw"
+          />
+
+          <div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {boxDegustacao.description}
+            </p>
+
+            <ul className="mt-5 flex flex-wrap gap-2">
+              {boxDegustacao.flavors.map((flavor) => (
+                <li
+                  key={flavor}
+                  className="rounded-full border border-white/10 px-3 py-1 text-xs text-muted-foreground"
+                >
+                  {flavor}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-8 space-y-3">
+              {boxDegustacao.tiers.map((tier, i) => (
+                <div
+                  key={tier.quantity}
+                  className="flex items-center justify-between gap-4 rounded-xl border border-white/[0.08] bg-card px-5 py-4"
+                >
+                  <div>
+                    <p className="font-heading text-lg font-bold">
+                      {tier.quantity} unidades
+                    </p>
+                    <p className="text-xl font-bold text-primary">
+                      {formatPrice(tier.price)}
+                    </p>
+                  </div>
+                  <AddToCartButton
+                    id={`${boxDegustacao.id}-${tier.quantity}`}
+                    name={`${boxDegustacao.name} — ${tier.quantity} un`}
+                    price={tier.price}
+                    variant={i === boxDegustacao.tiers.length - 1 ? "solid" : "quiet"}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   )

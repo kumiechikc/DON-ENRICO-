@@ -19,7 +19,7 @@ export function SectionHeading({ title, subtitle }: SectionHeadingProps) {
       <h2 className="font-heading text-[clamp(1.75rem,4vw,2.75rem)] font-bold tracking-tight">
         {title}
       </h2>
-      <div className="mx-auto mt-3 h-[3px] w-16 rounded-full fire-gradient" />
+      <div className="mx-auto mt-3 h-[2px] w-12 rounded-full bg-primary" />
       {subtitle && (
         <p className="mt-4 text-muted-foreground text-base md:text-lg max-w-xl mx-auto">
           {subtitle}
