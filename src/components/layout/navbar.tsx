@@ -10,9 +10,10 @@ interface NavbarProps {
 }
 
 const navLinks = [
-  { label: "Cardápio", href: "#cardapio" },
+  { label: "Box", href: "#box" },
+  { label: "Festas", href: "#cardapio" },
+  { label: "Congelados", href: "#congelados" },
   { label: "Sobre", href: "#sobre" },
-  { label: "Depoimentos", href: "#depoimentos" },
   { label: "Contato", href: "#contato" },
 ]
 
@@ -51,12 +52,15 @@ export function Navbar({ onCartOpen }: NavbarProps) {
       style={scrolled ? { borderImage: "linear-gradient(135deg, #CC0000, #EA580C, #F97316, #F28C28) 1" } : undefined}
     >
       <nav className="mx-auto max-w-7xl flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 md:h-20">
-        <a href="#" className="font-heading text-lg md:text-xl font-bold tracking-widest uppercase">
+        <a
+          href="#"
+          className="flex min-h-[44px] items-center font-heading text-lg md:text-xl font-bold tracking-widest uppercase"
+        >
           <span className="text-foreground">Don </span>
           <span className="text-primary">Enrico</span>
         </a>
 
-        <div className="hidden md:flex items-center gap-8" {...(!isDesktop ? { inert: true as unknown as boolean } : {})}>
+        <div className="hidden md:flex items-center gap-7" {...(!isDesktop ? { inert: true as unknown as boolean } : {})}>
           {navLinks.map((link) => (
             <a
               key={link.href}

@@ -6,7 +6,8 @@
   --card: #141414;
   --card-foreground: #FFF7ED;
   --primary: #EA580C;
-  --primary-foreground: #FFFFFF;
+  /* Texto quase preto sobre o laranja da marca: 5,9:1 (AA). Branco daria só 3,6:1. */
+  --primary-foreground: #0A0A0A;
   --secondary: #CC0000;
   --secondary-foreground: #FFFFFF;
   --accent: #F28C28;

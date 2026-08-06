@@ -16,13 +16,20 @@ const karla = Karla({
 })
 
 export const metadata: Metadata = {
-  title: "Don Enrico Salgados | O Sabor que Impõe Respeito",
+  title: "Don Enrico Lanches | O Sabor que Impõe Respeito",
   description:
-    "Salgados artesanais fritos na hora em Porto Alegre. Coxinha, bolinha de queijo, risoles e mais. Peça pelo WhatsApp!",
-  keywords: ["salgados", "salgados artesanais", "Porto Alegre", "coxinha", "bolinha de queijo", "Don Enrico"],
+    "Salgados para festa e congelados em Porto Alegre. Box degustação, encomendas de 50 e 100 unidades e linha praticidade. Peça pelo WhatsApp!",
+  keywords: [
+    "salgados para festa",
+    "salgados congelados",
+    "encomenda de salgados",
+    "Porto Alegre",
+    "coxinha",
+    "Don Enrico Lanches",
+  ],
   openGraph: {
-    title: "Don Enrico Salgados",
-    description: "Salgados artesanais fritos na hora. O Sabor que Impõe Respeito.",
+    title: "Don Enrico Lanches",
+    description: "Salgados para festa e congelados. O Sabor que Impõe Respeito.",
     locale: "pt_BR",
     type: "website",
   },

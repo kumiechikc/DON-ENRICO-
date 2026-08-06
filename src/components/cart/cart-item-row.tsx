@@ -2,6 +2,7 @@
 
 import { Minus, Plus, X } from "lucide-react"
 import { useCart } from "@/lib/cart/cart-context"
+import { ProductImage } from "@/components/ui/product-image"
 import { formatPrice } from "@/lib/utils"
 import type { CartItem } from "@/lib/cart/types"
 
@@ -10,13 +11,16 @@ export function CartItemRow({ item }: { item: CartItem }) {
 
   return (
     <div className="flex items-center gap-3 py-3 border-b border-white/5">
-      <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-xl shrink-0">
-        {item.image}
-      </div>
+      <ProductImage
+        src={item.image}
+        alt={item.name}
+        className="w-12 h-12 rounded-lg shrink-0"
+        sizes="48px"
+      />
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{item.name}</p>
-        <p className="text-xs text-muted-foreground">{formatPrice(item.price)}/un</p>
+        <p className="text-sm font-medium leading-snug">{item.name}</p>
+        <p className="text-xs text-muted-foreground">{formatPrice(item.price)}</p>
       </div>
 
       <div className="flex items-center gap-1 bg-muted rounded-lg">
