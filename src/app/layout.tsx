@@ -1,24 +1,26 @@
 import type { Metadata } from "next"
-import { Playfair_Display_SC, Karla } from "next/font/google"
+import { Archivo, Archivo_Black } from "next/font/google"
 import "./globals.css"
 
-const playfair = Playfair_Display_SC({
+// Uma superfamília só: o Black carrega os títulos com peso de tipo de madeira,
+// o Archivo normal sustenta o texto corrido em telas pequenas.
+const archivoBlack = Archivo_Black({
   subsets: ["latin"],
-  weight: ["400", "700", "900"],
-  variable: "--font-playfair",
+  weight: "400",
+  variable: "--font-archivo-black",
   display: "swap",
 })
 
-const karla = Karla({
+const archivo = Archivo({
   subsets: ["latin"],
-  variable: "--font-karla",
+  variable: "--font-archivo",
   display: "swap",
 })
 
 export const metadata: Metadata = {
-  title: "Don Enrico Lanches | O Sabor que Impõe Respeito",
+  title: "Don Enrico Lanches | Salgados para festa em Porto Alegre",
   description:
-    "Salgados para festa e congelados em Porto Alegre. Box degustação, encomendas de 50 e 100 unidades e linha praticidade. Peça pelo WhatsApp!",
+    "Salgados para festa e congelados por encomenda. Box degustação a partir de R$ 19,90, pacotes de 50 e 100 unidades e linha de congelados. Peça pelo WhatsApp.",
   keywords: [
     "salgados para festa",
     "salgados congelados",
@@ -29,7 +31,8 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Don Enrico Lanches",
-    description: "Salgados para festa e congelados. O Sabor que Impõe Respeito.",
+    description:
+      "Salgados para festa e congelados por encomenda em Porto Alegre. Peça pelo WhatsApp.",
     locale: "pt_BR",
     type: "website",
   },
@@ -41,7 +44,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-BR" className={`${playfair.variable} ${karla.variable} h-full antialiased`}>
+    <html
+      lang="pt-BR"
+      className={`${archivoBlack.variable} ${archivo.variable} h-full antialiased`}
+    >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   )

@@ -2,7 +2,6 @@
 
 import { Minus, Plus, X } from "lucide-react"
 import { useCart } from "@/lib/cart/cart-context"
-import { ProductImage } from "@/components/ui/product-image"
 import { formatPrice } from "@/lib/utils"
 import type { CartItem } from "@/lib/cart/types"
 
@@ -10,48 +9,52 @@ export function CartItemRow({ item }: { item: CartItem }) {
   const { updateQuantity, removeItem } = useCart()
 
   return (
-    <div className="flex items-center gap-3 py-3 border-b border-white/5">
-      <ProductImage
-        src={item.image}
-        alt={item.name}
-        className="w-12 h-12 rounded-lg shrink-0"
-        sizes="48px"
-      />
-
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium leading-snug">{item.name}</p>
-        <p className="text-xs text-muted-foreground">{formatPrice(item.price)}</p>
-      </div>
-
-      <div className="flex items-center gap-1 bg-muted rounded-lg">
+    <li className="py-4 border-b border-border">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-fg leading-snug">{item.name}</p>
+          {item.flavors.length > 0 && (
+            <p className="mt-1 text-xs text-fg-muted">{item.flavors.join(", ")}</p>
+          )}
+        </div>
         <button
-          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-          className="p-1.5 hover:text-primary transition-colors"
-          aria-label="Diminuir quantidade"
+          type="button"
+          onClick={() => removeItem(item.id)}
+          className="shrink-0 inline-flex items-center justify-center min-w-[2.25rem] min-h-[2.25rem] text-fg-muted hover:text-accent transition-colors duration-150"
+          aria-label={`Remover ${item.name} do pedido`}
         >
-          <Minus className="w-3.5 h-3.5" />
-        </button>
-        <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
-        <button
-          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-          className="p-1.5 hover:text-primary transition-colors"
-          aria-label="Aumentar quantidade"
-        >
-          <Plus className="w-3.5 h-3.5" />
+          <X className="w-4 h-4" aria-hidden="true" />
         </button>
       </div>
 
-      <p className="text-sm font-bold text-primary w-16 text-right">
-        {formatPrice(item.price * item.quantity)}
-      </p>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <div className="inline-flex items-center border border-border-strong">
+          <button
+            type="button"
+            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+            className="inline-flex items-center justify-center min-w-[2.5rem] min-h-[2.5rem] text-fg hover:text-accent transition-colors duration-150"
+            aria-label={`Diminuir quantidade de ${item.name}`}
+          >
+            <Minus className="w-3.5 h-3.5" aria-hidden="true" />
+          </button>
+          <span className="w-9 text-center text-sm font-bold tabular-nums" aria-hidden="true">
+            {item.quantity}
+          </span>
+          <button
+            type="button"
+            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+            className="inline-flex items-center justify-center min-w-[2.5rem] min-h-[2.5rem] text-fg hover:text-accent transition-colors duration-150"
+            aria-label={`Aumentar quantidade de ${item.name}`}
+          >
+            <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+          </button>
+        </div>
 
-      <button
-        onClick={() => removeItem(item.id)}
-        className="p-1 text-muted-foreground hover:text-destructive transition-colors"
-        aria-label={`Remover ${item.name}`}
-      >
-        <X className="w-4 h-4" />
-      </button>
-    </div>
+        <p className="text-sm font-bold text-fg tabular-nums">
+          <span className="sr-only">{item.quantity} unidades, subtotal </span>
+          {formatPrice(item.price * item.quantity)}
+        </p>
+      </div>
+    </li>
   )
 }

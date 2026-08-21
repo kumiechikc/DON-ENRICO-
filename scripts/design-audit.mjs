@@ -166,7 +166,7 @@ async function launchBrowser(executable) {
   const exe = executable || process.env.PW_EXECUTABLE_PATH;
   try {
     return await chromium.launch(exe ? { executablePath: exe } : {});
-  } catch (e) {
+  } catch {
     // Fall back to a common preinstalled path (e.g. managed CI images).
     return await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   }

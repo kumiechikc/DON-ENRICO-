@@ -1,119 +1,110 @@
 @import "tailwindcss";
 
+/*
+  Don Enrico Lanches — "cartaz de boteco".
+  Fundo creme quente para a comida frita aparecer dourada: fundo escuro deixa
+  fritura com cara de gordurosa. O âmbar da marca só entra como preenchimento
+  com texto escuro por cima — âmbar nunca alcança 3:1 sobre o creme, então não
+  pode ser traço fino nem texto pequeno sozinho; para isso existe --brand-deep.
+  Todas as razões de contraste anotadas abaixo foram medidas, não estimadas.
+*/
 :root {
-  --background: #0A0A0A;
-  --foreground: #FFF7ED;
-  --card: #141414;
-  --card-foreground: #FFF7ED;
-  --primary: #EA580C;
-  /* Texto quase preto sobre o laranja da marca: 5,9:1 (AA). Branco daria só 3,6:1. */
-  --primary-foreground: #0A0A0A;
-  --secondary: #CC0000;
-  --secondary-foreground: #FFFFFF;
-  --accent: #F28C28;
-  --accent-foreground: #000000;
-  --muted: #1C1C1C;
-  --muted-foreground: #A3A3A3;
-  --border: rgba(255, 255, 255, 0.08);
-  --ring: #EA580C;
-  --destructive: #EF4444;
-  --radius: 12px;
+  --bg: #fdf7ef;
+  --surface: #ffffff;
+  --surface-2: #f6eadb;
+
+  --fg: #241610; /* 16.48:1 sobre bg */
+  --fg-muted: #6b5648; /* 6.47:1 sobre bg */
+
+  --brand: #e8940c; /* preenchimento; texto --fg por cima = 7.24:1 */
+  --brand-deep: #9a5b06; /* 5.09:1 sobre bg — seguro para texto e traço */
+
+  --accent: #c1121f; /* branco por cima = 6.22:1 */
+  --accent-hover: #a00e19; /* branco por cima = 8.17:1 */
+
+  --border: #e4d5c3; /* divisória decorativa */
+  --border-strong: #9d8264; /* limite de controle — 3.39:1 sobre bg */
+  --ring: #c1121f;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-hover: var(--accent-hover);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-ring: var(--ring);
-  --color-destructive: var(--destructive);
-  --color-fire-red: #CC0000;
-  --color-fire-orange: #EA580C;
-  --color-fire-amber: #F97316;
-  --color-fire-gold: #F28C28;
-  --font-heading: var(--font-playfair);
-  --font-body: var(--font-karla);
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
-  --animate-ember-rise: ember-rise 12s linear infinite;
-}
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
+  --font-display: var(--font-archivo-black);
+  --font-body: var(--font-archivo);
 
-@keyframes glow-pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-
-@keyframes ember-rise {
-  0% { transform: translateY(100vh) scale(1); opacity: 0; }
-  10% { opacity: 0.8; }
-  90% { opacity: 0.2; }
-  100% { transform: translateY(-10vh) scale(0.3); opacity: 0; }
-}
-
-@keyframes bounce-down {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(8px); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  --radius-card: 4px;
 }
 
 html {
   scroll-behavior: smooth;
+  /* A navbar fixa não pode cobrir o título ao pular por âncora. */
+  scroll-padding-top: 5rem;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-body), sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a:focus,
-button:focus,
-input:focus,
-select:focus,
-textarea:focus,
-[tabindex]:focus,
-*:focus-visible {
-  outline: 2px solid var(--ring) !important;
-  outline-offset: 2px !important;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter !important;
+/*
+  Display em caixa alta com tracking apertado: a voz dos encartes impressos da
+  marca. Archivo Black tem só o peso 400 — o peso vem do desenho da fonte.
+*/
+.type-display {
+  font-family: var(--font-display), var(--font-body), system-ui, sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+
+/* Etiqueta pequena em caixa alta, para sobrelinhas e rótulos de categoria. */
+.type-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/*
+  Foco: anel vermelho sólido com deslocamento, visível sobre creme, branco e
+  âmbar. Nunca removido — é o único indicador para quem navega por teclado.
+*/
+:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+button,
+[role="button"],
+a[href] {
+  cursor: pointer;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  html { scroll-behavior: auto; }
-}
-
-.fire-gradient {
-  background: linear-gradient(135deg, #CC0000 0%, #EA580C 40%, #F97316 70%, #F28C28 100%);
-}
-
-.fire-text {
-  background: linear-gradient(135deg, #CC0000 0%, #EA580C 40%, #F97316 70%, #F28C28 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  html {
+    scroll-behavior: auto;
+  }
 }

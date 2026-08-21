@@ -1,68 +1,67 @@
-import { getWhatsAppDirectUrl } from "@/lib/cart/whatsapp"
+import { PHONE_DISPLAY, PHONE_TEL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/cart/whatsapp"
+
+const links = [
+  { label: "Festa", href: "#festa" },
+  { label: "Box degustação", href: "#box" },
+  { label: "Congelados", href: "#congelados" },
+  { label: "Como encomendar", href: "#como-encomendar" },
+]
 
 export function Footer() {
   return (
-    <footer className="relative bg-[#050505] pt-12 pb-6">
-      <div className="absolute top-0 left-0 right-0 h-[2px] fire-gradient" />
-
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+    <footer className="bg-fg text-white/70 py-12">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
           <div>
-            <p className="font-heading text-lg font-bold tracking-widest uppercase">
-              <span className="text-foreground">Don </span>
-              <span className="text-primary">Enrico</span>
-              <span className="text-foreground"> Lanches</span>
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground italic">
-              O Sabor que Impõe Respeito
-            </p>
+            <p className="type-display text-lg text-white">Don Enrico Lanches</p>
+            <p className="mt-2 text-sm italic">O sabor que impõe respeito</p>
+            <p className="mt-3 text-sm">Porto Alegre, RS</p>
           </div>
 
-          <div>
-            <p className="text-sm font-semibold mb-1 text-foreground">Links</p>
-            <div className="flex flex-col">
-              {[
-                { label: "Box Degustação", href: "#box" },
-                { label: "Encomendas para festa", href: "#cardapio" },
-                { label: "Congelados", href: "#congelados" },
-                { label: "Sobre", href: "#sobre" },
-                { label: "Contato", href: "#contato" },
-              ].map(({ label, href }) => (
-                <a
-                  key={href}
-                  href={href}
-                  className="flex min-h-[44px] items-center text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {label}
-                </a>
+          <nav aria-label="Seções do site">
+            <p className="type-label text-[0.7rem] text-white mb-3">Cardápio</p>
+            <ul className="flex flex-col gap-2">
+              {links.map((link) => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    className="text-sm hover:text-white transition-colors duration-150"
+                  >
+                    {link.label}
+                  </a>
+                </li>
               ))}
-            </div>
-          </div>
+            </ul>
+          </nav>
 
           <div>
-            <p className="text-sm font-semibold mb-1 text-foreground">Contato</p>
-            <a
-              href={getWhatsAppDirectUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex min-h-[44px] items-center text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              Peça pelo WhatsApp
-            </a>
-            <a
-              href="tel:+5551990156798"
-              className="flex min-h-[44px] items-center text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              (51) 99015-6798
-            </a>
+            <p className="type-label text-[0.7rem] text-white mb-3">Contato</p>
+            <ul className="flex flex-col gap-2">
+              <li>
+                <a
+                  href={`tel:${PHONE_TEL}`}
+                  className="text-sm hover:text-white transition-colors duration-150"
+                >
+                  {PHONE_DISPLAY}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={INSTAGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm hover:text-white transition-colors duration-150"
+                >
+                  {INSTAGRAM_HANDLE}
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
 
-        <div className="border-t border-white/5 pt-6 text-center">
-          <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Don Enrico Lanches. Todos os direitos reservados.
-          </p>
-        </div>
+        <p className="mt-10 pt-6 border-t border-white/15 text-xs">
+          &copy; {new Date().getFullYear()} Don Enrico Lanches
+        </p>
       </div>
     </footer>
   )

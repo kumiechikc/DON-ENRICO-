@@ -1,30 +1,24 @@
-"use client"
-
-import { motion } from "framer-motion"
-
 interface SectionHeadingProps {
+  /** Sobrelinha curta em caixa alta, para situar a seção. */
+  eyebrow?: string
   title: string
   subtitle?: string
 }
 
-export function SectionHeading({ title, subtitle }: SectionHeadingProps) {
+export function SectionHeading({ eyebrow, title, subtitle }: SectionHeadingProps) {
   return (
-    <motion.div
-      className="text-center mb-12 md:mb-16"
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.5 }}
-    >
-      <h2 className="font-heading text-[clamp(1.75rem,4vw,2.75rem)] font-bold tracking-tight">
+    <div className="max-w-2xl mb-10 md:mb-14">
+      {eyebrow && (
+        <p className="type-label text-xs text-brand-deep mb-3">{eyebrow}</p>
+      )}
+      <h2 className="type-display text-[clamp(2rem,5.5vw,3.25rem)] text-fg">
         {title}
       </h2>
-      <div className="mx-auto mt-3 h-[2px] w-12 rounded-full bg-primary" />
       {subtitle && (
-        <p className="mt-4 text-muted-foreground text-base md:text-lg max-w-xl mx-auto">
+        <p className="mt-4 text-base md:text-lg text-fg-muted leading-relaxed">
           {subtitle}
         </p>
       )}
-    </motion.div>
+    </div>
   )
 }

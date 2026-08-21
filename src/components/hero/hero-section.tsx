@@ -1,55 +1,91 @@
-"use client"
-
-import dynamic from "next/dynamic"
-import { ChevronDown } from "lucide-react"
-
-const HeroScene = dynamic(() => import("./hero-scene"), { ssr: false })
+import { getWhatsAppDirectUrl } from "@/lib/cart/whatsapp"
+import { boxDegustacao, festaCategories } from "@/lib/data/menu"
+import { formatPrice } from "@/lib/utils"
 
 export function HeroSection() {
+  // Índice de preços montado a partir do próprio cardápio: quando um preço muda
+  // no menu.ts, a dobra acompanha sozinha.
+  const entryPrice = Math.min(...boxDegustacao.tiers.map((t) => t.price))
+  const priceIndex = festaCategories.map((c) => ({
+    name: c.name,
+    from: Math.min(...c.tiers.map((t) => t.price)),
+  }))
+
   return (
-    <section className="relative min-h-screen min-h-[100svh] flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <HeroScene />
-      </div>
+    <section className="border-b border-border">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-28 pb-16 md:pt-36 md:pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-12 lg:gap-16 items-end">
+          <div>
+            <p className="type-label text-xs text-brand-deep">
+              Porto Alegre · Encomendas
+            </p>
 
-      <div className="relative z-10 text-center px-4 max-w-3xl mx-auto">
-        <p className="font-body text-xs sm:text-sm font-semibold tracking-[0.3em] text-primary uppercase mb-4 animate-[fadeIn_0.6s_ease_0.3s_both]">
-          Salgados para festa e congelados
-        </p>
+            <h1 className="mt-5 type-display text-[clamp(2.75rem,9vw,5.5rem)] text-fg">
+              Salgados
+              <br />
+              para festa
+            </h1>
 
-        <h1 className="font-heading text-[clamp(2.5rem,7vw,5rem)] font-black leading-[0.95] tracking-tight animate-[fadeIn_0.6s_ease_0.5s_both]">
-          <span className="block text-foreground">Don Enrico</span>
-          <span className="block text-primary mt-1">Lanches</span>
-        </h1>
+            {/* Barra âmbar: o único gesto de cor forte da dobra. */}
+            <div className="mt-7 h-2 w-24 bg-brand" aria-hidden="true" />
 
-        <p className="mt-4 font-body text-base sm:text-lg md:text-xl text-muted-foreground italic font-light animate-[fadeIn_0.6s_ease_0.7s_both]">
-          O Sabor que Impõe Respeito
-        </p>
+            <p className="mt-7 max-w-xl text-lg md:text-xl text-fg-muted leading-relaxed">
+              Fritos, assados e folhados por encomenda — e a linha de congelados
+              para assar em casa. Box degustação a partir de{" "}
+              <strong className="text-fg font-bold">{formatPrice(entryPrice)}</strong>.
+            </p>
 
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 animate-[fadeIn_0.6s_ease_0.9s_both]">
-          <a
-            href="#cardapio"
-            className="bg-primary text-primary-foreground px-8 py-3.5 rounded-lg font-bold text-sm tracking-wide hover:bg-primary/90 hover:shadow-[0_4px_24px_rgba(234,88,12,0.35)] transition-all duration-200"
-          >
-            Peça Agora
-          </a>
-          <a
-            href="#congelados"
-            className="px-8 py-3.5 rounded-lg border border-white/20 text-foreground font-medium text-sm hover:border-primary hover:text-primary transition-all duration-200"
-          >
-            Ver congelados
-          </a>
+            <div className="mt-9 flex flex-col sm:flex-row gap-3">
+              <a
+                href="#festa"
+                className="inline-flex items-center justify-center min-h-[3.25rem] px-8 bg-accent text-white font-bold text-sm uppercase tracking-wider hover:bg-accent-hover transition-colors duration-150"
+              >
+                Ver cardápio
+              </a>
+              <a
+                href={getWhatsAppDirectUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center min-h-[3.25rem] px-8 border border-border-strong text-fg font-bold text-sm uppercase tracking-wider hover:border-fg transition-colors duration-150"
+              >
+                Falar no WhatsApp
+              </a>
+            </div>
+
+            <p className="mt-6 text-sm text-fg-muted italic">
+              O sabor que impõe respeito
+            </p>
+          </div>
+
+          {/*
+            Quadro de preços como o de uma casa de salgados: preenche a metade
+            direita com informação real em vez de enfeite, e dá ao visitante a
+            faixa de preço antes de rolar a página.
+          */}
+          <div className="lg:w-72 border-t-2 border-fg pt-5">
+            <p className="type-label text-[0.7rem] text-fg-muted mb-4">
+              Linhas para festa
+            </p>
+            <ul className="flex flex-col gap-3">
+              {priceIndex.map((line) => (
+                <li
+                  key={line.name}
+                  className="flex items-baseline justify-between gap-4 border-b border-border pb-2"
+                >
+                  <span className="text-sm font-semibold text-fg">{line.name}</span>
+                  <span className="text-sm text-fg-muted tabular-nums whitespace-nowrap">
+                    a partir de{" "}
+                    <strong className="text-fg font-bold">
+                      {formatPrice(line.from)}
+                    </strong>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs text-fg-muted">Pacotes de 50 ou 100 unidades.</p>
+          </div>
         </div>
       </div>
-
-      <a
-        href="#box"
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex min-h-[44px] min-w-[44px] items-center justify-center text-muted-foreground/60 animate-[bounce-down_1.5s_ease-in-out_infinite]"
-        aria-label="Rolar para o cardápio"
-      >
-        <ChevronDown className="w-6 h-6" />
-      </a>
-
     </section>
   )
 }

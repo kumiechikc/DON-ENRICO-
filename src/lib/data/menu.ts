@@ -1,6 +1,16 @@
 export interface Tier {
   quantity: number
   price: number
+  /*
+   * Quantos sabores o cliente pode combinar nesta faixa.
+   *
+   * CONFIRMAR COM O DONO: o encarte diz "máximo dois sabores por cento", o que
+   * é claro para 100 unidades mas ambíguo para 25 e 50. Os valores abaixo são a
+   * leitura conservadora (1 sabor em 25, 2 em 50 e 100). Se a regra real for
+   * outra, é só trocar o número aqui — nenhuma outra parte do código presume
+   * esses valores.
+   */
+  maxFlavors: number
 }
 
 // `image` fica vazio até o cliente enviar a foto: o componente ProductImage cai
@@ -27,7 +37,7 @@ export interface FlavorPack {
 export const boxDegustacao: AssortedCategory = {
   id: "box-degustacao",
   name: "Box Degustação",
-  description: "Salgados sortidos fritos na hora, prontos para saborear.",
+  description: "Sortido dos clássicos fritos, para provar.",
   flavors: [
     "Coxinha de frango",
     "Bolinha de queijo",
@@ -40,8 +50,8 @@ export const boxDegustacao: AssortedCategory = {
     "Mini churros",
   ],
   tiers: [
-    { quantity: 25, price: 19.9 },
-    { quantity: 50, price: 39.9 },
+    { quantity: 25, price: 19.9, maxFlavors: 1 },
+    { quantity: 50, price: 39.9, maxFlavors: 2 },
   ],
 }
 
@@ -51,7 +61,7 @@ export const festaCategories: AssortedCategory[] = [
   {
     id: "classicos-fritos",
     name: "Clássicos Fritos",
-    description: "Os salgados de sempre, crocantes e fritos na hora.",
+    description: "Fritos na hora. Os sabores tradicionais.",
     flavors: [
       "Coxinha de frango",
       "Bolinha de queijo",
@@ -64,15 +74,15 @@ export const festaCategories: AssortedCategory[] = [
       "Mini churros",
     ],
     tiers: [
-      { quantity: 50, price: 39.9 },
-      { quantity: 100, price: 69.9 },
+      { quantity: 50, price: 39.9, maxFlavors: 2 },
+      { quantity: 100, price: 69.9, maxFlavors: 2 },
     ],
     maxFlavorsNote: MAX_FLAVORS_NOTE,
   },
   {
     id: "assados-especiais",
     name: "Assados Especiais",
-    description: "Assados na medida, leves e douradinhos.",
+    description: "Assados no forno, sem fritura.",
     flavors: [
       "Enroladinho de salsicha",
       "Joelho calabresa e queijo",
@@ -82,30 +92,30 @@ export const festaCategories: AssortedCategory[] = [
       "Pastelzinho suíço",
     ],
     tiers: [
-      { quantity: 50, price: 44.9 },
-      { quantity: 100, price: 79.9 },
+      { quantity: 50, price: 44.9, maxFlavors: 2 },
+      { quantity: 100, price: 79.9, maxFlavors: 2 },
     ],
     maxFlavorsNote: MAX_FLAVORS_NOTE,
   },
   {
     id: "folhados-premium",
     name: "Folhados Premium",
-    description: "Massa folhada amanteigada, recheio generoso.",
+    description: "Massa folhada, assada no forno.",
     flavors: [
       "Enroladinho de salsicha",
       "Pastel presunto e queijo",
       "Empadinha de frango",
     ],
     tiers: [
-      { quantity: 50, price: 44.9 },
-      { quantity: 100, price: 79.9 },
+      { quantity: 50, price: 44.9, maxFlavors: 2 },
+      { quantity: 100, price: 79.9, maxFlavors: 2 },
     ],
     maxFlavorsNote: MAX_FLAVORS_NOTE,
   },
   {
     id: "selecao-don-enrico",
     name: "Seleção Don Enrico",
-    description: "Nossa linha especial, para quem quer impressionar.",
+    description: "Mini pizzas, croissants, empadinhas e tortinhas.",
     flavors: [
       "Mini pizza de calabresa",
       "Mini pizza de frango",
@@ -120,8 +130,8 @@ export const festaCategories: AssortedCategory[] = [
       "Tortinha de espinafre",
     ],
     tiers: [
-      { quantity: 50, price: 59.9 },
-      { quantity: 100, price: 109.9 },
+      { quantity: 50, price: 59.9, maxFlavors: 2 },
+      { quantity: 100, price: 109.9, maxFlavors: 2 },
     ],
     maxFlavorsNote: MAX_FLAVORS_NOTE,
   },

@@ -1,6 +1,14 @@
 "use client"
 
-import { createContext, useContext, useReducer, useEffect, useState, type ReactNode } from "react"
+import {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useMemo,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react"
 import type { CartItem, CartAction } from "./types"
 
 interface CartContextValue {
@@ -44,50 +52,97 @@ function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
 
 const STORAGE_KEY = "don-enrico-cart"
 
-export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, dispatch] = useReducer(cartReducer, [])
-  const [hydrated, setHydrated] = useState(false)
+/*
+ * O que está no localStorage veio de uma versão anterior do site ou de alguém
+ * editando à mão, então nada aqui é confiável: cada campo é validado antes de
+ * virar estado. Um carrinho corrompido é descartado em silêncio em vez de
+ * quebrar a página.
+ */
+function parseStoredCart(raw: string): CartItem[] {
+  const parsed: unknown = JSON.parse(raw)
+  if (!Array.isArray(parsed)) return []
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        const parsed: CartItem[] = JSON.parse(saved)
-        parsed.forEach((item) => {
-          for (let i = 0; i < item.quantity; i++) {
-            dispatch({ type: "ADD_ITEM", item })
-          }
-        })
-      }
-    } catch {}
-    setHydrated(true)
-  }, [])
+  return parsed.flatMap((entry): CartItem[] => {
+    if (typeof entry !== "object" || entry === null) return []
+    const { id, name, price, quantity, flavors } = entry as Record<string, unknown>
 
-  useEffect(() => {
-    if (hydrated) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+    if (typeof id !== "string" || id === "") return []
+    if (typeof name !== "string" || name === "") return []
+    if (typeof price !== "number" || !Number.isFinite(price) || price < 0) return []
+    if (typeof quantity !== "number" || !Number.isInteger(quantity) || quantity < 1) {
+      return []
     }
-  }, [items, hydrated])
 
-  const totalItems = items.reduce((sum, i) => sum + i.quantity, 0)
-  const totalPrice = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
+    return [
+      {
+        id,
+        name,
+        price,
+        quantity,
+        flavors: Array.isArray(flavors)
+          ? flavors.filter((f): f is string => typeof f === "string")
+          : [],
+      },
+    ]
+  })
+}
 
-  return (
-    <CartContext.Provider
-      value={{
-        items: hydrated ? items : [],
-        totalItems: hydrated ? totalItems : 0,
-        totalPrice: hydrated ? totalPrice : 0,
-        addItem: (item) => dispatch({ type: "ADD_ITEM", item }),
-        removeItem: (id) => dispatch({ type: "REMOVE_ITEM", id }),
-        updateQuantity: (id, quantity) =>
-          dispatch({ type: "UPDATE_QUANTITY", id, quantity }),
-        clearCart: () => dispatch({ type: "CLEAR" }),
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+function readStoredCart(): CartItem[] {
+  if (typeof window === "undefined") return []
+  try {
+    const saved = window.localStorage.getItem(STORAGE_KEY)
+    return saved ? parseStoredCart(saved) : []
+  } catch {
+    // localStorage bloqueado (aba anônima, cookies desligados) ou JSON inválido.
+    return []
+  }
+}
+
+/*
+ * `false` no servidor e `true` depois que o React assume a página. Isso deixa a
+ * primeira renderização do navegador idêntica à do servidor (carrinho vazio) e
+ * só então revela o que estava salvo — sem descasamento de hidratação e sem
+ * chamar setState dentro de efeito.
+ */
+const emptySubscribe = () => () => {}
+function useHasMounted(): boolean {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
   )
+}
+
+export function CartProvider({ children }: { children: ReactNode }) {
+  const hasMounted = useHasMounted()
+  // O initializer preguiçoso roda uma vez: no servidor devolve [], no navegador
+  // já devolve o carrinho salvo, sem precisar de um efeito para carregá-lo.
+  const [items, dispatch] = useReducer(cartReducer, undefined, readStoredCart)
+
+  useEffect(() => {
+    if (!hasMounted) return
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+    } catch {
+      // Sem espaço ou sem permissão: o carrinho segue funcionando na memória.
+    }
+  }, [items, hasMounted])
+
+  const value = useMemo<CartContextValue>(() => {
+    const visible = hasMounted ? items : []
+    return {
+      items: visible,
+      totalItems: visible.reduce((sum, i) => sum + i.quantity, 0),
+      totalPrice: visible.reduce((sum, i) => sum + i.price * i.quantity, 0),
+      addItem: (item) => dispatch({ type: "ADD_ITEM", item }),
+      removeItem: (id) => dispatch({ type: "REMOVE_ITEM", id }),
+      updateQuantity: (id, quantity) =>
+        dispatch({ type: "UPDATE_QUANTITY", id, quantity }),
+      clearCart: () => dispatch({ type: "CLEAR" }),
+    }
+  }, [items, hasMounted])
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }
 
 export function useCart() {
