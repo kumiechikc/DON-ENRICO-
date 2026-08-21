@@ -1,40 +1,42 @@
 "use client"
 
-import { useRef, useMemo } from "react"
-import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import * as THREE from "three"
+import { useEffect, useRef } from "react"
 
 /*
- * O plano de fundo do hero: um único quad em tela cheia com um shader que
- * simula óleo quente e calor subindo — a luz da fritadeira na sombra.
+ * Fundo do hero: um quad em tela cheia com um shader que simula óleo quente e
+ * calor subindo — a luz da fritadeira na sombra.
  *
- * Por que shader e não sistema de partículas: partículas de fogo flutuando são
- * o clichê mais reconhecível de "site gerado por IA", custam milhares de draw
- * calls e nunca se parecem com fritura. Um quad com ruído fractal em GLSL custa
- * um draw call, roda a 60fps em aparelho fraco e produz a luz volumétrica
- * quente que a direção de arte pede.
+ * Escrito em WebGL puro, sem three.js nem React Three Fiber, por um motivo
+ * medido: a versão com as duas bibliotecas custava mais de 1,5 MB de
+ * JavaScript para desenhar UM quad com UM shader. three.js é uma engine de
+ * cena 3D — câmeras, luzes, grafo de objetos, carregadores — e nada disso é
+ * usado aqui. Sessenta linhas de WebGL entregam o mesmo pixel.
+ *
+ * Também não são partículas: partículas de fogo flutuando são o clichê mais
+ * reconhecível de site gerado por IA, custam milhares de draw calls e nunca se
+ * parecem com fritura. Ruído fractal num quad custa um draw call.
  */
 
-const vertexShader = /* glsl */ `
+const VERTEX_SOURCE = `
+  attribute vec2 aPosition;
   varying vec2 vUv;
   void main() {
-    vUv = uv;
-    gl_Position = vec4(position, 1.0);
+    vUv = aPosition * 0.5 + 0.5;
+    gl_Position = vec4(aPosition, 0.0, 1.0);
   }
 `
 
 /*
- * Ruído simplex 2D de Ashima Arts (domínio público / MIT), a implementação
- * padrão usada em produção — reescrever isto à mão só introduziria bugs.
+ * Ruído simplex 2D de Ashima Arts (licença MIT), a implementação padrão de
+ * produção — reescrever à mão só introduziria bugs sutis.
  */
-const fragmentShader = /* glsl */ `
-  precision highp float;
+const FRAGMENT_SOURCE = `
+  precision mediump float;
 
   varying vec2 vUv;
   uniform float uTime;
   uniform vec2  uResolution;
   uniform vec2  uPointer;
-  uniform float uIntensity;
 
   vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
   vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -65,11 +67,11 @@ const fragmentShader = /* glsl */ `
     return 130.0 * dot(m, g);
   }
 
-  /* Ruído fractal: várias oitavas somadas dão a turbulência do calor. */
+  /* Quatro oitavas somadas dão a turbulência do ar quente. */
   float fbm(vec2 p) {
     float total = 0.0;
     float amplitude = 0.5;
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 4; i++) {
       total += snoise(p) * amplitude;
       p *= 2.0;
       amplitude *= 0.5;
@@ -79,12 +81,12 @@ const fragmentShader = /* glsl */ `
 
   void main() {
     vec2 uv = vUv;
-    float aspect = uResolution.x / uResolution.y;
+    float aspect = uResolution.x / max(uResolution.y, 1.0);
     vec2 p = vec2(uv.x * aspect, uv.y);
 
     /*
-     * O campo sobe com o tempo e ondula na horizontal: é a assinatura visual do
-     * ar quente sobre óleo. A escala vertical é menor que a horizontal para as
+     * O campo sobe com o tempo e ondula na horizontal: é a assinatura do ar
+     * quente sobre óleo. A escala vertical é menor que a horizontal para as
      * plumas ficarem alongadas em vez de circulares.
      */
     float t = uTime * 0.11;
@@ -92,20 +94,19 @@ const fragmentShader = /* glsl */ `
     float heat = fbm(q + fbm(q * 1.7) * 0.35);
     heat = heat * 0.5 + 0.5;
 
-    /* Concentra a luz embaixo, como se a fonte de calor estivesse fora da tela. */
-    float rise = smoothstep(1.05, -0.15, uv.y);
-    heat *= rise;
+    /* Concentra a luz embaixo: a fonte de calor fica fora da tela. */
+    heat *= smoothstep(1.05, -0.15, uv.y);
 
-    /* Halo suave seguindo o ponteiro: presença, não efeito de spotlight. */
-    float pointer = 1.0 - smoothstep(0.0, 0.75, distance(p, vec2(uPointer.x * aspect, uPointer.y)));
+    /* Halo suave seguindo o ponteiro: presença, não holofote. */
+    float pointer = 1.0 - smoothstep(0.0, 0.75,
+      distance(p, vec2(uPointer.x * aspect, uPointer.y)));
     heat += pointer * 0.16;
 
-    /* Rampa de cor da sombra quente ao dourado. */
     vec3 shadow = vec3(0.071, 0.043, 0.031);
     vec3 ember  = vec3(0.404, 0.145, 0.055);
     vec3 gold   = vec3(0.961, 0.647, 0.141);
 
-    float h = clamp(heat * uIntensity, 0.0, 1.0);
+    float h = clamp(heat, 0.0, 1.0);
     vec3 color = mix(shadow, ember, smoothstep(0.18, 0.62, h));
     color = mix(color, gold, smoothstep(0.62, 0.95, h));
 
@@ -117,64 +118,145 @@ const fragmentShader = /* glsl */ `
   }
 `
 
-function HeatPlane({ intensity }: { intensity: number }) {
-  const materialRef = useRef<THREE.ShaderMaterial>(null)
-  const { size } = useThree()
-  // O alvo do ponteiro é perseguido com suavização; saltar direto para a
-  // posição do mouse deixa o halo nervoso.
-  const pointer = useRef({ x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 })
-
-  const uniforms = useMemo(
-    () => ({
-      uTime: { value: 0 },
-      uResolution: { value: new THREE.Vector2(1, 1) },
-      uPointer: { value: new THREE.Vector2(0.5, 0.5) },
-      uIntensity: { value: intensity },
-    }),
-    [intensity]
-  )
-
-  useFrame((state, delta) => {
-    const mat = materialRef.current
-    if (!mat) return
-
-    mat.uniforms.uTime.value += delta
-    mat.uniforms.uResolution.value.set(size.width, size.height)
-
-    pointer.current.tx = state.pointer.x * 0.5 + 0.5
-    pointer.current.ty = state.pointer.y * 0.5 + 0.5
-    pointer.current.x += (pointer.current.tx - pointer.current.x) * 0.045
-    pointer.current.y += (pointer.current.ty - pointer.current.y) * 0.045
-    mat.uniforms.uPointer.value.set(pointer.current.x, pointer.current.y)
-  })
-
-  return (
-    <mesh frustumCulled={false}>
-      {/* Quad de tela cheia: o vertex shader já emite clip space, então a
-          geometria não precisa de câmera nem de transformação. */}
-      <planeGeometry args={[2, 2]} />
-      <shaderMaterial
-        ref={materialRef}
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        uniforms={uniforms}
-        depthTest={false}
-        depthWrite={false}
-      />
-    </mesh>
-  )
+function compile(gl: WebGLRenderingContext, type: number, source: string) {
+  const shader = gl.createShader(type)
+  if (!shader) return null
+  gl.shaderSource(shader, source)
+  gl.compileShader(shader)
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    gl.deleteShader(shader)
+    return null
+  }
+  return shader
 }
 
-export default function HeatShader({ intensity = 1 }: { intensity?: number }) {
+export default function HeatShader() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const gl = canvas.getContext("webgl", {
+      alpha: false,
+      antialias: false,
+      depth: false,
+      stencil: false,
+      powerPreference: "low-power",
+    })
+    // Sem WebGL o componente simplesmente não pinta: o gradiente CSS por trás
+    // continua sendo a cena.
+    if (!gl) return
+
+    const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX_SOURCE)
+    const fragment = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT_SOURCE)
+    if (!vertex || !fragment) return
+
+    const program = gl.createProgram()
+    if (!program) return
+    gl.attachShader(program, vertex)
+    gl.attachShader(program, fragment)
+    gl.linkProgram(program)
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return
+    gl.useProgram(program)
+
+    // Dois triângulos cobrindo o espaço de recorte inteiro.
+    const buffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array([-1, -1, 3, -1, -1, 3]),
+      gl.STATIC_DRAW
+    )
+    const aPosition = gl.getAttribLocation(program, "aPosition")
+    gl.enableVertexAttribArray(aPosition)
+    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0)
+
+    const uTime = gl.getUniformLocation(program, "uTime")
+    const uResolution = gl.getUniformLocation(program, "uResolution")
+    const uPointer = gl.getUniformLocation(program, "uPointer")
+
+    // Perseguição suavizada: saltar direto para o mouse deixa o halo nervoso.
+    const pointer = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 }
+    const onPointerMove = (event: PointerEvent) => {
+      pointer.tx = event.clientX / window.innerWidth
+      pointer.ty = 1 - event.clientY / window.innerHeight
+    }
+    window.addEventListener("pointermove", onPointerMove, { passive: true })
+
+    /*
+     * Resolução limitada a 1.5x: acima disso o custo do fragment shader dobra
+     * sem ganho visível num efeito difuso como este.
+     */
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+      const width = Math.floor(canvas.clientWidth * dpr)
+      const height = Math.floor(canvas.clientHeight * dpr)
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width
+        canvas.height = height
+        gl.viewport(0, 0, width, height)
+      }
+    }
+    const observer = new ResizeObserver(resize)
+    observer.observe(canvas)
+    resize()
+
+    let frame = 0
+    const start = performance.now()
+    let running = true
+
+    const render = (now: number) => {
+      if (!running) return
+      pointer.x += (pointer.tx - pointer.x) * 0.045
+      pointer.y += (pointer.ty - pointer.y) * 0.045
+
+      gl.uniform1f(uTime, (now - start) / 1000)
+      gl.uniform2f(uResolution, canvas.width, canvas.height)
+      gl.uniform2f(uPointer, pointer.x, pointer.y)
+      gl.drawArrays(gl.TRIANGLES, 0, 3)
+      frame = requestAnimationFrame(render)
+    }
+    frame = requestAnimationFrame(render)
+
+    /*
+     * Fora da tela o laço para. Um site de cardápio passa a maior parte do
+     * tempo rolado para baixo do hero, e manter um shader rodando ali é gastar
+     * bateria para pintar pixel que ninguém vê.
+     */
+    const visibility = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !running) {
+          running = true
+          frame = requestAnimationFrame(render)
+        } else if (!entry.isIntersecting && running) {
+          running = false
+          cancelAnimationFrame(frame)
+        }
+      },
+      { threshold: 0 }
+    )
+    visibility.observe(canvas)
+
+    return () => {
+      running = false
+      cancelAnimationFrame(frame)
+      observer.disconnect()
+      visibility.disconnect()
+      window.removeEventListener("pointermove", onPointerMove)
+      // WebGL não devolve memória de GPU sozinho.
+      gl.deleteBuffer(buffer)
+      gl.deleteProgram(program)
+      gl.deleteShader(vertex)
+      gl.deleteShader(fragment)
+    }
+  }, [])
+
   return (
-    <Canvas
-      // dpr limitado a 1.5: acima disso o custo do fragment shader dobra sem
-      // ganho visível num efeito difuso como este.
-      dpr={[1, 1.5]}
-      gl={{ antialias: false, alpha: false, powerPreference: "low-power" }}
-      style={{ position: "absolute", inset: 0 }}
-    >
-      <HeatPlane intensity={intensity} />
-    </Canvas>
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      className="absolute inset-0 h-full w-full"
+    />
   )
 }

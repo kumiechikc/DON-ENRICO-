@@ -17,6 +17,7 @@ import { checkViewports } from "./checks/viewport.mjs"
 import { checkContrast } from "./checks/contrast.mjs"
 import { checkOrderFlow } from "./checks/order-flow.mjs"
 import { checkA11y } from "./checks/a11y.mjs"
+import { checkPerformance } from "./checks/performance.mjs"
 
 const args = process.argv.slice(2)
 const urlArg = args.indexOf("--url")
@@ -107,6 +108,7 @@ try {
     ["Fluxo do pedido", () => checkOrderFlow(browser, target, { screenshotDir: wantShots ? SHOT_DIR : null })],
     ["Contraste WCAG AA", () => checkContrast(browser, target)],
     ["Acessibilidade e teclado", () => checkA11y(browser, target)],
+    ["Orçamento de performance", () => checkPerformance(browser, target)],
   ]
 
   const allFailures = []

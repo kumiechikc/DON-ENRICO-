@@ -12,10 +12,26 @@ const archivoBlack = Archivo_Black({
   display: "swap",
 })
 
+/*
+ * `optional` em vez de `swap` no texto corrido, de propósito.
+ *
+ * Com `swap` o navegador pinta na fonte de fallback e troca quando o Archivo
+ * chega. Como as métricas diferem, o parágrafo do hero quebrava numa linha a
+ * mais e encolhia 26px na troca — sozinho isso empurrava 813px de conteúdo e
+ * respondia por todo o CLS da página (0.131, acima do limite de 0.1).
+ *
+ * Com `optional` o navegador usa o fallback se a fonte não chegar em ~100ms e
+ * NÃO troca no meio da sessão: zero deslocamento. O custo é que uma parte das
+ * primeiras visitas lê em fonte de sistema; da segunda em diante a fonte já
+ * está em cache. Para texto corrido essa troca compensa.
+ *
+ * O título segue com `swap`, porque ali a fonte É a identidade — e lá o
+ * deslocamento foi resolvido reservando a altura das linhas.
+ */
 const archivo = Archivo({
   subsets: ["latin"],
   variable: "--font-archivo",
-  display: "swap",
+  display: "optional",
 })
 
 export const metadata: Metadata = {

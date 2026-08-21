@@ -6,6 +6,8 @@ import { MotionProvider } from "@/lib/motion/motion-provider"
 import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 import { CartDrawer } from "@/components/cart/cart-drawer"
+import { CursorFollower } from "@/components/ui/cursor-follower"
+import { IntroCurtain } from "@/components/ui/intro-curtain"
 
 /*
  * Only the shell is a Client Component. As seções entram por `children` já
@@ -32,6 +34,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
         </main>
         <Footer />
         <CartDrawer open={cartOpen} onClose={closeCart} />
+        <CursorFollower />
+        <IntroCurtain />
       </CartProvider>
     </MotionProvider>
   )

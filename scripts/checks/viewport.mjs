@@ -24,10 +24,17 @@ export async function checkViewports(browser, url, { screenshotDir } = {}) {
     const page = await ctx.newPage()
 
     const noise = []
+    /*
+     * Mensagens do driver de GPU ("GL Driver Message", "GPU stall") vêm do
+     * Chromium headless capturando tela nesta máquina, não do site. Filtrar
+     * evita que um ruído de ambiente reprove todo build no CI.
+     */
+    const RUIDO_DE_AMBIENTE = /GL Driver Message|GPU stall|Automatic fallback to software WebGL/i
     page.on("console", (m) => {
-      if (m.type() === "error" || m.type() === "warning") {
-        noise.push(`[${m.type()}] ${m.text()}`)
-      }
+      if (m.type() !== "error" && m.type() !== "warning") return
+      const texto = m.text()
+      if (RUIDO_DE_AMBIENTE.test(texto)) return
+      noise.push(`[${m.type()}] ${texto}`)
     })
     page.on("pageerror", (e) => noise.push(`[pageerror] ${e.message}`))
 

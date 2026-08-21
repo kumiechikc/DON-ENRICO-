@@ -12,9 +12,9 @@ import { formatPrice } from "@/lib/utils"
 import { MagneticButton } from "@/components/ui/magnetic-button"
 
 /*
- * O shader entra por import dinâmico e sem SSR: three.js não roda no servidor,
- * e mantê-lo fora do bundle inicial significa que o primeiro pixel da página
- * não espera meio megabyte de WebGL para aparecer.
+ * O shader entra por import dinâmico e sem SSR: WebGL não existe no servidor, e
+ * mantê-lo fora do bundle inicial deixa o primeiro pixel da página aparecer sem
+ * esperar por ele.
  */
 const HeatShader = dynamic(() => import("./heat-shader"), {
   ssr: false,
@@ -66,7 +66,7 @@ export function HeroSection() {
           (aparelho fraco, movimento desligado), a cena continua sendo uma
           fritadeira acesa na sombra, não um retângulo preto. */}
       <div className="absolute inset-0 z-0 bg-[radial-gradient(125%_90%_at_50%_118%,#8A4318_0%,#3A1809_42%,#120B08_76%)]">
-        {shaderReady && <HeatShader intensity={1} />}
+        {shaderReady && <HeatShader />}
       </div>
 
       {/* Camada 2 — véu direcional. Escurece onde o texto pousa (embaixo à
@@ -86,7 +86,13 @@ export function HeroSection() {
 
             <h1
               ref={titleRef}
-              className="type-display text-[clamp(2.6rem,8vw,7rem)] text-fg opacity-0 whitespace-nowrap"
+              /*
+                O título tem duas linhas e `line-height: 0.88`, então reservar
+                1.76em garante a mesma altura antes e depois da fonte chegar.
+                Sem isso a troca do Archivo Black remedia o bloco e empurrava
+                tudo abaixo em 813px — sozinho, todo o CLS da página.
+              */
+              className="type-display text-[clamp(2.6rem,8vw,7rem)] text-fg opacity-0 whitespace-nowrap min-h-[1.76em]"
             >
               Salgados
               <br />
