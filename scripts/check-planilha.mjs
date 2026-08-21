@@ -129,11 +129,10 @@ for (const achado of fontes["Menu.gs"].matchAll(/addItem\('[^']+',\s*'([^']+)'\)
  * coluna errada, calado. Esta tabela é o alarme.
  */
 const letrasEsperadas = {
-  Pedidos: { ID: "A", Status: "H", Pagamento: "I", Maquininha: "J", Total: "K", Líquido: "L" },
+  Pedidos: { ID: "A", "Entrega em": "G", Status: "H", Pagamento: "I", Total: "J" },
   Itens: { "ID pedido": "A", SKU: "B", Pacotes: "E", Preço: "G", Subtotal: "H" },
   Movimentos: { Tipo: "B", Item: "C", Unidades: "D", Pedido: "E" },
   Estoque: { Item: "A", Nome: "B", Mínimo: "D", Entradas: "E", Saídas: "F", Saldo: "G", Comprometido: "H", Livre: "I", Alerta: "J" },
-  Taxas: { Chave: "A", Maquininha: "B", Forma: "C", "Taxa %": "D" },
 }
 for (const [tabela, esperado] of Object.entries(letrasEsperadas)) {
   for (const [coluna, letra] of Object.entries(esperado)) {

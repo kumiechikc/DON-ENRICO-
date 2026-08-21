@@ -1,7 +1,7 @@
 # Planilha de operação — instalação
 
-Sistema em Google Apps Script que substitui o caderno: pedidos, estoque e custo real
-de maquininha numa planilha só. O site manda o pedido para cá no mesmo clique que abre
+Sistema em Google Apps Script que substitui o caderno: pedidos e controle de estoque
+numa planilha só. O site manda o pedido para cá no mesmo clique que abre
 o WhatsApp.
 
 Instalação leva ~10 minutos e é feita uma vez.
@@ -42,7 +42,7 @@ Volte para a planilha e recarregue a página. Vai aparecer o menu **Don Enrico**
 **Don Enrico → Instalar / atualizar planilha.** Na primeira vez o Google pede
 autorização — é o script pedindo permissão para editar a própria planilha.
 
-Pronto: oito abas criadas, com o cardápio inteiro já cadastrado.
+Pronto: sete abas criadas, com o cardápio inteiro já cadastrado.
 
 ## 4. Publicar o endpoint (só se quiser o pedido do site caindo aqui)
 
@@ -125,3 +125,7 @@ sabor que você tenha feito à mão também ficam.
   o problema em vez de mostrá-lo.
 - **Cancelar pedido já entregue não estorna o estoque.** Isso é devolução, e devolução
   precisa aparecer como `Ajuste +`, não como uma saída que sumiu.
+- **Taxa de maquininha.** O parcelamento é combinado na conversa e a máquina vai na
+  entrega, então a planilha não teria como saber a taxa de cada venda. Coluna que fica
+  vazia ou errada é pior que coluna nenhuma: alguém acaba somando aquilo achando que é
+  real. O que fica é a forma de pagamento e quanto do mês entrou em Pix.

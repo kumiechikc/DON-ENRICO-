@@ -1,9 +1,8 @@
 /**
  * Cria e atualiza a estrutura da planilha.
  *
- * Roda quantas vezes for preciso. As abas de dado (Pedidos, Itens, Movimentos,
- * Taxas) só têm cabeçalho, fórmula e validação reescritos — nenhuma linha é
- * tocada. As abas de referência (Catálogo, Sabores, Estoque) são regeneradas a
+ * Roda quantas vezes for preciso. As abas de dado (Pedidos, Itens e Movimentos)
+ * só têm cabeçalho, fórmula e validação reescritos, nenhuma linha é tocada. As abas de referência (Catálogo, Sabores, Estoque) são regeneradas a
  * partir do Catalogo.gs, preservando o que é do dono: o estoque mínimo de cada
  * item e o apontamento de sabor que ele tenha corrigido à mão.
  *
@@ -40,7 +39,6 @@ function criarAbas_(ss) {
     ABAS.movimentos,
     ABAS.catalogo,
     ABAS.sabores,
-    ABAS.taxas,
   ]
   for (let i = 0; i < nomes.length; i++) {
     if (!ss.getSheetByName(nomes[i])) ss.insertSheet(nomes[i])
@@ -62,7 +60,6 @@ function ordenarAbas_(ss) {
     ABAS.movimentos,
     ABAS.catalogo,
     ABAS.sabores,
-    ABAS.taxas,
   ]
   for (let i = 0; i < ordem.length; i++) {
     const s = ss.getSheetByName(ordem[i])
@@ -178,7 +175,6 @@ function escreverFormulas_() {
   const p = aba(ABAS.pedidos)
   const i = aba(ABAS.itens)
   const e = aba(ABAS.estoque)
-  const t = aba(ABAS.taxas)
 
   // Total do pedido = soma dos itens. Não existe total digitado à mão: sem item
   // lançado não há como dar baixa no estoque, e um total solto esconderia isso.
@@ -186,14 +182,6 @@ function escreverFormulas_() {
     matriz_('Total', 'IF($A:$A="","",SUMIF(' + ABAS.itens + "!$A:$A,$A:$A," + ABAS.itens + '!$H:$H))')
   )
 
-  p.getRange(1, coluna(p, 'Líquido')).setFormula(
-    matriz_(
-      'Líquido',
-      'IF($A:$A="","",$K:$K*(1-IFERROR(VLOOKUP($J:$J&"|"&$I:$I,' +
-        ABAS.taxas +
-        '!$A:$D,4,FALSE),0)))'
-    )
-  )
 
   /*
    * Situação do estoque lida do razão, nunca de uma marcação própria.
@@ -243,9 +231,6 @@ function escreverFormulas_() {
     matriz_('Subtotal', 'IF($A:$A="","",$E:$E*$G:$G)')
   )
 
-  t.getRange(1, coluna(t, 'Chave')).setFormula(
-    matriz_('Chave', 'IF($B:$B="","",$B:$B&"|"&$C:$C)')
-  )
 
   const mov = ABAS.movimentos
   const soma = function (tipo) {
@@ -295,17 +280,13 @@ function aplicarValidacoes_() {
   const p = aba(ABAS.pedidos)
   const m = aba(ABAS.movimentos)
   const e = aba(ABAS.estoque)
-  const t = aba(ABAS.taxas)
 
   lista_(p, coluna(p, 'Status'), STATUS_LISTA)
   lista_(p, coluna(p, 'Origem'), ORIGENS)
   lista_(p, coluna(p, 'Pagamento'), PAGAMENTOS)
-  intervalo_(p, coluna(p, 'Maquininha'), t.getRange(2, coluna(t, 'Maquininha'), 200, 1))
 
   lista_(m, coluna(m, 'Tipo'), MOVIMENTO_LISTA)
   intervalo_(m, coluna(m, 'Item'), e.getRange(2, 1, 300, 1))
-
-  lista_(t, coluna(t, 'Forma'), PAGAMENTOS.slice(1))
 
   const i = aba(ABAS.itens)
   const c0 = aba(ABAS.catalogo)
@@ -349,16 +330,14 @@ function aplicarFormatos_() {
   const e = aba(ABAS.estoque)
   const m = aba(ABAS.movimentos)
   const c = aba(ABAS.catalogo)
-  const t = aba(ABAS.taxas)
 
-  moedaCol_(p, ['Total', 'Líquido'])
+  moedaCol_(p, ['Total'])
   moedaCol_(i, ['Preço', 'Subtotal'])
   moedaCol_(c, ['Preço'])
 
   p.getRange(2, coluna(p, 'Recebido em'), p.getMaxRows() - 1, 1).setNumberFormat('dd/MM/yyyy HH:mm')
   p.getRange(2, coluna(p, 'Entrega em'), p.getMaxRows() - 1, 1).setNumberFormat('dd/MM/yyyy')
   m.getRange(2, coluna(m, 'Data'), m.getMaxRows() - 1, 1).setNumberFormat('dd/MM/yyyy HH:mm')
-  t.getRange(2, coluna(t, 'Taxa %'), t.getMaxRows() - 1, 1).setNumberFormat('0.00%')
 
   const alerta = e.getRange(2, 1, e.getMaxRows() - 1, COLUNAS.Estoque.length)
   const letraAlerta = colunaLetra_(coluna(e, 'Alerta'))
@@ -385,7 +364,7 @@ function aplicarFormatos_() {
     regra(STATUS.cancelado, '#EDEDED'),
   ])
 
-  const abas = [p, i, e, m, c, t]
+  const abas = [p, i, e, m, c]
   for (let k = 0; k < abas.length; k++) abas[k].autoResizeColumns(1, 4)
 }
 
@@ -422,24 +401,24 @@ function montarResumo_() {
     ['Mês', '=TEXT(TODAY(),"MMMM \\"de\\" yyyy")'],
     [
       'Faturamento entregue no mês',
-      '=SUMIFS(' + p + '!K:K,' + p + '!H:H,"' + STATUS.entregue + '",' + p + '!G:G,">="&' +
+      '=SUMIFS(' + p + '!J:J,' + p + '!H:H,"' + STATUS.entregue + '",' + p + '!G:G,">="&' +
         mesInicio.slice(1) + ',' + p + '!G:G,"<="&EOMONTH(TODAY(),0))',
     ],
-    [
-      'Recebido líquido (depois da maquininha)',
-      '=SUMIFS(' + p + '!L:L,' + p + '!H:H,"' + STATUS.entregue + '",' + p + '!G:G,">="&' +
-        mesInicio.slice(1) + ',' + p + '!G:G,"<="&EOMONTH(TODAY(),0))',
-    ],
-    ['Custo de maquininha no mês', '=B4-B5'],
     [
       'Pedidos entregues no mês',
       '=COUNTIFS(' + p + '!H:H,"' + STATUS.entregue + '",' + p + '!G:G,">="&' +
         mesInicio.slice(1) + ',' + p + '!G:G,"<="&EOMONTH(TODAY(),0))',
     ],
-    ['Ticket médio', '=IFERROR(B4/B7,0)'],
+    ['Ticket médio', '=IFERROR(B4/B5,0)'],
+    [
+      'Recebido em Pix no mês',
+      '=SUMIFS(' + p + '!J:J,' + p + '!I:I,"Pix",' + p + '!H:H,"' + STATUS.entregue + '",' +
+        p + '!G:G,">="&' + mesInicio.slice(1) + ',' + p + '!G:G,"<="&EOMONTH(TODAY(),0))',
+    ],
     ['', ''],
     ['A fazer', ''],
     ['Novos, ainda sem confirmar', '=COUNTIF(' + p + '!H:H,"' + STATUS.novo + '")'],
+    ['Pagamento ainda pendente', '=COUNTIFS(' + p + '!I:I,"Pendente",' + p + '!H:H,"<>' + STATUS.cancelado + '")'],
     [
       'Confirmados para os próximos 7 dias',
       '=COUNTIFS(' + p + '!H:H,"' + STATUS.confirmado + '",' + p + '!G:G,">="&TODAY(),' + p +
@@ -458,11 +437,11 @@ function montarResumo_() {
 
   s.getRange(1, 1, linhas.length, 2).setValues(linhas)
   s.getRange(1, 1).setFontSize(16).setFontWeight('bold')
-  s.getRange(10, 1).setFontWeight('bold')
-  s.getRange(16, 1).setFontWeight('bold')
-  s.getRange(4, 2, 3, 1).setNumberFormat('R$ #,##0.00')
-  s.getRange(8, 2).setNumberFormat('R$ #,##0.00')
-  s.getRange(17, 2).setWrap(true)
+  s.getRange(9, 1).setFontWeight('bold')
+  s.getRange(15, 1).setFontWeight('bold')
+  s.getRange(4, 2).setNumberFormat('R$ #,##0.00')
+  s.getRange(6, 2, 2, 1).setNumberFormat('R$ #,##0.00')
+  s.getRange(16, 2).setWrap(true)
   s.setColumnWidth(1, 300)
   s.setColumnWidth(2, 380)
   s.setFrozenRows(0)

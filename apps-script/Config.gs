@@ -14,7 +14,6 @@ const ABAS = {
   movimentos: 'Movimentos',
   catalogo: 'Catálogo',
   sabores: 'Sabores',
-  taxas: 'Taxas',
 }
 
 const COLUNAS = {
@@ -28,9 +27,7 @@ const COLUNAS = {
     'Entrega em',
     'Status',
     'Pagamento',
-    'Maquininha',
     'Total',
-    'Líquido',
     'Estoque',
     'Obs',
   ],
@@ -50,7 +47,6 @@ const COLUNAS = {
   ],
   'Catálogo': ['SKU', 'Linha', 'Produto', 'Unidades', 'Preço', 'Máx. sabores', 'Ativo'],
   Sabores: ['Linha', 'Sabor', 'Item de estoque'],
-  Taxas: ['Chave', 'Maquininha', 'Forma', 'Taxa %', 'Prazo (dias)'],
 }
 
 /*
@@ -108,19 +104,14 @@ const MOVIMENTO_LISTA = [
 ]
 
 /*
- * Formas de pagamento separadas por CUSTO, não por aparência.
+ * Formas de pagamento como a operação realmente funciona.
  *
- * "Cartão" numa coluna só não serve: débito e crédito têm taxas bem diferentes,
- * e é justamente essa diferença que a planilha precisa mostrar em dinheiro.
+ * Não há coluna de taxa nem de valor líquido: o parcelamento é combinado na
+ * conversa e a maquininha vai na entrega, então a planilha não tem como saber a
+ * taxa de cada venda. Uma coluna que só ficaria vazia ou errada é pior que
+ * coluna nenhuma, porque alguém vai acabar somando aquilo achando que é real.
  */
-const PAGAMENTOS = [
-  'Pendente',
-  'Pix',
-  'Dinheiro',
-  'Débito',
-  'Crédito',
-  'Crédito parcelado',
-]
+const PAGAMENTOS = ['Pendente', 'Pix', 'Dinheiro', 'Cartão na entrega']
 
 const ORIGENS = ['Site', 'WhatsApp', 'Pessoalmente', 'Telefone', 'Instagram']
 

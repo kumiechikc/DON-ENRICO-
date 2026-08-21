@@ -88,18 +88,17 @@ Montar banco em tempo real para isso é usar caminhão para carregar uma sacola.
 
 ### O que existe agora
 
-Google Sheets + Apps Script, oito abas:
+Google Sheets + Apps Script, sete abas:
 
 | Aba | Para quê |
 |---|---|
-| **Resumo** | faturamento do mês, custo de maquininha, o que repor, o que entregar |
-| **Pedidos** | um por linha, com status, pagamento e valor líquido |
+| **Resumo** | faturamento do mês, quanto veio em Pix, o que repor, o que entregar |
+| **Pedidos** | um por linha, com status, forma de pagamento e total |
 | **Itens** | o que tem em cada pedido; preço vem do catálogo, não digitado |
 | **Estoque** | saldo, comprometido e livre por produto — tudo calculado |
 | **Movimentos** | o razão: produção, reserva, venda, perda, ajuste |
 | **Catálogo** | os 29 SKUs, gerados do `menu.ts` do site |
 | **Sabores** | qual produto do congelador cada sabor consome |
-| **Taxas** | taxa de cada maquininha por forma de pagamento |
 
 **O pedido do site cai direto na planilha.** No mesmo clique que abre o WhatsApp, o
 site envia o pedido em segundo plano. A mensagem e a linha da planilha carregam o mesmo
@@ -123,15 +122,19 @@ O site manda SKU e quantidade; a planilha busca o valor no catálogo. O endpoint
 público — tem que ser, quem chama é o visitante — então qualquer valor vindo de lá é
 forjável. Mandar só o que dá para verificar do outro lado dispensa confiar no cliente.
 
-### O custo real das maquininhas
+### Pagamento
 
-O sócio tem várias. A aba **Taxas** guarda a taxa de cada uma por forma de pagamento
-(débito, crédito, parcelado), e cada pedido ganha uma coluna **Líquido**. O Resumo
-mostra quanto do mês foi embora em taxa.
+Decidido com o sócio: **sem controle de taxa de maquininha na planilha.** O
+parcelamento é combinado na conversa e a máquina vai na entrega, então a planilha não
+teria como saber a taxa de cada venda. Uma coluna que fica vazia ou errada é pior que
+coluna nenhuma, porque alguém acaba somando aquilo achando que é real.
 
-Vale medir antes de opinar: a diferença entre a melhor e a pior costuma passar de dois
-pontos percentuais, e máquina parada normalmente tem aluguel mensal. Com o número na
-tela, dá para decidir qual usar e quais devolver — hoje isso é palpite.
+O que fica: a forma de pagamento (Pix, dinheiro, cartão na entrega) e quanto do mês
+entrou em Pix, que é o número que importa para saber se vale empurrar o Pix.
+
+**Próximo passo: Pix com QR Code e copia e cola no site**, para o cliente pagar antes e
+mandar o comprovante no WhatsApp. Falta a chave Pix e o nome do titular; o código do QR
+(padrão BR Code do Banco Central) é gerado a partir deles.
 
 ### O que continua fora
 
