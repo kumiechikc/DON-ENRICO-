@@ -20,12 +20,12 @@ export function Footer() {
 
           <nav aria-label="Seções do site">
             <p className="type-label text-[0.7rem] text-white mb-3">Cardápio</p>
-            <ul className="flex flex-col gap-2">
+            <ul className="flex flex-col">
               {links.map((link) => (
                 <li key={link.href}>
                   <a
                     href={link.href}
-                    className="text-sm hover:text-white transition-colors duration-150"
+                    className="inline-flex items-center min-h-[2.75rem] text-sm hover:text-white transition-colors duration-150"
                   >
                     {link.label}
                   </a>
@@ -36,11 +36,11 @@ export function Footer() {
 
           <div>
             <p className="type-label text-[0.7rem] text-white mb-3">Contato</p>
-            <ul className="flex flex-col gap-2">
+            <ul className="flex flex-col">
               <li>
                 <a
                   href={`tel:${PHONE_TEL}`}
-                  className="text-sm hover:text-white transition-colors duration-150"
+                  className="inline-flex items-center min-h-[2.75rem] text-sm hover:text-white transition-colors duration-150"
                 >
                   {PHONE_DISPLAY}
                 </a>
@@ -50,7 +50,7 @@ export function Footer() {
                   href={INSTAGRAM_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm hover:text-white transition-colors duration-150"
+                  className="inline-flex items-center min-h-[2.75rem] text-sm hover:text-white transition-colors duration-150"
                 >
                   {INSTAGRAM_HANDLE}
                 </a>

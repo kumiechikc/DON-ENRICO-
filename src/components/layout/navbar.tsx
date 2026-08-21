@@ -34,7 +34,7 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
       )}
     >
       <nav className="mx-auto max-w-6xl flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 h-16 md:h-20">
-        <a href="#" className="type-display text-base md:text-lg text-fg shrink-0">
+        <a href="#" className="inline-flex items-center min-h-[2.75rem] type-display text-base md:text-lg text-fg shrink-0">
           Don Enrico
         </a>
 
@@ -43,7 +43,7 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
             <li key={link.href}>
               <a
                 href={link.href}
-                className="text-sm font-semibold text-fg-muted hover:text-fg transition-colors duration-150"
+                className="inline-flex items-center min-h-[2.75rem] text-sm font-semibold text-fg-muted hover:text-fg transition-colors duration-150"
               >
                 {link.label}
               </a>

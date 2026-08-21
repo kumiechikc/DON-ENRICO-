@@ -10,7 +10,8 @@
     "lint": "eslint",
     "setup": "bash scripts/setup.sh",
     "audit": "node scripts/design-audit.mjs",
-    "audit:file": "node scripts/design-audit.mjs --file ./index.html"
+    "audit:file": "node scripts/design-audit.mjs --file ./index.html",
+    "check": "node scripts/check-site.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
