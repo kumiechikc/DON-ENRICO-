@@ -16,11 +16,15 @@
  *     solta: nenhum tipo protege contra escrever "Líquido" sem acento.
  *  3. Regras — validação do pedido, rateio de sabores e alocação no estoque,
  *     que é onde mora a lógica que dá para errar de verdade.
+ *  4. Ciclo do estoque — reserva, venda e cancelamento rodando contra um Google
+ *     Sheets imitado. É a parte que só existiria dentro do Google, e é a que
+ *     erra em silêncio: baixa errada não dá tela vermelha, dá saldo errado.
  */
 import { readFileSync, readdirSync } from "node:fs"
 import { createContext, Script } from "node:vm"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
+import { ambienteFake } from "./checks/sheets-fake.mjs"
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), "..")
 const pastaGs = join(raiz, "apps-script")
@@ -308,6 +312,242 @@ ok(!/[01OIL5S]/.test(codigo), "o código não usa caracteres confundíveis", cod
 
 ok(nucleo.moeda(1234.5) === "R$ 1.234,50", "moeda em pt-BR", nucleo.moeda(1234.5))
 ok(nucleo.moeda(0) === "R$ 0,00", "moeda de zero")
+
+/* ────────────────────── 4. o ciclo do estoque ────────────────────────── */
+
+secao("Instalação da planilha")
+
+/**
+ * Sobe o sistema inteiro dentro do Sheets imitado.
+ *
+ * Diferente da carga acima, aqui entram TODOS os arquivos: é o único jeito de
+ * executar o que só roda dentro do Google.
+ */
+function novoAmbiente() {
+  const fake = ambienteFake()
+  const ctx = createContext(fake.globais)
+  const exportar = `globalThis.__gs = {
+    instalar, lerTabela, aba, coluna, ultimaLinha, acrescentar,
+    reservarPedido_, venderPedido_, soltarReserva_, alocacaoDoPedido_,
+    movimentosDoPedido_, gravarPedido_, proximoId_, pedidoPorCodigo_,
+    ABAS, STATUS, MOVIMENTO,
+  }`
+  new Script(arquivos.map((n) => fontes[n]).join("\n;\n") + "\n;\n" + exportar, {
+    filename: "apps-script (tudo)",
+  }).runInContext(ctx)
+  return { fake: fake, gs: ctx.__gs }
+}
+
+let ambiente
+try {
+  ambiente = novoAmbiente()
+  ambiente.gs.instalar()
+  checagens++
+} catch (erro) {
+  falhas++
+  process.stdout.write(`   ✗ instalar() falhou — ${erro.message}\n`)
+}
+
+if (ambiente) {
+  const gs = ambiente.gs
+  const linhasCatalogo = gs.lerTabela(gs.ABAS.catalogo)
+  const linhasSabores = gs.lerTabela(gs.ABAS.sabores)
+  const linhasEstoque = gs.lerTabela(gs.ABAS.estoque)
+
+  ok(linhasCatalogo.length === CATALOGO.length, `Catálogo com ${CATALOGO.length} SKUs`, `veio ${linhasCatalogo.length}`)
+  ok(linhasSabores.length === SABORES.length, `Sabores com ${SABORES.length} linhas`, `veio ${linhasSabores.length}`)
+  ok(linhasEstoque.length === ITENS_ESTOQUE.length, `Estoque com ${ITENS_ESTOQUE.length} itens`, `veio ${linhasEstoque.length}`)
+
+  /*
+   * Reinstalar acontece toda vez que o cardápio muda. Se isso apagasse o
+   * estoque mínimo ou a correção de sabor que o dono fez à mão, ele perderia o
+   * ajuste sem aviso e a planilha passaria a mandar repor a hora errada.
+   */
+  const e = gs.aba(gs.ABAS.estoque)
+  e.getRange(2, gs.coluna(e, "Mínimo")).setValue(150)
+  const sab = gs.aba(gs.ABAS.sabores)
+  sab.getRange(2, gs.coluna(sab, "Item de estoque")).setValue("item-corrigido-a-mao")
+
+  gs.instalar()
+
+  ok(
+    gs.aba(gs.ABAS.estoque).getRange(2, gs.coluna(e, "Mínimo")).getValue() === 150,
+    "reinstalar preserva o estoque mínimo digitado"
+  )
+  ok(
+    gs.aba(gs.ABAS.sabores).getRange(2, gs.coluna(sab, "Item de estoque")).getValue() ===
+      "item-corrigido-a-mao",
+    "reinstalar preserva a correção de sabor feita à mão"
+  )
+}
+
+secao("Ciclo do estoque")
+
+/**
+ * Semeia um pedido já lançado.
+ *
+ * `Unidades` é escrito à mão porque na planilha real ele é fórmula (busca o SKU
+ * no Catálogo e multiplica pelos pacotes), e a imitação não calcula fórmula. O
+ * valor semeado é o que o Sheets produziria.
+ */
+function semearPedido(gs, id, itens) {
+  const p = gs.aba(gs.ABAS.pedidos)
+  const linha = gs.ultimaLinha(p, 1) + 1
+  p.getRange(linha, gs.coluna(p, "ID")).setValue(id)
+  p.getRange(linha, gs.coluna(p, "Status")).setValue(gs.STATUS.novo)
+
+  const i = gs.aba(gs.ABAS.itens)
+  for (const item of itens) {
+    const alvo = gs.ultimaLinha(i, 1) + 1
+    i.getRange(alvo, gs.coluna(i, "ID pedido")).setValue(id)
+    i.getRange(alvo, gs.coluna(i, "SKU")).setValue(item.sku)
+    i.getRange(alvo, gs.coluna(i, "Sabores")).setValue((item.sabores || []).join(", "))
+    i.getRange(alvo, gs.coluna(i, "Pacotes")).setValue(item.pacotes)
+    i.getRange(alvo, gs.coluna(i, "Unidades")).setValue(item.unidades)
+  }
+  return linha
+}
+
+function movimentos(gs) {
+  return gs.lerTabela(gs.ABAS.movimentos)
+}
+
+if (ambiente) {
+  const ciclo = novoAmbiente()
+  const gs = ciclo.gs
+  gs.instalar()
+
+  semearPedido(gs, "P-0001", [
+    {
+      sku: "classicos-fritos-100",
+      pacotes: 1,
+      unidades: 100,
+      sabores: ["Coxinha de frango", "Bolinha de queijo"],
+    },
+  ])
+
+  gs.reservarPedido_("P-0001")
+  let movs = movimentos(gs)
+  const reservas = movs.filter((m) => m["Tipo"] === gs.MOVIMENTO.reserva)
+  ok(reservas.length === 2, "confirmar reserva gera um movimento por sabor", `veio ${reservas.length}`)
+  ok(
+    reservas.every((m) => m["Unidades"] === 50),
+    "as 100 unidades são divididas 50/50 entre os dois sabores"
+  )
+  ok(
+    movs.every((m) => m["Pedido"] === "P-0001"),
+    "todo movimento fica amarrado ao pedido que o gerou"
+  )
+
+  /*
+   * O pedido passa por "Em produção" e "Pronto" antes de sair. Cada passagem
+   * chama a reserva de novo — se ela não fosse idempotente, um pedido comum
+   * comprometeria o triplo do que vai realmente usar.
+   */
+  gs.reservarPedido_("P-0001")
+  gs.reservarPedido_("P-0001")
+  ok(movimentos(gs).length === 2, "reservar de novo não duplica", `veio ${movimentos(gs).length}`)
+
+  gs.venderPedido_("P-0001")
+  movs = movimentos(gs)
+  ok(movs.length === 2, "entregar converte a reserva em vez de criar linha nova")
+  ok(
+    movs.every((m) => m["Tipo"] === gs.MOVIMENTO.venda),
+    "as reservas viraram venda"
+  )
+
+  gs.venderPedido_("P-0001")
+  ok(movimentos(gs).length === 2, "entregar duas vezes não baixa o dobro")
+
+  /*
+   * Cancelar pedido já entregue é devolução, e devolução tem que aparecer. Se a
+   * saída sumisse em silêncio, o estoque voltaria sem ninguém saber por quê.
+   */
+  gs.soltarReserva_("P-0001")
+  ok(movimentos(gs).length === 2, "cancelar pedido já entregue não apaga a venda")
+  ok(
+    ciclo.fake.planilha.avisos.some((a) => /Ajuste \+/.test(a.mensagem)),
+    "e avisa que a devolução precisa ser lançada à mão"
+  )
+
+  /*
+   * O caso que justifica apagar linha de baixo para cima.
+   *
+   * Precisa de DUAS coisas juntas: o pedido cancelado tem mais de uma linha, e
+   * há outro pedido logo abaixo. Apagando de cima para baixo, a primeira
+   * exclusão sobe todo o resto — e a segunda, mirando o índice antigo, leva a
+   * linha do pedido vizinho. Com uma linha só o teste passa de qualquer jeito, e
+   * foi assim que escrevi da primeira vez: verde sem estar verificando nada.
+   */
+  semearPedido(gs, "P-0002", [
+    {
+      sku: "classicos-fritos-50",
+      pacotes: 1,
+      unidades: 50,
+      sabores: ["Coxinha de frango", "Mini churros"],
+    },
+  ])
+  semearPedido(gs, "P-0003", [
+    {
+      sku: "assados-especiais-50",
+      pacotes: 1,
+      unidades: 50,
+      sabores: ["Esfiha de frango", "Empadinha de frango"],
+    },
+  ])
+  gs.reservarPedido_("P-0002")
+  gs.reservarPedido_("P-0003")
+
+  const antes = movimentos(gs).length
+  ok(antes === 6, "dois pedidos novos somam quatro movimentos", `veio ${antes}`)
+
+  gs.soltarReserva_("P-0002")
+  movs = movimentos(gs)
+  ok(movs.length === 4, "cancelar apaga só os movimentos do pedido cancelado", `sobraram ${movs.length}`)
+  ok(
+    movs.filter((m) => m["Pedido"] === "P-0003").length === 2,
+    "o pedido vizinho fica intacto — é o que exige apagar de baixo para cima"
+  )
+  ok(
+    movs.filter((m) => m["Pedido"] === "P-0002").length === 0,
+    "e nada do cancelado sobra"
+  )
+
+  /* Congelado de sabor único desconta sem escolha de sabor. */
+  const doCongelado = movs.filter((m) => m["Pedido"] === "P-0003")
+  ok(
+    doCongelado.every((m) => m["Unidades"] === 25),
+    "50 unidades em dois sabores viram 25 e 25"
+  )
+
+  /* Venda de balcão: entregue sem passar por confirmado. */
+  semearPedido(gs, "P-0004", [
+    { sku: "cong-assado-esfiha-frango", pacotes: 1, unidades: 50, sabores: [] },
+  ])
+  gs.venderPedido_("P-0004")
+  const balcao = movimentos(gs).filter((m) => m["Pedido"] === "P-0004")
+  ok(balcao.length === 1, "pedido entregue sem confirmação prévia também baixa")
+  ok(balcao[0] && balcao[0]["Tipo"] === gs.MOVIMENTO.venda, "e baixa como venda")
+  ok(balcao[0] && balcao[0]["Unidades"] === 50, "com as unidades certas")
+
+  /*
+   * "Sortidos" é mistura, não produto do congelador: tem que avisar em vez de
+   * descontar de um item escolhido no chute.
+   */
+  const avisosAntes = ciclo.fake.planilha.avisos.length
+  semearPedido(gs, "P-0005", [
+    { sku: "cong-frito-sortidos", pacotes: 1, unidades: 50, sabores: [] },
+  ])
+  gs.reservarPedido_("P-0005")
+  ok(
+    movimentos(gs).filter((m) => m["Pedido"] === "P-0005").length === 0,
+    "sortidos não desconta de nenhum item"
+  )
+  ok(
+    ciclo.fake.planilha.avisos.length > avisosAntes,
+    "e o dono é avisado para lançar à mão"
+  )
+}
 
 /* ───────────────────────────── conclusão ────────────────────────────── */
 
