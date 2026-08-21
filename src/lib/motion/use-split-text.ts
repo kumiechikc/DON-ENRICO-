@@ -15,16 +15,22 @@ import { useMotion } from "./motion-provider"
  *    o container com aria-label contendo a frase inteira e esconder os
  *    fragmentos, e chamar `revert()` na limpeza para devolver o nó original.
  *
+ *    A frase vem por parâmetro, não do DOM. Tentar deduzi-la lendo o elemento
+ *    falhou de duas maneiras: `textContent` ignora o <br> e produzia
+ *    "Salgadospara festa", e depois que o SplitText assume, o elemento já não
+ *    contém o texto original para reler. O componente sabe o que escreveu —
+ *    ele diz, em vez de o hook adivinhar.
+ *
  * 2. Layout shift. Dividir texto antes da fonte carregar mede a largura errada
  *    e a linha reflui quando a fonte chega — o que arruína o CLS. Por isso a
  *    divisão só acontece depois de `document.fonts.ready`.
  */
 export function useSplitReveal<T extends HTMLElement = HTMLHeadingElement>(
-  options: { delay?: number; enabled?: boolean } = {}
+  options: { delay?: number; enabled?: boolean; label: string }
 ) {
   const ref = useRef<T>(null)
   const { motionEnabled } = useMotion()
-  const { delay = 0, enabled = true } = options
+  const { delay = 0, enabled = true, label } = options
 
   useEffect(() => {
     const el = ref.current
@@ -49,13 +55,23 @@ export function useSplitReveal<T extends HTMLElement = HTMLHeadingElement>(
       }
       if (cancelled || !ref.current) return
 
-      const phrase = el.textContent ?? ""
-      el.setAttribute("aria-label", phrase)
-
       split = new SplitText(el, {
         type: "lines,chars",
         linesClass: "overflow-hidden",
+        /*
+         * `aria: "none"` desliga a acessibilidade automática do SplitText.
+         *
+         * Ele monta o próprio aria-label com `element.textContent`, que ignora
+         * o <br> e produzia "Salgadospara festa" — o mesmo defeito que este
+         * hook tentava corrigir. Como o SplitText roda depois, ele sobrescrevia
+         * a correção em silêncio. Com a opção desligada, o rótulo abaixo é o
+         * único que existe.
+         */
+        aria: "none",
       })
+
+      // Definido DEPOIS da divisão, para o SplitText não sobrescrever.
+      el.setAttribute("aria-label", label)
 
       // Os fragmentos são decoração: o texto acessível está no aria-label.
       split.chars.forEach((c) => c.setAttribute("aria-hidden", "true"))
@@ -80,7 +96,7 @@ export function useSplitReveal<T extends HTMLElement = HTMLHeadingElement>(
       split?.revert()
       el.removeAttribute("aria-label")
     }
-  }, [motionEnabled, delay, enabled])
+  }, [motionEnabled, delay, enabled, label])
 
   return ref
 }

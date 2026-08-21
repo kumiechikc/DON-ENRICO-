@@ -21,6 +21,23 @@ export async function checkA11y(browser, url) {
     const h1s = document.querySelectorAll("h1")
     if (h1s.length !== 1) problems.push(`a página tem ${h1s.length} h1 (deve ter 1)`)
 
+    /*
+     * O nome acessível do h1 precisa fazer sentido lido em voz alta. Quando a
+     * animação de texto assume o título, ela troca o conteúdo por um elemento
+     * por caractere e depende de um aria-label — e uma primeira versão montava
+     * esse rótulo com textContent, que ignora o <br> e produzia
+     * "Salgadospara festa". Palavras coladas é o sintoma a procurar.
+     */
+    const h1 = h1s[0]
+    if (h1) {
+      const nome = (h1.getAttribute("aria-label") || h1.textContent || "").trim()
+      if (!nome) {
+        problems.push("h1 sem nome acessível")
+      } else if (/[a-záéíóúâêôãõç][A-ZÁÉÍÓÚÂÊÔÃÕÇ]/.test(nome)) {
+        problems.push(`nome acessível do h1 com palavras coladas: "${nome}"`)
+      }
+    }
+
     // Hierarquia de títulos sem pular nível.
     const levels = [...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].map((h) =>
       Number(h.tagName[1])

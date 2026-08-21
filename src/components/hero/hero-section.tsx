@@ -23,7 +23,10 @@ const HeatShader = dynamic(() => import("./heat-shader"), {
 
 export function HeroSection() {
   const { motionEnabled } = useMotion()
-  const titleRef = useSplitReveal<HTMLHeadingElement>({ delay: 0.35 })
+  const titleRef = useSplitReveal<HTMLHeadingElement>({
+    delay: 0.35,
+    label: "Salgados para festa",
+  })
   const supportRef = useRef<HTMLDivElement>(null)
   const indexRef = useRef<HTMLDivElement>(null)
 
