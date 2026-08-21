@@ -83,6 +83,12 @@ export async function checkOrderFlow(browser, url, { screenshotDir } = {}) {
    * O clique abre o WhatsApp numa aba nova, então o `noWaitAfter` impede o
    * Playwright de ficar esperando uma navegação que não acontece nesta página.
    */
+  const rodape =
+    (await page.getByText(/O pedido abre no WhatsApp/).textContent()) || ""
+  // O código do pedido só aparece no rodapé quando o registro está configurado;
+  // é o sinal visível ao usuário, e portanto o certo para um teste de navegador.
+  const registroLigado = /Código #/.test(rodape)
+
   await waLink.click({ noWaitAfter: true })
   await page.waitForTimeout(250)
 
@@ -93,7 +99,26 @@ export async function checkOrderFlow(browser, url, { screenshotDir } = {}) {
     )
   })
 
-  if (enviados.length !== 1) {
+  /*
+   * O envio para a planilha é decidido em tempo de build: sem
+   * NEXT_PUBLIC_REGISTRO_URL o código não entra no pacote. Então a suíte
+   * confere o que o build à frente dela realmente faz, em vez de exigir uma
+   * configuração — rodar contra o site publicado, onde o registro pode estar
+   * desligado de propósito, é um uso legítimo.
+   *
+   * Nos dois caminhos há uma afirmação de verdade: com o registro ligado, um
+   * envio com o conteúdo certo; desligado, nenhum envio. O que não pode
+   * acontecer é a conferência sumir em silêncio, então o modo aparece no
+   * relatório.
+   */
+  if (!registroLigado) {
+    if (enviados.length !== 0) {
+      failures.push(
+        `o registro está desligado neste build mas houve ${enviados.length} envio(s)`
+      )
+    }
+    notes.push("registro na planilha: desligado neste build (nada foi conferido)")
+  } else if (enviados.length !== 1) {
     failures.push(`o pedido deveria ser registrado uma vez, foram ${enviados.length}`)
   } else {
     const enviado = JSON.parse(enviados[0].corpo)

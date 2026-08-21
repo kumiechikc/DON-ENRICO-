@@ -71,6 +71,13 @@ jobs:
 
       - name: Build de produção
         run: npm run build
+        env:
+          # O envio do pedido para a planilha é decidido em tempo de build: sem
+          # estas variáveis o código nem chega a existir no pacote, e a suíte não
+          # teria o que conferir. A URL é falsa e o navegador substitui o envio
+          # durante o teste — nada sai daqui.
+          NEXT_PUBLIC_REGISTRO_URL: https://exemplo.invalido/registro
+          NEXT_PUBLIC_REGISTRO_TOKEN: token-de-teste
 
       - name: Subir o servidor
         run: |
