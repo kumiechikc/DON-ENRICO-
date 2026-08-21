@@ -10,6 +10,11 @@ import { boxDegustacao } from "@/lib/data/menu"
  * Duas restrições do renderizador (Satori) moldam este arquivo: toda div com
  * mais de um filho precisa de `display` explícito, e não há fonte externa de
  * propósito — a geração roda no build e buscar fonte na rede o deixaria frágil.
+ *
+ * As cores são as mesmas do site, e precisam continuar sendo: o cartão é a
+ * primeira impressão da marca quando alguém cola o link numa conversa, e um
+ * preview que não parece o site queima a chegada. Ficaram para trás uma vez,
+ * na troca da paleta clara para o chiaroscuro.
  */
 export const dynamic = "force-static"
 export const size = { width: 1200, height: 630 }
@@ -30,7 +35,7 @@ export default function OpengraphImage() {
           width: "100%",
           height: "100%",
           justifyContent: "space-between",
-          background: "#FDF7EF",
+          background: "#120B08",
           padding: "64px 72px",
           fontFamily: "sans-serif",
         }}
@@ -42,7 +47,7 @@ export default function OpengraphImage() {
               fontWeight: 700,
               letterSpacing: 6,
               textTransform: "uppercase",
-              color: "#9A5B06",
+              color: "#F5A524",
             }}
           >
             {`${site.city} · Encomendas`}
@@ -56,13 +61,13 @@ export default function OpengraphImage() {
               lineHeight: 1,
               letterSpacing: -3,
               textTransform: "uppercase",
-              color: "#241610",
+              color: "#F8EFE3",
             }}
           >
             <span>Salgados</span>
             <span>para festa</span>
           </div>
-          <div style={{ marginTop: 30, width: 150, height: 14, background: "#E8940C" }} />
+          <div style={{ marginTop: 30, width: 150, height: 14, background: "#F5A524" }} />
         </div>
 
         <div
@@ -73,10 +78,10 @@ export default function OpengraphImage() {
           }}
         >
           <div style={COL}>
-            <span style={{ fontSize: 34, fontWeight: 700, color: "#241610" }}>
+            <span style={{ fontSize: 34, fontWeight: 700, color: "#F8EFE3" }}>
               {site.name}
             </span>
-            <span style={{ marginTop: 8, fontSize: 25, color: "#6B5648" }}>
+            <span style={{ marginTop: 8, fontSize: 25, color: "#B9A08B" }}>
               Fritos, assados, folhados e congelados
             </span>
           </div>
@@ -85,7 +90,7 @@ export default function OpengraphImage() {
             style={{
               ...COL,
               alignItems: "flex-end",
-              background: "#E8940C",
+              background: "#F5A524",
               padding: "16px 28px",
             }}
           >
@@ -95,12 +100,12 @@ export default function OpengraphImage() {
                 fontWeight: 700,
                 letterSpacing: 3,
                 textTransform: "uppercase",
-                color: "#241610",
+                color: "#120B08",
               }}
             >
               A partir de
             </span>
-            <span style={{ fontSize: 44, fontWeight: 900, color: "#241610" }}>
+            <span style={{ fontSize: 44, fontWeight: 900, color: "#120B08" }}>
               {fromLabel}
             </span>
           </div>
