@@ -127,6 +127,56 @@ export async function checkA11y(browser, url) {
     `anel de foco: ${focusRing?.width} ${focusRing?.style} ${focusRing?.color ?? ""}`
   )
 
+  /*
+   * Modalidade dos diálogos.
+   *
+   * Prender o Tab não basta: sem marcar o fundo como `inert`, quem usa leitor
+   * de tela continua percorrendo o rodapé e o cardápio por trás de um menu
+   * aberto, como se a página estivesse normal. Este teste existe porque a
+   * lacuna passou despercebida na primeira implementação.
+   */
+  await page.getByRole("button", { name: "Abrir menu" }).click()
+  await page.waitForTimeout(400)
+
+  const modalidade = await page.evaluate(() => {
+    const rodape = document.querySelector("footer")
+    const link = rodape?.querySelector("a")
+    link?.focus()
+    return {
+      abriu: !!document.querySelector('[role="dialog"][aria-label="Menu"]'),
+      mainInerte: document.querySelector("main")?.hasAttribute("inert") ?? false,
+      rodapeInerte: rodape?.hasAttribute("inert") ?? false,
+      fundoRecebeFoco: document.activeElement === link,
+    }
+  })
+
+  if (!modalidade.abriu) {
+    failures.push("menu do celular não abriu")
+  } else {
+    if (!modalidade.mainInerte || !modalidade.rodapeInerte) {
+      failures.push(
+        "diálogo aberto sem marcar o fundo como inert — leitor de tela ainda percorre a página atrás"
+      )
+    }
+    if (modalidade.fundoRecebeFoco) {
+      failures.push("elemento do fundo ainda recebe foco com o diálogo aberto")
+    }
+  }
+  notes.push(
+    `diálogo isola o fundo: ${
+      modalidade.mainInerte && modalidade.rodapeInerte && !modalidade.fundoRecebeFoco
+        ? "ok"
+        : "FALHA"
+    }`
+  )
+
+  await page.keyboard.press("Escape")
+  await page.waitForTimeout(300)
+  const restaurado = await page.evaluate(
+    () => !document.querySelector("main")?.hasAttribute("inert")
+  )
+  if (!restaurado) failures.push("inert não foi removido ao fechar o diálogo")
+
   await ctx.close()
   return { failures, notes }
 }
