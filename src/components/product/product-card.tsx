@@ -1,45 +1,79 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { ProductImage } from "@/components/ui/product-image"
-import { AddToCartButton } from "@/components/ui/add-to-cart-button"
-import { formatPrice } from "@/lib/utils"
+import { useState, useEffect } from "react"
+import { Plus, Check } from "lucide-react"
+import { useCart } from "@/lib/cart/cart-context"
+import { formatPrice, cn } from "@/lib/utils"
 import type { FlavorPack } from "@/lib/data/menu"
 
-export function ProductCard({ pack, index = 0 }: { pack: FlavorPack; index?: number }) {
+/*
+ * Linha de um pacote de sabor único (congelados).
+ *
+ * A linha pontilhada entre nome e preço é o recurso tipográfico clássico de
+ * cardápio impresso, e é o que faz esta lista parecer desenhada em vez de uma
+ * tabela. Ela é feita com um flex-1 e `border-bottom: dotted` — nada de
+ * caracteres de ponto repetidos, que leitores de tela leriam um por um.
+ *
+ * O tamanho do pacote aparece uma vez no cabeçalho da coluna, não repetido nas
+ * dezenove linhas.
+ */
+export function ProductCard({ pack }: { pack: FlavorPack }) {
+  const { addItem } = useCart()
+  const [added, setAdded] = useState(false)
+
+  const handleAdd = () => {
+    addItem({
+      id: pack.id,
+      name: `${pack.name} — pacote com ${pack.packSize}`,
+      price: pack.price,
+      flavors: [],
+    })
+    setAdded(true)
+  }
+
+  useEffect(() => {
+    if (!added) return
+    const timer = window.setTimeout(() => setAdded(false), 1400)
+    return () => window.clearTimeout(timer)
+  }, [added])
+
   return (
-    <motion.article
-      className="flex items-center gap-4 rounded-xl border border-white/[0.08] bg-card p-3 sm:p-4"
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.3, delay: (index % 3) * 0.04 }}
-    >
-      <ProductImage
-        src={pack.image}
-        alt={`${pack.name} congelado — pacote com ${pack.packSize} unidades`}
-        className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg shrink-0"
-        sizes="80px"
+    <li className="group flex items-baseline gap-3 py-1">
+      <h4 className="shrink-0 text-sm sm:text-base text-fg leading-snug transition-colors duration-300 group-hover:text-amber">
+        {pack.name}
+      </h4>
+
+      {/* Condutor pontilhado: puramente decorativo. */}
+      <span
+        aria-hidden="true"
+        className="flex-1 min-w-4 translate-y-[-0.28em] border-b border-dotted border-border-strong/60 transition-colors duration-300 group-hover:border-amber/70"
       />
 
-      <div className="min-w-0 flex-1">
-        <h4 className="font-heading text-sm sm:text-base font-bold leading-tight">
-          {pack.name}
-        </h4>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          {pack.packSize} unidades
-        </p>
-        <p className="mt-1 text-base font-bold text-primary">{formatPrice(pack.price)}</p>
-      </div>
+      <span className="shrink-0 text-sm sm:text-base font-bold text-fg tabular-nums">
+        {formatPrice(pack.price)}
+      </span>
 
-      <AddToCartButton
-        id={pack.id}
-        name={`${pack.name} — pacote ${pack.packSize} un`}
-        price={pack.price}
-        iconOnly
-        variant="quiet"
-        className="shrink-0"
-      />
-    </motion.article>
+      <button
+        type="button"
+        onClick={handleAdd}
+        className={cn(
+          "shrink-0 inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] border transition-[color,background-color,border-color,opacity] duration-300 self-center",
+          added
+            ? "bg-amber border-amber text-bg"
+            : "border-border-strong/60 text-fg-muted hover:border-amber hover:text-amber"
+        )}
+        aria-label={
+          added
+            ? `${pack.name} adicionado ao pedido`
+            : `Adicionar ${pack.name}, pacote com ${pack.packSize}, ao pedido`
+        }
+      >
+        {added ? (
+          <Check className="w-4 h-4" aria-hidden="true" />
+        ) : (
+          <Plus className="w-4 h-4" aria-hidden="true" />
+        )}
+      </button>
+    </li>
   )
 }

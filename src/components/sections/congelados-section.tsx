@@ -1,30 +1,49 @@
 "use client"
 
-import { Snowflake } from "lucide-react"
 import { SectionHeading } from "@/components/ui/section-heading"
-import { ProductGrid } from "@/components/product/product-grid"
-import { congeladosFritar, congeladosAssados } from "@/lib/data/menu"
+import { ProductCard } from "@/components/product/product-card"
+import { useReveal } from "@/lib/motion/use-reveal"
+import {
+  congeladosFritar,
+  congeladosAssados,
+  CONGELADOS_PACK_SIZE,
+  type FlavorPack,
+} from "@/lib/data/menu"
+
+function PackList({ title, packs }: { title: string; packs: FlavorPack[] }) {
+  const ref = useReveal<HTMLUListElement>("stagger")
+
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3 border-b border-amber pb-3 mb-2">
+        <h3 className="type-label text-[0.68rem] text-amber">{title}</h3>
+        <span className="text-xs text-fg-muted whitespace-nowrap">
+          pacote c/ {CONGELADOS_PACK_SIZE}
+        </span>
+      </div>
+      <ul ref={ref} data-reveal>
+        {packs.map((pack) => (
+          <ProductCard key={pack.id} pack={pack} />
+        ))}
+      </ul>
+    </div>
+  )
+}
 
 export function CongeladosSection() {
   return (
-    <section id="congelados" className="py-20 md:py-28">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <section id="congelados" className="relative border-t border-border py-24 md:py-36">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
         <SectionHeading
-          title="Linha Praticidade"
-          subtitle="Salgados congelados para ter a Don Enrico sempre no seu freezer. Cada pacote vem com 50 unidades de um sabor."
+          eyebrow="Linha praticidade"
+          title="Sempre no seu freezer"
+          subtitle={`Pacote fechado com ${CONGELADOS_PACK_SIZE} unidades de um sabor só, para preparar na hora que der vontade.`}
         />
 
-        <div className="mb-6 flex items-center gap-2">
-          <Snowflake className="w-4 h-4 text-primary" aria-hidden="true" />
-          <h3 className="font-heading text-lg font-bold">Para fritar</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
+          <PackList title="Para fritar" packs={congeladosFritar} />
+          <PackList title="Assados — só aquecer" packs={congeladosAssados} />
         </div>
-        <ProductGrid packs={congeladosFritar} />
-
-        <div className="mt-16 mb-6 flex items-center gap-2">
-          <Snowflake className="w-4 h-4 text-primary" aria-hidden="true" />
-          <h3 className="font-heading text-lg font-bold">Assados, prontos para aquecer</h3>
-        </div>
-        <ProductGrid packs={congeladosAssados} />
       </div>
     </section>
   )

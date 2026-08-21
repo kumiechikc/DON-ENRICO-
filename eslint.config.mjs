@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Ferramentas vendorizadas do stack de design (skills do Claude Code) e
+    // scripts Node de apoio: não são código da aplicação e seguem outro estilo,
+    // então poluíam o lint com erros que ninguém ia corrigir.
+    ".claude/**",
+    "src/ui-ux-pro-max/**",
   ]),
 ]);
 

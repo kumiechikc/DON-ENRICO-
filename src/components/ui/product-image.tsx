@@ -1,42 +1,57 @@
-"use client"
-
-import { useState } from "react"
 import Image from "next/image"
-import { UtensilsCrossed } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ProductImageProps {
+  /**
+   * Caminho da foto em public/. Enquanto o cliente não envia as fotos, fica
+   * indefinido e o bloco cai no espaço reservado da marca — em vez de fingir
+   * que há uma foto ali.
+   */
   src?: string
   alt: string
   className?: string
   sizes?: string
+  /** Marca a imagem do topo da página, que não deve ser adiada. */
   priority?: boolean
 }
 
-export function ProductImage({ src, alt, className, sizes, priority }: ProductImageProps) {
-  const [failed, setFailed] = useState(false)
-  const showFallback = !src || failed
-
+export function ProductImage({
+  src,
+  alt,
+  className,
+  sizes = "(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw",
+  priority = false,
+}: ProductImageProps) {
   return (
-    <div className={cn("relative overflow-hidden bg-muted", className)}>
-      {showFallback ? (
-        <div
-          className="absolute inset-0 flex items-center justify-center bg-[linear-gradient(135deg,#1C1C1C_0%,#241812_60%,#2E1A0E_100%)]"
-          role="img"
-          aria-label={alt}
-        >
-          <UtensilsCrossed className="w-8 h-8 text-primary/40" strokeWidth={1.5} />
-        </div>
-      ) : (
+    <div
+      className={cn(
+        "relative overflow-hidden bg-surface-2 border border-border",
+        className
+      )}
+    >
+      {src ? (
         <Image
           src={src}
           alt={alt}
           fill
-          sizes={sizes ?? "(min-width: 1024px) 320px, (min-width: 640px) 45vw, 90vw"}
+          sizes={sizes}
           priority={priority}
+          loading={priority ? undefined : "lazy"}
           className="object-cover"
-          onError={() => setFailed(true)}
         />
+      ) : (
+        /*
+         * Espaço reservado, não conteúdo: puramente decorativo e escondido de
+         * leitores de tela, para ninguém anunciar uma foto que não existe.
+         */
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 flex items-center justify-center"
+        >
+          <span className="type-display text-[clamp(1.5rem,4vw,2.25rem)] text-border-strong/45 select-none">
+            Don Enrico
+          </span>
+        </div>
       )}
     </div>
   )

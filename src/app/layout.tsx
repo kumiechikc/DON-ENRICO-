@@ -1,37 +1,66 @@
 import type { Metadata } from "next"
-import { Playfair_Display_SC, Karla } from "next/font/google"
+import { Archivo, Archivo_Black } from "next/font/google"
+import { site } from "@/lib/site"
 import "./globals.css"
 
-const playfair = Playfair_Display_SC({
+// Uma superfamília só: o Black carrega os títulos com peso de tipo de madeira,
+// o Archivo normal sustenta o texto corrido em telas pequenas.
+const archivoBlack = Archivo_Black({
   subsets: ["latin"],
-  weight: ["400", "700", "900"],
-  variable: "--font-playfair",
+  weight: "400",
+  variable: "--font-archivo-black",
   display: "swap",
 })
 
-const karla = Karla({
+/*
+ * `optional` em vez de `swap` no texto corrido, de propósito.
+ *
+ * Com `swap` o navegador pinta na fonte de fallback e troca quando o Archivo
+ * chega. Como as métricas diferem, o parágrafo do hero quebrava numa linha a
+ * mais e encolhia 26px na troca — sozinho isso empurrava 813px de conteúdo e
+ * respondia por todo o CLS da página (0.131, acima do limite de 0.1).
+ *
+ * Com `optional` o navegador usa o fallback se a fonte não chegar em ~100ms e
+ * NÃO troca no meio da sessão: zero deslocamento. O custo é que uma parte das
+ * primeiras visitas lê em fonte de sistema; da segunda em diante a fonte já
+ * está em cache. Para texto corrido essa troca compensa.
+ *
+ * O título segue com `swap`, porque ali a fonte É a identidade — e lá o
+ * deslocamento foi resolvido reservando a altura das linhas.
+ */
+const archivo = Archivo({
   subsets: ["latin"],
-  variable: "--font-karla",
-  display: "swap",
+  variable: "--font-archivo",
+  display: "optional",
 })
 
 export const metadata: Metadata = {
-  title: "Don Enrico Lanches | O Sabor que Impõe Respeito",
-  description:
-    "Salgados para festa e congelados em Porto Alegre. Box degustação, encomendas de 50 e 100 unidades e linha praticidade. Peça pelo WhatsApp!",
+  // Sem metadataBase as URLs de Open Graph saem relativas e o preview quebra
+  // quando o link é colado no WhatsApp.
+  metadataBase: new URL(site.url),
+  title: `${site.name} | Salgados para festa em ${site.city}`,
+  description: site.description,
   keywords: [
     "salgados para festa",
     "salgados congelados",
     "encomenda de salgados",
-    "Porto Alegre",
-    "coxinha",
-    "Don Enrico Lanches",
+    "coxinha Porto Alegre",
+    "salgadinhos para festa Porto Alegre",
+    site.name,
   ],
+  alternates: { canonical: "/" },
   openGraph: {
-    title: "Don Enrico Lanches",
-    description: "Salgados para festa e congelados. O Sabor que Impõe Respeito.",
+    title: `${site.name} — salgados para festa`,
+    description: site.description,
+    url: "/",
+    siteName: site.name,
     locale: "pt_BR",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${site.name} — salgados para festa`,
+    description: site.description,
   },
 }
 
@@ -41,8 +70,21 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-BR" className={`${playfair.variable} ${karla.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html
+      lang="pt-BR"
+      className={`${archivoBlack.variable} ${archivo.variable} h-full antialiased grain`}
+    >
+      <body className="min-h-full flex flex-col">
+        {/*
+          Sem JavaScript, nada devolve a opacidade dos elementos marcados para
+          revelação — o cardápio inteiro ficaria invisível. O navegador aplica
+          este bloco sozinho nesse caso, sem depender de script nenhum.
+        */}
+        <noscript>
+          <style>{`[data-reveal]{opacity:1 !important;transform:none !important}`}</style>
+        </noscript>
+        {children}
+      </body>
     </html>
   )
 }

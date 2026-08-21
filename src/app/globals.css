@@ -1,119 +1,178 @@
 @import "tailwindcss";
 
+/*
+  Don Enrico Lanches — chiaroscuro quente.
+  ─────────────────────────────────────────────────────────────────────────────
+  A marca é um Don de chapéu com o slogan "o sabor que impõe respeito". Isso é
+  um personagem de cinema, não uma padaria: o site trabalha a linguagem de
+  cartaz de filme de máfia cruzada com boteco brasileiro.
+
+  Por que escuro, se comida frita costuma pedir fundo claro: o que estraga
+  fritura é fundo escuro FRIO e CHAPADO. Escuro com luz âmbar direcional é
+  exatamente como fotógrafo de comida ilumina fritura para marca premium — o
+  dourado ganha contraste e brilho contra a sombra quente.
+
+  Ganho concreto desta paleta: no fundo claro anterior o âmbar da marca não
+  alcançava nem 3:1 e não podia ser texto. Aqui ele é 9.55:1 — vira cor de
+  texto, de traço e de destaque. Todas as razões abaixo foram medidas.
+*/
 :root {
-  --background: #0A0A0A;
-  --foreground: #FFF7ED;
-  --card: #141414;
-  --card-foreground: #FFF7ED;
-  --primary: #EA580C;
-  /* Texto quase preto sobre o laranja da marca: 5,9:1 (AA). Branco daria só 3,6:1. */
-  --primary-foreground: #0A0A0A;
-  --secondary: #CC0000;
-  --secondary-foreground: #FFFFFF;
-  --accent: #F28C28;
-  --accent-foreground: #000000;
-  --muted: #1C1C1C;
-  --muted-foreground: #A3A3A3;
-  --border: rgba(255, 255, 255, 0.08);
-  --ring: #EA580C;
-  --destructive: #EF4444;
-  --radius: 12px;
+  /* Sombra quente, nunca preto puro nem cinza azulado. */
+  --bg: #120b08;
+  --surface: #1c110c;
+  --surface-2: #2a1a12;
+
+  --fg: #f8efe3; /* 17.13:1 sobre bg */
+  --fg-muted: #b9a08b; /* 7.86:1 sobre bg */
+
+  /* A luz da cena. Legível como texto, diferente da paleta clara. */
+  --amber: #f5a524; /* 9.55:1 sobre bg */
+  --amber-bright: #ffb93d; /* 11.38:1 — usada no foco e no brilho */
+
+  /* Acento de sangue. O tom claro é o único seguro sobre superfície elevada. */
+  --red: #f25c63; /* 6.02:1 sobre bg, 5.17:1 sobre surface-2 */
+  --red-deep: #c1121f; /* fundo de botão; branco por cima = 6.22:1 */
+
+  --border: rgba(248, 239, 227, 0.1);
+  --border-strong: rgba(248, 239, 227, 0.28);
+  /*
+    Nome próprio, não `--ring`: o Tailwind v4 usa `--ring` no próprio tema, e a
+    colisão fazia `var(--ring)` resolver para vazio dentro dos utilitários. Uma
+    declaração com var() inválida é descartada inteira — inclusive com
+    !important — e o contorno caía no `outline: 0 solid` do preflight.
+  */
+  --focus-ring: #ffb93d;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-amber: var(--amber);
+  --color-amber-bright: var(--amber-bright);
+  --color-red: var(--red);
+  --color-red-deep: var(--red-deep);
   --color-border: var(--border);
-  --color-ring: var(--ring);
-  --color-destructive: var(--destructive);
-  --color-fire-red: #CC0000;
-  --color-fire-orange: #EA580C;
-  --color-fire-amber: #F97316;
-  --color-fire-gold: #F28C28;
-  --font-heading: var(--font-playfair);
-  --font-body: var(--font-karla);
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
-  --animate-ember-rise: ember-rise 12s linear infinite;
-}
+  --color-border-strong: var(--border-strong);
+  --color-focus-ring: var(--focus-ring);
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-
-@keyframes glow-pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-
-@keyframes ember-rise {
-  0% { transform: translateY(100vh) scale(1); opacity: 0; }
-  10% { opacity: 0.8; }
-  90% { opacity: 0.2; }
-  100% { transform: translateY(-10vh) scale(0.3); opacity: 0; }
-}
-
-@keyframes bounce-down {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(8px); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  --font-display: var(--font-archivo-black);
+  --font-body: var(--font-archivo);
 }
 
 html {
-  scroll-behavior: smooth;
+  /*
+    O scroll suave é feito pelo Lenis em JavaScript. Deixar `scroll-behavior:
+    smooth` no CSS junto faz os dois brigarem pelo mesmo scroll e produz um
+    solavanco em cada âncora.
+  */
+  scroll-padding-top: 5rem;
+  background: var(--bg);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-body), sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-a:focus,
-button:focus,
-input:focus,
-select:focus,
-textarea:focus,
-[tabindex]:focus,
-*:focus-visible {
-  outline: 2px solid var(--ring) !important;
-  outline-offset: 2px !important;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter !important;
+.type-display {
+  font-family: var(--font-display), var(--font-body), system-ui, sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  line-height: 0.88;
+}
+
+.type-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+/*
+  Grão de filme. Uma camada fixa de ruído SVG sobre a página inteira: é o que
+  dá textura de impresso e tira o aspecto de gradiente digital liso. Custa uma
+  imagem inline e nenhum JavaScript — bem mais barato que fazer o mesmo com
+  WebGL, que é a alternativa comum e pesada.
+*/
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/*
+  Estado inicial das revelações.
+
+  Cuidado ao mexer: se o conteúdo começa invisível, alguma coisa PRECISA
+  devolvê-lo. São três caminhos, e os três importam:
+
+  — o GSAP, quando anima o elemento (caso normal);
+  — `html.no-motion`, quando o movimento está desligado por preferência ou por
+    aparelho fraco;
+  — o <noscript> no layout, quando o JavaScript não roda.
+
+  A versão anterior tinha uma regra `html.no-js` que nada adicionava, então com
+  o JavaScript desligado doze elementos — todos os cards do cardápio e os
+  títulos de seção — ficavam invisíveis. Página em branco num site de cardápio.
+*/
+[data-reveal] {
+  opacity: 0;
+}
+
+html.no-motion [data-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/*
+  Foco visível.
+
+  Escrito com seletores explícitos e `!important` de propósito: o preflight do
+  Tailwind aplica `outline: 0 solid` em todo elemento, e a cor do contorno cai
+  em `currentColor` — num botão âmbar com texto escuro isso resulta em contorno
+  invisível sobre fundo claro. Foco visível é garantia de acessibilidade para
+  quem navega por teclado, não pode ficar à mercê de disputa de cascata com uma
+  classe utilitária.
+*/
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--focus-ring) !important;
+  outline-offset: 3px !important;
+  border-radius: 2px;
+}
+
+button,
+[role="button"],
+a[href] {
+  cursor: pointer;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  html { scroll-behavior: auto; }
-}
-
-.fire-gradient {
-  background: linear-gradient(135deg, #CC0000 0%, #EA580C 40%, #F97316 70%, #F28C28 100%);
-}
-
-.fire-text {
-  background: linear-gradient(135deg, #CC0000 0%, #EA580C 40%, #F97316 70%, #F28C28 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

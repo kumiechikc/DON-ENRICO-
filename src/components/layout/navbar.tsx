@@ -1,42 +1,34 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { ShoppingBag, Menu, X } from "lucide-react"
 import { useCart } from "@/lib/cart/cart-context"
+import { useDialog } from "@/lib/hooks/use-dialog"
 import { cn } from "@/lib/utils"
 
-interface NavbarProps {
-  onCartOpen: () => void
-}
-
 const navLinks = [
+  { label: "Festa", href: "#festa" },
   { label: "Box", href: "#box" },
-  { label: "Festas", href: "#cardapio" },
   { label: "Congelados", href: "#congelados" },
-  { label: "Sobre", href: "#sobre" },
   { label: "Contato", href: "#contato" },
 ]
 
-function useIsDesktop() {
-  const [isDesktop, setIsDesktop] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)")
-    setIsDesktop(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
-    mq.addEventListener("change", handler)
-    return () => mq.removeEventListener("change", handler)
-  }, [])
-  return isDesktop
-}
-
-export function Navbar({ onCartOpen }: NavbarProps) {
+export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const { totalItems } = useCart()
-  const isDesktop = useIsDesktop()
+  /*
+   * Precisa ser estável: o efeito do useDialog depende desta função, e uma
+   * função nova a cada render faria o efeito remontar — o cleanup devolve o
+   * foco ao botão e o efeito o rouba de volta para o painel, deixando o foco
+   * quicando enquanto o menu está aberto.
+   */
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
+  const menuRef = useDialog(menuOpen, closeMenu)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 80)
+    const onScroll = () => setScrolled(window.scrollY > 24)
+    onScroll()
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
@@ -44,74 +36,87 @@ export function Navbar({ onCartOpen }: NavbarProps) {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        scrolled
-          ? "bg-[#0A0A0A]/95 backdrop-blur-md border-b-2 border-b-transparent shadow-lg"
-          : "bg-transparent"
+        "fixed top-0 inset-x-0 z-50 transition-colors duration-200",
+        scrolled ? "bg-bg/95 backdrop-blur border-b border-border" : "bg-transparent"
       )}
-      style={scrolled ? { borderImage: "linear-gradient(135deg, #CC0000, #EA580C, #F97316, #F28C28) 1" } : undefined}
     >
-      <nav className="mx-auto max-w-7xl flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 md:h-20">
-        <a
-          href="#"
-          className="flex min-h-[44px] items-center font-heading text-lg md:text-xl font-bold tracking-widest uppercase"
-        >
-          <span className="text-foreground">Don </span>
-          <span className="text-primary">Enrico</span>
+      <nav className="mx-auto max-w-6xl flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 h-16 md:h-20">
+        <a href="#" className="inline-flex items-center min-h-[2.75rem] type-display text-base md:text-lg text-fg shrink-0">
+          Don Enrico
         </a>
 
-        <div className="hidden md:flex items-center gap-7" {...(!isDesktop ? { inert: true as unknown as boolean } : {})}>
+        <ul className="hidden md:flex items-center gap-7">
           {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="font-body text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-200"
-            >
-              {link.label}
-            </a>
+            <li key={link.href}>
+              <a
+                href={link.href}
+                className="inline-flex items-center min-h-[2.75rem] text-sm font-semibold text-fg-muted hover:text-fg transition-colors duration-150"
+              >
+                {link.label}
+              </a>
+            </li>
           ))}
-        </div>
+        </ul>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
           <button
+            type="button"
             onClick={onCartOpen}
-            className="relative p-2.5 rounded-lg hover:bg-white/5 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label={`Carrinho com ${totalItems} itens`}
+            className="relative inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] lg:px-3 text-fg hover:text-red transition-colors duration-150"
+            aria-label={
+              totalItems > 0
+                ? `Abrir pedido — ${totalItems} ${totalItems === 1 ? "item" : "itens"}`
+                : "Abrir pedido, vazio"
+            }
           >
-            <ShoppingBag className="w-5 h-5" />
+            <ShoppingBag className="w-5 h-5" aria-hidden="true" />
+            <span className="hidden lg:inline ml-2 text-sm font-semibold">Pedido</span>
             {totalItems > 0 && (
-              <span className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+              <span
+                aria-hidden="true"
+                className="absolute top-1 right-1 min-w-[1.15rem] h-[1.15rem] px-1 bg-red-deep text-white text-[0.7rem] font-bold flex items-center justify-center rounded-full tabular-nums"
+              >
                 {totalItems}
               </span>
             )}
           </button>
 
           <button
+            type="button"
             onClick={() => setMenuOpen(true)}
-            className="p-2.5 rounded-lg hover:bg-white/5 transition-colors md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="md:hidden inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] text-fg"
             aria-label="Abrir menu"
-            {...(isDesktop ? { inert: true as unknown as boolean } : {})}
+            aria-expanded={menuOpen}
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
       </nav>
 
       {menuOpen && (
-        <div className="fixed inset-0 z-50 bg-[#0A0A0A]/98 backdrop-blur-xl flex flex-col items-center justify-center gap-8 md:hidden">
+        <div
+          ref={menuRef}
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu"
+          className="md:hidden fixed inset-0 z-50 bg-bg flex flex-col items-center justify-center gap-7"
+        >
           <button
-            onClick={() => setMenuOpen(false)}
-            className="absolute top-5 right-5 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            type="button"
+            onClick={closeMenu}
+            className="absolute top-3 right-4 inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] text-fg"
             aria-label="Fechar menu"
           >
-            <X className="w-6 h-6" />
+            <X className="w-6 h-6" aria-hidden="true" />
           </button>
+
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              onClick={() => setMenuOpen(false)}
-              className="font-heading text-2xl font-bold tracking-wide text-foreground hover:text-primary transition-colors"
+              onClick={closeMenu}
+              className="type-display text-2xl text-fg hover:text-red transition-colors duration-150"
             >
               {link.label}
             </a>
