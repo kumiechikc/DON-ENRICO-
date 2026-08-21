@@ -5,6 +5,7 @@ import { Check } from "lucide-react"
 import { useCart } from "@/lib/cart/cart-context"
 import { buildCartItemId } from "@/lib/cart/types"
 import { formatPrice, cn } from "@/lib/utils"
+import { ProductImage } from "@/components/ui/product-image"
 import type { AssortedCategory } from "@/lib/data/menu"
 
 /*
@@ -77,6 +78,20 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
 
   return (
     <div className="flex flex-col bg-surface border border-border">
+      {/*
+        A foto só entra quando existe. Reservar o espaço desde já encheria a
+        página de blocos vazios enquanto o cliente não manda as imagens — pior
+        do que não ter foto é parecer que falta alguma coisa.
+      */}
+      {category.image && (
+        <ProductImage
+          src={category.image}
+          alt={`${category.name} — Don Enrico Lanches`}
+          className="aspect-[16/9] border-0 border-b border-border"
+          sizes="(min-width: 1024px) 45vw, 92vw"
+        />
+      )}
+
       <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-border">
         <h3 className="type-display text-xl sm:text-2xl text-fg">{category.name}</h3>
         <p className="mt-2 text-sm text-fg-muted">{category.description}</p>

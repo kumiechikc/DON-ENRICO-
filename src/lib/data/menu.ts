@@ -26,12 +26,16 @@ export interface AssortedCategory {
   maxFlavorsNote?: string
 }
 
+/*
+ * Sem campo de imagem: as linhas de congelados são compactas de propósito (são
+ * 19 sabores) e não mostram foto. Se um dia quisermos miniatura aqui, o campo
+ * volta junto com o componente que o lê.
+ */
 export interface FlavorPack {
   id: string
   name: string
   price: number
   packSize: number
-  image?: string
 }
 
 export const boxDegustacao: AssortedCategory = {
