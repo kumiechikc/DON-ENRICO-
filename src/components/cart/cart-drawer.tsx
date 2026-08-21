@@ -64,7 +64,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             <a
               href="#festa"
               onClick={onClose}
-              className="mt-2 inline-flex items-center justify-center min-h-[3rem] px-6 bg-red-deep text-white font-bold text-sm uppercase tracking-wider hover:bg-red-deep transition-colors duration-150"
+              className="mt-2 inline-flex items-center justify-center min-h-[3rem] px-6 bg-amber text-bg font-bold text-sm uppercase tracking-wider hover:bg-amber-bright transition-colors duration-150"
             >
               Ver cardápio
             </a>
@@ -89,7 +89,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 href={getWhatsAppUrl(items, totalPrice)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2.5 w-full min-h-[3.25rem] bg-red-deep text-white font-bold text-sm uppercase tracking-wider hover:bg-red-deep transition-colors duration-150"
+                className="inline-flex items-center justify-center gap-2.5 w-full min-h-[3.25rem] bg-amber text-bg font-bold text-sm uppercase tracking-wider hover:bg-amber-bright transition-colors duration-150"
               >
                 <WhatsAppIcon className="w-5 h-5" />
                 Enviar pelo WhatsApp

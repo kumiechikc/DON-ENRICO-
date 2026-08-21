@@ -63,8 +63,18 @@ export async function checkContrast(browser, url, viewport = { width: 1440, heig
       const rect = el.getBoundingClientRect()
       if (rect.width === 0 || rect.height === 0) continue
 
-      const rawFg = toRgb(cs.color)
-      if (!rawFg) continue
+      /*
+       * Texto vazado (`color: transparent` + `-webkit-text-stroke`) tem cor
+       * medida igual a nada, e a leitura ingênua reprovava em 1:1 um número que
+       * está perfeitamente visível. Quando o preenchimento é transparente e
+       * existe traço, é a cor do traço que a pessoa enxerga.
+       */
+      let rawFg = toRgb(cs.color)
+      const strokeWidth = parseFloat(cs.webkitTextStrokeWidth || "0")
+      if ((!rawFg || rawFg.a === 0) && strokeWidth > 0) {
+        rawFg = toRgb(cs.webkitTextStrokeColor || "")
+      }
+      if (!rawFg || rawFg.a === 0) continue
       const bg = opaqueBackgroundOf(el)
       const fg = rawFg.a < 1 ? composite(rawFg, bg) : rawFg
 

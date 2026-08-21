@@ -188,7 +188,7 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
               "w-full min-h-[3.5rem] px-5 font-bold text-sm uppercase tracking-[0.14em] transition-[color,background-color,border-color,opacity] duration-300",
               justAdded
                 ? "bg-amber text-bg"
-                : "bg-red-deep text-white hover:bg-red hover:text-bg"
+                : "bg-fg text-bg hover:bg-amber"
             )}
           >
             {justAdded ? "Adicionado ao pedido" : `Adicionar — ${formatPrice(tier.price)}`}
