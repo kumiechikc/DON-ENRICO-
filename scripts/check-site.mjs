@@ -34,9 +34,14 @@ if (wantShots) mkdirSync(SHOT_DIR, { recursive: true })
  * testar um endereço morto.
  */
 async function startDevServer() {
+  /*
+   * `detached` cria um grupo de processos próprio. Sem isso, matar o npm no fim
+   * deixa o next-server filho vivo segurando a porta, e a rodada seguinte sobe
+   * noutra porta ou não sobe — foi exatamente o que aconteceu aqui.
+   */
   const proc = spawn("npm", ["run", "dev"], {
     stdio: ["ignore", "pipe", "pipe"],
-    detached: false,
+    detached: true,
   })
 
   let url = null
@@ -47,7 +52,7 @@ async function startDevServer() {
   proc.stdout.on("data", readPort)
   proc.stderr.on("data", readPort)
 
-  for (let attempt = 0; attempt < 60; attempt++) {
+  for (let attempt = 0; attempt < 120; attempt++) {
     if (url) {
       try {
         const res = await fetch(url, { signal: AbortSignal.timeout(1000) })
@@ -59,10 +64,25 @@ async function startDevServer() {
     await sleep(500)
   }
 
-  proc.kill("SIGTERM")
+  stopDevServer(proc)
   throw new Error(
-    url ? `o dev server em ${url} não respondeu em 30s` : "o dev server não anunciou porta"
+    url ? `o dev server em ${url} não respondeu a tempo` : "o dev server não anunciou porta"
   )
+}
+
+/** Derruba o grupo de processos inteiro (npm + next-server + workers). */
+function stopDevServer(proc) {
+  if (!proc?.pid) return
+  try {
+    process.kill(-proc.pid, "SIGTERM")
+  } catch {
+    // já morreu, ou o SO não suporta grupo — tenta o processo direto
+    try {
+      proc.kill("SIGTERM")
+    } catch {
+      // nada a fazer
+    }
+  }
 }
 
 /** Chromium do ambiente; cai no caminho pré-instalado das imagens de CI. */
@@ -112,7 +132,7 @@ try {
   exitCode = 1
 } finally {
   await browser?.close()
-  server?.proc.kill("SIGTERM")
+  if (server) stopDevServer(server.proc)
 }
 
 process.exit(exitCode)

@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Archivo, Archivo_Black } from "next/font/google"
+import { site } from "@/lib/site"
 import "./globals.css"
 
 // Uma superfamília só: o Black carrega os títulos com peso de tipo de madeira,
@@ -18,23 +19,32 @@ const archivo = Archivo({
 })
 
 export const metadata: Metadata = {
-  title: "Don Enrico Lanches | Salgados para festa em Porto Alegre",
-  description:
-    "Salgados para festa e congelados por encomenda. Box degustação a partir de R$ 19,90, pacotes de 50 e 100 unidades e linha de congelados. Peça pelo WhatsApp.",
+  // Sem metadataBase as URLs de Open Graph saem relativas e o preview quebra
+  // quando o link é colado no WhatsApp.
+  metadataBase: new URL(site.url),
+  title: `${site.name} | Salgados para festa em ${site.city}`,
+  description: site.description,
   keywords: [
     "salgados para festa",
     "salgados congelados",
     "encomenda de salgados",
-    "Porto Alegre",
-    "coxinha",
-    "Don Enrico Lanches",
+    "coxinha Porto Alegre",
+    "salgadinhos para festa Porto Alegre",
+    site.name,
   ],
+  alternates: { canonical: "/" },
   openGraph: {
-    title: "Don Enrico Lanches",
-    description:
-      "Salgados para festa e congelados por encomenda em Porto Alegre. Peça pelo WhatsApp.",
+    title: `${site.name} — salgados para festa`,
+    description: site.description,
+    url: "/",
+    siteName: site.name,
     locale: "pt_BR",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${site.name} — salgados para festa`,
+    description: site.description,
   },
 }
 
