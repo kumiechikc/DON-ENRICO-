@@ -7,8 +7,15 @@ import { formatPrice, cn } from "@/lib/utils"
 import type { FlavorPack } from "@/lib/data/menu"
 
 /*
- * Linha de um pacote de sabor único (congelados). O tamanho do pacote aparece
- * uma vez no cabeçalho da coluna, não repetido nas dezenove linhas.
+ * Linha de um pacote de sabor único (congelados).
+ *
+ * A linha pontilhada entre nome e preço é o recurso tipográfico clássico de
+ * cardápio impresso, e é o que faz esta lista parecer desenhada em vez de uma
+ * tabela. Ela é feita com um flex-1 e `border-bottom: dotted` — nada de
+ * caracteres de ponto repetidos, que leitores de tela leriam um por um.
+ *
+ * O tamanho do pacote aparece uma vez no cabeçalho da coluna, não repetido nas
+ * dezenove linhas.
  */
 export function ProductCard({ pack }: { pack: FlavorPack }) {
   const { addItem } = useCart()
@@ -31,37 +38,42 @@ export function ProductCard({ pack }: { pack: FlavorPack }) {
   }, [added])
 
   return (
-    <li className="group flex items-center justify-between gap-3 border-b border-border py-1 transition-colors duration-300 hover:border-amber">
-      <h4 className="text-sm sm:text-base text-fg leading-snug min-w-0 transition-colors duration-300 group-hover:text-amber">
+    <li className="group flex items-baseline gap-3 py-1">
+      <h4 className="shrink-0 text-sm sm:text-base text-fg leading-snug transition-colors duration-300 group-hover:text-amber">
         {pack.name}
       </h4>
 
-      <div className="flex items-center gap-3 shrink-0">
-        <span className="text-sm sm:text-base font-bold text-fg tabular-nums">
-          {formatPrice(pack.price)}
-        </span>
-        <button
-          type="button"
-          onClick={handleAdd}
-          className={cn(
-            "inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] border transition-[color,background-color,border-color,opacity] duration-300",
-            added
-              ? "bg-amber border-amber text-bg"
-              : "border-border-strong text-fg-muted hover:border-amber hover:text-amber"
-          )}
-          aria-label={
-            added
-              ? `${pack.name} adicionado ao pedido`
-              : `Adicionar ${pack.name}, pacote com ${pack.packSize}, ao pedido`
-          }
-        >
-          {added ? (
-            <Check className="w-4 h-4" aria-hidden="true" />
-          ) : (
-            <Plus className="w-4 h-4" aria-hidden="true" />
-          )}
-        </button>
-      </div>
+      {/* Condutor pontilhado: puramente decorativo. */}
+      <span
+        aria-hidden="true"
+        className="flex-1 min-w-4 translate-y-[-0.28em] border-b border-dotted border-border-strong/60 transition-colors duration-300 group-hover:border-amber/70"
+      />
+
+      <span className="shrink-0 text-sm sm:text-base font-bold text-fg tabular-nums">
+        {formatPrice(pack.price)}
+      </span>
+
+      <button
+        type="button"
+        onClick={handleAdd}
+        className={cn(
+          "shrink-0 inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] border transition-[color,background-color,border-color,opacity] duration-300 self-center",
+          added
+            ? "bg-amber border-amber text-bg"
+            : "border-border-strong/60 text-fg-muted hover:border-amber hover:text-amber"
+        )}
+        aria-label={
+          added
+            ? `${pack.name} adicionado ao pedido`
+            : `Adicionar ${pack.name}, pacote com ${pack.packSize}, ao pedido`
+        }
+      >
+        {added ? (
+          <Check className="w-4 h-4" aria-hidden="true" />
+        ) : (
+          <Plus className="w-4 h-4" aria-hidden="true" />
+        )}
+      </button>
     </li>
   )
 }
