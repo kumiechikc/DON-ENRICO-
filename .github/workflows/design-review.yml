@@ -47,6 +47,16 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Cardápio e planilha em sincronia
+        run: |
+          npm run catalogo
+          # O Catalogo.gs é gerado do menu.ts. Se o commit mexeu no cardápio sem
+          # regerar, a planilha continuaria com o preço velho e o pedido do site
+          # cairia lá com valor de outro mês. Falhar aqui é barato; descobrir
+          # pela planilha, não.
+          git diff --exit-code apps-script/Catalogo.gs
+          npm run check:planilha
+
       # O export estático do GitHub Pages tem restrições que o build comum não
       # expõe (rotas de imagem precisam ser force-static, por exemplo). Validar
       # aqui evita descobrir isso só na hora de publicar.

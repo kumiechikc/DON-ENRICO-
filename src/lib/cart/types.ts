@@ -6,6 +6,12 @@ export interface CartItem {
    * mesma linha com quantidade 2.
    */
   id: string
+  /*
+   * Código do produto no cardápio ("classicos-fritos-100"). Serve para o pedido
+   * chegar identificado na planilha de operação; o `id` acima não serve para
+   * isso porque embute os sabores escolhidos.
+   */
+  sku: string
   name: string
   price: number
   quantity: number

@@ -44,6 +44,17 @@ async function startDevServer() {
   const proc = spawn("npm", ["run", "dev"], {
     stdio: ["ignore", "pipe", "pipe"],
     detached: true,
+    /*
+     * Liga o registro na planilha para o teste poder conferir o que o site
+     * envia. A URL é falsa e o `sendBeacon` é substituído no navegador, então
+     * nada sai da máquina — o que se verifica aqui é o conteúdo do envio, que é
+     * onde dá para errar (mandar preço, esquecer o SKU, perder os sabores).
+     */
+    env: {
+      ...process.env,
+      NEXT_PUBLIC_REGISTRO_URL: "https://exemplo.invalido/registro",
+      NEXT_PUBLIC_REGISTRO_TOKEN: "token-de-teste",
+    },
   })
 
   let url = null

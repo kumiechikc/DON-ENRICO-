@@ -56,6 +56,19 @@ export async function checkOrderFlow(browser, url, { screenshotDir } = {}) {
   const href = (await waLink.getAttribute("href")) || ""
   const message = decodeURIComponent(href.split("text=")[1] || "")
 
+  /*
+   * Troca o envio de verdade por um espião. Sem isto o clique dispararia uma
+   * requisição para fora, e o que interessa não é se ela sai — é o que ela
+   * levaria.
+   */
+  await page.evaluate(() => {
+    window.__enviados = []
+    navigator.sendBeacon = (endereco, corpo) => {
+      window.__enviados.push({ endereco, corpo })
+      return true
+    }
+  })
+
   if (!message.includes("Sabores:")) {
     failures.push("mensagem do WhatsApp sai sem os sabores escolhidos")
   }
@@ -63,6 +76,60 @@ export async function checkOrderFlow(browser, url, { screenshotDir } = {}) {
     failures.push("mensagem do WhatsApp sai sem o total")
   }
   notes.push("mensagem gerada:\n" + message.split("\n").map((l) => `      | ${l}`).join("\n"))
+
+  /*
+   * O que vai para a planilha.
+   *
+   * O clique abre o WhatsApp numa aba nova, então o `noWaitAfter` impede o
+   * Playwright de ficar esperando uma navegação que não acontece nesta página.
+   */
+  await waLink.click({ noWaitAfter: true })
+  await page.waitForTimeout(250)
+
+  const enviados = await page.evaluate(async () => {
+    const lista = window.__enviados || []
+    return Promise.all(
+      lista.map(async (e) => ({ endereco: e.endereco, corpo: await e.corpo.text() }))
+    )
+  })
+
+  if (enviados.length !== 1) {
+    failures.push(`o pedido deveria ser registrado uma vez, foram ${enviados.length}`)
+  } else {
+    const enviado = JSON.parse(enviados[0].corpo)
+    const codigoNaMensagem = (message.match(/#([A-Z0-9]{4})/) || [])[1]
+
+    if (enviado.codigo !== codigoNaMensagem) {
+      failures.push(
+        `o código do registro (${enviado.codigo}) não bate com o da mensagem (${codigoNaMensagem})`
+      )
+    }
+    if (!Array.isArray(enviado.itens) || enviado.itens.length !== 1) {
+      failures.push("o registro não levou exatamente o item do pedido")
+    } else {
+      const item = enviado.itens[0]
+      if (item.sku !== "classicos-fritos-100") {
+        failures.push(`SKU errado no registro: ${item.sku}`)
+      }
+      if (item.pacotes !== 1) failures.push(`quantidade errada no registro: ${item.pacotes}`)
+      if ((item.sabores || []).length !== 2) {
+        failures.push("o registro foi sem os sabores escolhidos")
+      }
+    }
+    /*
+     * Preço e total não podem sair daqui: a planilha recalcula pelo SKU, e
+     * mandar valor de um endpoint público seria oferecer um número forjável
+     * onde não precisa haver nenhum.
+     */
+    const cru = enviados[0].corpo
+    if (/"pre[çc]o"|"total"|"price"/i.test(cru)) {
+      failures.push("o registro está enviando preço — a planilha é que calcula")
+    }
+    notes.push(
+      `registro na planilha: código ${enviado.codigo}, ` +
+        `${enviado.itens.length} item, sem preço no envio`
+    )
+  }
 
   if (screenshotDir) {
     await page.screenshot({ path: `${screenshotDir}/carrinho.png` })

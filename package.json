@@ -11,7 +11,9 @@
     "setup": "bash scripts/setup.sh",
     "audit": "node scripts/design-audit.mjs",
     "audit:file": "node scripts/design-audit.mjs --file ./index.html",
-    "check": "node scripts/check-site.mjs"
+    "check": "node scripts/check-site.mjs",
+    "catalogo": "node scripts/gerar-catalogo.mjs",
+    "check:planilha": "node scripts/check-planilha.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

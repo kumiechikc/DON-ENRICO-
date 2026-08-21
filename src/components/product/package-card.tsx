@@ -4,6 +4,7 @@ import { useState, useRef, useId, useEffect } from "react"
 import { Check } from "lucide-react"
 import { useCart } from "@/lib/cart/cart-context"
 import { buildCartItemId } from "@/lib/cart/types"
+import { assortedSku } from "@/lib/data/menu"
 import { formatPrice, cn } from "@/lib/utils"
 import { useReveal } from "@/lib/motion/use-reveal"
 import { ProductImage } from "@/components/ui/product-image"
@@ -58,7 +59,8 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
     }
 
     addItem({
-      id: buildCartItemId(`${category.id}-${tier.quantity}`, selected),
+      id: buildCartItemId(assortedSku(category.id, tier.quantity), selected),
+      sku: assortedSku(category.id, tier.quantity),
       name: `${category.name} — ${tier.quantity} unidades`,
       price: tier.price,
       flavors: selected,

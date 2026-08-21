@@ -24,6 +24,7 @@ export function ProductCard({ pack }: { pack: FlavorPack }) {
   const handleAdd = () => {
     addItem({
       id: pack.id,
+      sku: pack.sku,
       name: `${pack.name} — pacote com ${pack.packSize}`,
       price: pack.price,
       flavors: [],
