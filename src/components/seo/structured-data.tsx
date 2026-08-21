@@ -73,9 +73,14 @@ export function StructuredData() {
   return (
     <script
       type="application/ld+json"
-      // O objeto é montado aqui a partir de dados nossos, nunca de entrada de
-      // usuário, então não há conteúdo externo sendo injetado.
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      /*
+       * Hoje os dados vêm de menu.ts, que é nosso. O escape existe para o dia em
+       * que o cardápio vier de planilha ou CMS: um "</script>" dentro de um nome
+       * de sabor fecharia o bloco e injetaria markup na página.
+       */
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(data).replace(/</g, "\\u003c"),
+      }}
     />
   )
 }

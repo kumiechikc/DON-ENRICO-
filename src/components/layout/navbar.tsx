@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { ShoppingBag, Menu, X } from "lucide-react"
 import { useCart } from "@/lib/cart/cart-context"
 import { useDialog } from "@/lib/hooks/use-dialog"
@@ -17,7 +17,14 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const { totalItems } = useCart()
-  const menuRef = useDialog(menuOpen, () => setMenuOpen(false))
+  /*
+   * Precisa ser estável: o efeito do useDialog depende desta função, e uma
+   * função nova a cada render faria o efeito remontar — o cleanup devolve o
+   * foco ao botão e o efeito o rouba de volta para o painel, deixando o foco
+   * quicando enquanto o menu está aberto.
+   */
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
+  const menuRef = useDialog(menuOpen, closeMenu)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -97,7 +104,7 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
         >
           <button
             type="button"
-            onClick={() => setMenuOpen(false)}
+            onClick={closeMenu}
             className="absolute top-3 right-4 inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] text-fg"
             aria-label="Fechar menu"
           >
@@ -108,7 +115,7 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
             <a
               key={link.href}
               href={link.href}
-              onClick={() => setMenuOpen(false)}
+              onClick={closeMenu}
               className="type-display text-2xl text-fg hover:text-accent transition-colors duration-150"
             >
               {link.label}

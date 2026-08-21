@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Plus, Check } from "lucide-react"
 import { useCart } from "@/lib/cart/cart-context"
 import { formatPrice, cn } from "@/lib/utils"
@@ -22,8 +22,13 @@ export function ProductCard({ pack }: { pack: FlavorPack }) {
       flavors: [],
     })
     setAdded(true)
-    window.setTimeout(() => setAdded(false), 1400)
   }
+
+  useEffect(() => {
+    if (!added) return
+    const timer = window.setTimeout(() => setAdded(false), 1400)
+    return () => window.clearTimeout(timer)
+  }, [added])
 
   return (
     <li className="flex items-center justify-between gap-3 bg-surface border border-border pl-4 pr-2 py-2">

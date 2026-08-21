@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useId } from "react"
+import { useState, useRef, useId, useEffect } from "react"
 import { Check } from "lucide-react"
 import { useCart } from "@/lib/cart/cart-context"
 import { buildCartItemId } from "@/lib/cart/types"
@@ -62,8 +62,15 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
     })
     setJustAdded(true)
     setSelected([])
-    window.setTimeout(() => setJustAdded(false), 1800)
   }
+
+  // O aviso de "adicionado" se apaga sozinho. Com cleanup, para que um clique
+  // repetido reinicie a contagem em vez de acumular timers.
+  useEffect(() => {
+    if (!justAdded) return
+    const timer = window.setTimeout(() => setJustAdded(false), 1800)
+    return () => window.clearTimeout(timer)
+  }, [justAdded])
 
   const flavorLimitLabel =
     tier.maxFlavors === 1 ? "Escolha 1 sabor" : `Escolha até ${tier.maxFlavors} sabores`
