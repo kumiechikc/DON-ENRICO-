@@ -17,7 +17,9 @@ import { useMotion } from "./motion-provider"
  */
 gsap.registerPlugin(ScrollTrigger)
 
-type RevealKind = "fade" | "rise" | "stagger" | "mask"
+// Só os dois tipos realmente usados. "fade" e "mask" existiram como
+// variação especulativa e nunca foram chamados.
+type RevealKind = "rise" | "stagger"
 
 /*
  * Revelação por scroll com um contrato importante: o elemento começa com
@@ -72,19 +74,9 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(
         return
       }
 
-      if (kind === "mask") {
-        // Sobe por trás de uma máscara: o texto surge como se fosse impresso.
-        gsap.fromTo(
-          el,
-          { opacity: 0, yPercent: 110 },
-          { opacity: 1, yPercent: 0, duration: 0.95, ease: "expo.out", ...common }
-        )
-        return
-      }
-
       gsap.fromTo(
         el,
-        { opacity: 0, y: kind === "fade" ? 0 : 24 },
+        { opacity: 0, y: 24 },
         { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", ...common }
       )
     }, el)

@@ -18,6 +18,7 @@ import { checkContrast } from "./checks/contrast.mjs"
 import { checkOrderFlow } from "./checks/order-flow.mjs"
 import { checkA11y } from "./checks/a11y.mjs"
 import { checkPerformance } from "./checks/performance.mjs"
+import { checkNoJs } from "./checks/no-js.mjs"
 
 const args = process.argv.slice(2)
 const urlArg = args.indexOf("--url")
@@ -134,6 +135,7 @@ try {
     ["Contraste WCAG AA", () => checkContrast(browser, target)],
     ["Acessibilidade e teclado", () => checkA11y(browser, target)],
     ["Orçamento de performance", () => checkPerformance(browser, target, { isDev })],
+    ["Site sem JavaScript", () => checkNoJs(browser, target)],
   ]
 
   const allFailures = []

@@ -21,7 +21,6 @@
   --bg: #120b08;
   --surface: #1c110c;
   --surface-2: #2a1a12;
-  --elevated: #38251a;
 
   --fg: #f8efe3; /* 17.13:1 sobre bg */
   --fg-muted: #b9a08b; /* 7.86:1 sobre bg */
@@ -49,7 +48,6 @@
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
-  --color-elevated: var(--elevated);
   --color-fg: var(--fg);
   --color-fg-muted: var(--fg-muted);
   --color-amber: var(--amber);
@@ -114,22 +112,26 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Brilho quente atrás de um elemento, como luz de fritadeira na sombra. */
-.glow-amber {
-  box-shadow: 0 0 80px -20px rgba(245, 165, 36, 0.45);
-}
-
 /*
-  Estado inicial das revelações. O JavaScript de animação remove isto assim que
-  assume o elemento; se o JS não rodar, a regra `.no-js` abaixo devolve tudo ao
-  estado final — conteúdo nunca fica preso invisível.
+  Estado inicial das revelações.
+
+  Cuidado ao mexer: se o conteúdo começa invisível, alguma coisa PRECISA
+  devolvê-lo. São três caminhos, e os três importam:
+
+  — o GSAP, quando anima o elemento (caso normal);
+  — `html.no-motion`, quando o movimento está desligado por preferência ou por
+    aparelho fraco;
+  — o <noscript> no layout, quando o JavaScript não roda.
+
+  A versão anterior tinha uma regra `html.no-js` que nada adicionava, então com
+  o JavaScript desligado doze elementos — todos os cards do cardápio e os
+  títulos de seção — ficavam invisíveis. Página em branco num site de cardápio.
 */
 [data-reveal] {
   opacity: 0;
 }
 
-html.no-motion [data-reveal],
-html.no-js [data-reveal] {
+html.no-motion [data-reveal] {
   opacity: 1 !important;
   transform: none !important;
 }

@@ -74,7 +74,17 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${archivoBlack.variable} ${archivo.variable} h-full antialiased grain`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {/*
+          Sem JavaScript, nada devolve a opacidade dos elementos marcados para
+          revelação — o cardápio inteiro ficaria invisível. O navegador aplica
+          este bloco sozinho nesse caso, sem depender de script nenhum.
+        */}
+        <noscript>
+          <style>{`[data-reveal]{opacity:1 !important;transform:none !important}`}</style>
+        </noscript>
+        {children}
+      </body>
     </html>
   )
 }
