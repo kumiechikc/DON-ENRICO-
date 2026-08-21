@@ -101,6 +101,31 @@ let exitCode = 0
 
 try {
   const target = providedUrl ?? (server = await startDevServer()).url
+
+  /*
+   * Conferência rápida antes de qualquer teste.
+   *
+   * Existe porque errei isso duas vezes: rodei a suíte contra um servidor que
+   * servia um build antigo, e contra um `next start` apontado para um export
+   * estático (que devolve 500 em todo recurso). Nos dois casos os resultados
+   * pareciam falhas do site, e o tempo foi para caçar bug em código correto.
+   * Falhar aqui, alto e claro, custa dois segundos e evita esse desperdício.
+   */
+  const resposta = await fetch(target, { signal: AbortSignal.timeout(10000) })
+  if (!resposta.ok) {
+    throw new Error(
+      `o servidor em ${target} respondeu ${resposta.status}. ` +
+        "Se acabou de rodar um build com GITHUB_PAGES=true, refaça com `npm run build` " +
+        "antes de usar `next start` — o export estático não é servível por ele."
+    )
+  }
+  const html = await resposta.text()
+  if (!html.includes("Don Enrico")) {
+    throw new Error(`o servidor em ${target} respondeu 200 mas sem o conteúdo do site`)
+  }
+  // O Next injeta as devtools só em desenvolvimento; é o sinal mais direto.
+  const isDev = html.includes("next-devtools") || html.includes("__nextjs")
+
   browser = await launchBrowser()
 
   const suites = [
@@ -108,7 +133,7 @@ try {
     ["Fluxo do pedido", () => checkOrderFlow(browser, target, { screenshotDir: wantShots ? SHOT_DIR : null })],
     ["Contraste WCAG AA", () => checkContrast(browser, target)],
     ["Acessibilidade e teclado", () => checkA11y(browser, target)],
-    ["Orçamento de performance", () => checkPerformance(browser, target)],
+    ["Orçamento de performance", () => checkPerformance(browser, target, { isDev })],
   ]
 
   const allFailures = []

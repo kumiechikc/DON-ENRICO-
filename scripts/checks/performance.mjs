@@ -17,7 +17,7 @@ const BUDGET = {
   cls: 0.1,
 }
 
-export async function checkPerformance(browser, url) {
+export async function checkPerformance(browser, url, { isDev = false } = {}) {
   const failures = []
   const notes = []
 
@@ -93,7 +93,17 @@ export async function checkPerformance(browser, url) {
   notes.push(`LCP: ${vitals.lcp} ms (orçamento ${BUDGET.lcpMs} ms, CPU 4x lenta, 4G)`)
   notes.push(`CLS: ${vitals.cls} (orçamento ${BUDGET.cls})`)
 
-  if (jsKb > BUDGET.jsGzipKb) {
+  /*
+   * O orçamento de JavaScript só vale contra build de produção: o servidor de
+   * desenvolvimento entrega módulos sem minificar nem empacotar, e o número
+   * chega a triplicar. Reprovar ali seria alarme falso — e um alarme falso
+   * recorrente é o jeito mais rápido de treinar todo mundo a ignorar a suíte.
+   */
+  if (isDev) {
+    notes.push(
+      "  (servidor de desenvolvimento: o orçamento de JavaScript não se aplica — rode contra `npm run build` + `npm start` para o número real)"
+    )
+  } else if (jsKb > BUDGET.jsGzipKb) {
     failures.push(`JavaScript acima do orçamento: ${jsKb} KB > ${BUDGET.jsGzipKb} KB`)
   }
   if (vitals.lcp > BUDGET.lcpMs) {
