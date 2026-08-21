@@ -154,16 +154,19 @@ removidos.
 Já está pronta e no repositório (`apps-script/`), montada a partir do que você me contou:
 caderno, planilha e controle de estoque. Para ela sair do papel faltam respostas.
 
-### 4b.1 Maquininhas
-- **Quantas** máquinas tem hoje, e de quais empresas?
-- Para cada uma: **taxa de débito, de crédito à vista e de crédito parcelado**.
-- Alguma cobra **aluguel mensal**? Quanto?
-- Em quantos dias cai o dinheiro de cada uma?
+### 4b.1 Pagamento
+**Resolvido:** taxa de maquininha saiu do escopo. O parcelamento é combinado na conversa
+e a máquina vai na entrega, então a planilha não teria como saber a taxa de cada venda —
+e coluna que fica vazia ou errada é pior que coluna nenhuma.
 
-Com isso a planilha calcula o líquido de cada venda e mostra quanto foi embora em taxa
-no mês. É bem comum a diferença entre a melhor e a pior passar de dois pontos, e máquina
-parada com aluguel ser prejuízo puro — mas isso é conta, não palpite. Preciso dos
-números.
+O que ficou pendente é o **Pix no site** (QR Code + copia e cola, para o cliente pagar
+antes e mandar o comprovante no WhatsApp):
+
+- Chave Pix e **tipo** (CPF, CNPJ, celular, e-mail, aleatória).
+- **Nome do titular exatamente como aparece** no comprovante — é ele que vai no QR.
+- Cidade do titular (entra no código BR Code).
+- Paga tudo adiantado ou dá sinal? Quanto de sinal?
+- Devolve se cancelar? Até quantos dias antes?
 
 ### 4b.2 Produtos que são a mesma coisa
 O congelador conta produto físico, e alguns aparecem em duas partes do encarte. Assumi
