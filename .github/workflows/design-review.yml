@@ -1,12 +1,18 @@
 name: Design Review
 
-# Runs the heuristic design audit on PRs that touch UI. The full taste/interaction review is
-# the /design-review subagent inside Claude Code; this CI gate catches the mechanical defects
-# (overflow, focus, contrast, unsized media, missing meta) automatically on every PR.
+# Dois verificadores rodam aqui contra o mesmo servidor:
+#
+#   npm run check        — a suíte do projeto: responsividade, fluxo do pedido de
+#                          ponta a ponta, contraste medido no DOM e acessibilidade
+#   scripts/design-audit — o auditor heurístico genérico do stack de design
+#
+# A revisão de gosto e interação continua sendo o subagente /design-review dentro do
+# Claude Code; isto aqui pega o defeito mecânico em todo PR.
 
 on:
   pull_request:
     paths:
+      # Interface
       - '**/*.html'
       - '**/*.css'
       - '**/*.jsx'
@@ -14,6 +20,14 @@ on:
       - '**/*.vue'
       - '**/*.svelte'
       - '**/*.astro'
+      # Lógica do pedido e dados do cardápio: uma regressão aqui quebra o fluxo
+      # sem tocar em nenhum componente.
+      - 'src/lib/**'
+      # Os próprios verificadores e o que muda o build.
+      - 'scripts/**'
+      - 'package.json'
+      - 'next.config.ts'
+      - '.github/workflows/design-review.yml'
 
 jobs:
   audit:
@@ -25,33 +39,62 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install deps + Chromium
+      - name: Instalar dependências e o Chromium
         run: |
           npm install
           npx playwright install --with-deps chromium
 
-      - name: Build Next.js
+      - name: Lint
+        run: npm run lint
+
+      # O export estático do GitHub Pages tem restrições que o build comum não
+      # expõe (rotas de imagem precisam ser force-static, por exemplo). Validar
+      # aqui evita descobrir isso só na hora de publicar.
+      #
+      # Vem antes do build normal de propósito: `output: export` não deixa um
+      # .next que o `next start` consiga servir, então o último build tem que ser
+      # o de servidor.
+      - name: Build do GitHub Pages (validação do export)
+        run: npm run build
+        env:
+          GITHUB_PAGES: 'true'
+
+      - name: Build de produção
         run: npm run build
 
-      - name: Run design audit
+      - name: Subir o servidor
         run: |
           npm run start &
-          SERVER_PID=$!
+          echo "SERVER_PID=$!" >> "$GITHUB_ENV"
           for i in $(seq 1 30); do
-            if curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 | grep -q "200"; then
-              break
+            if curl -sf -o /dev/null http://localhost:3000; then
+              echo "servidor no ar"
+              exit 0
             fi
             sleep 1
           done
-          node scripts/design-audit.mjs --url http://localhost:3000 --out audit-output
-          EXIT_CODE=$?
-          kill $SERVER_PID 2>/dev/null || true
-          wait $SERVER_PID 2>/dev/null || true
-          exit $EXIT_CODE
+          echo "o servidor não respondeu em 30s" >&2
+          exit 1
 
-      - name: Upload audit report + screenshots
+      - name: Suíte de verificação
+        run: npm run check -- --url http://localhost:3000 --shots
+
+      - name: Auditoria de design
+        # Roda mesmo se a suíte acima falhar, para o PR mostrar os dois relatórios
+        # de uma vez em vez de um problema por rodada.
+        if: always()
+        run: node scripts/design-audit.mjs --url http://localhost:3000 --out audit-output
+
+      - name: Encerrar o servidor
+        if: always()
+        run: kill "$SERVER_PID" 2>/dev/null || true
+
+      - name: Publicar relatórios e capturas
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: design-audit
-          path: audit-output/
+          path: |
+            audit-output/
+            .checks/
+          if-no-files-found: ignore
