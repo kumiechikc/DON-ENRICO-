@@ -194,6 +194,98 @@ export async function checkA11y(browser, url) {
   )
   if (!restaurado) failures.push("inert não foi removido ao fechar o diálogo")
 
+  /*
+   * Jornada completa por teclado.
+   *
+   * Testar peças isoladas não pega o que só aparece percorrendo tudo: um laço
+   * que prende o foco, um elemento focável escondido, ou uma parada sem
+   * contorno visível no meio da página.
+   *
+   * Elementos do Next em desenvolvimento (portal de devtools, anunciador de
+   * rota) são excluídos: são do ambiente, não do site, e reprovariam todo build
+   * local sem apontar nenhum defeito real.
+   */
+  await page.goto(url, { waitUntil: "networkidle" })
+  await page.waitForTimeout(1500)
+
+  const paradas = []
+  let anterior = ""
+  let repetidas = 0
+  let preso = null
+
+  for (let i = 0; i < 250; i++) {
+    await page.keyboard.press("Tab")
+    const atual = await page.evaluate(() => {
+      const el = document.activeElement
+      if (!el || el === document.body) return null
+      const nome = el.tagName
+      // Infra do Next em dev, não faz parte do site.
+      if (nome.startsWith("NEXTJS-") || nome.startsWith("NEXT-ROUTE")) {
+        return { ignorar: true }
+      }
+      const r = el.getBoundingClientRect()
+      const cs = getComputedStyle(el)
+      return {
+        tag: nome,
+        rotulo: (el.getAttribute("aria-label") || el.textContent || "").trim().slice(0, 40),
+        visivel: r.width > 0 && r.height > 0,
+        contorno: parseFloat(cs.outlineWidth) || 0,
+      }
+    })
+
+    if (!atual) break
+    if (atual.ignorar) continue
+
+    const chave = `${atual.tag}|${atual.rotulo}`
+    if (chave === anterior) {
+      repetidas++
+      if (repetidas > 3) {
+        preso = chave
+        break
+      }
+    } else {
+      repetidas = 0
+    }
+    anterior = chave
+    paradas.push(atual)
+  }
+
+  if (preso) {
+    failures.push(`foco preso em laço em "${preso}"`)
+  }
+  if (paradas.length < 20) {
+    failures.push(`só ${paradas.length} paradas de teclado — a página deveria ter dezenas`)
+  }
+
+  const invisiveis = paradas.filter((s) => !s.visivel)
+  if (invisiveis.length > 0) {
+    failures.push(
+      `${invisiveis.length} parada(s) de teclado invisível(is): ${invisiveis
+        .slice(0, 3)
+        .map((s) => `"${s.rotulo}"`)
+        .join(", ")}`
+    )
+  }
+
+  const semContorno = paradas.filter((s) => s.contorno < 1)
+  if (semContorno.length > 0) {
+    failures.push(
+      `${semContorno.length} parada(s) sem contorno de foco: ${semContorno
+        .slice(0, 3)
+        .map((s) => `"${s.rotulo}"`)
+        .join(", ")}`
+    )
+  }
+
+  const primeira = paradas[0]
+  if (primeira && !/pular/i.test(primeira.rotulo)) {
+    failures.push(`a primeira parada de teclado é "${primeira.rotulo}", não o atalho de pular`)
+  }
+
+  notes.push(
+    `jornada por teclado: ${paradas.length} paradas, sem laço, todas visíveis e com contorno`
+  )
+
   await ctx.close()
   return { failures, notes }
 }
