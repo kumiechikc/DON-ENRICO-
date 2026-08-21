@@ -1,21 +1,40 @@
+"use client"
+
+import { useReveal } from "@/lib/motion/use-reveal"
+
 interface SectionHeadingProps {
-  /** Sobrelinha curta em caixa alta, para situar a seção. */
   eyebrow?: string
   title: string
   subtitle?: string
+  align?: "left" | "center"
 }
 
-export function SectionHeading({ eyebrow, title, subtitle }: SectionHeadingProps) {
+export function SectionHeading({
+  eyebrow,
+  title,
+  subtitle,
+  align = "left",
+}: SectionHeadingProps) {
+  const ref = useReveal<HTMLDivElement>("rise")
+
   return (
-    <div className="max-w-2xl mb-10 md:mb-14">
+    <div
+      ref={ref}
+      data-reveal
+      className={
+        align === "center"
+          ? "max-w-3xl mx-auto text-center mb-14 md:mb-20"
+          : "max-w-3xl mb-14 md:mb-20"
+      }
+    >
       {eyebrow && (
-        <p className="type-label text-xs text-brand-deep mb-3">{eyebrow}</p>
+        <p className="type-label text-[0.68rem] text-amber mb-5">{eyebrow}</p>
       )}
-      <h2 className="type-display text-[clamp(2rem,5.5vw,3.25rem)] text-fg">
+      <h2 className="type-display text-[clamp(2.25rem,7vw,4.5rem)] text-fg">
         {title}
       </h2>
       {subtitle && (
-        <p className="mt-4 text-base md:text-lg text-fg-muted leading-relaxed">
+        <p className="mt-6 text-base md:text-lg text-fg-muted leading-relaxed">
           {subtitle}
         </p>
       )}

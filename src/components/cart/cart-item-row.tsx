@@ -20,7 +20,7 @@ export function CartItemRow({ item }: { item: CartItem }) {
         <button
           type="button"
           onClick={() => removeItem(item.id)}
-          className="shrink-0 inline-flex items-center justify-center min-w-[2.25rem] min-h-[2.25rem] text-fg-muted hover:text-accent transition-colors duration-150"
+          className="shrink-0 inline-flex items-center justify-center min-w-[2.25rem] min-h-[2.25rem] text-fg-muted hover:text-red transition-colors duration-150"
           aria-label={`Remover ${item.name} do pedido`}
         >
           <X className="w-4 h-4" aria-hidden="true" />
@@ -32,7 +32,7 @@ export function CartItemRow({ item }: { item: CartItem }) {
           <button
             type="button"
             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-            className="inline-flex items-center justify-center min-w-[2.5rem] min-h-[2.5rem] text-fg hover:text-accent transition-colors duration-150"
+            className="inline-flex items-center justify-center min-w-[2.5rem] min-h-[2.5rem] text-fg hover:text-red transition-colors duration-150"
             aria-label={`Diminuir quantidade de ${item.name}`}
           >
             <Minus className="w-3.5 h-3.5" aria-hidden="true" />
@@ -43,7 +43,7 @@ export function CartItemRow({ item }: { item: CartItem }) {
           <button
             type="button"
             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-            className="inline-flex items-center justify-center min-w-[2.5rem] min-h-[2.5rem] text-fg hover:text-accent transition-colors duration-150"
+            className="inline-flex items-center justify-center min-w-[2.5rem] min-h-[2.5rem] text-fg hover:text-red transition-colors duration-150"
             aria-label={`Aumentar quantidade de ${item.name}`}
           >
             <Plus className="w-3.5 h-3.5" aria-hidden="true" />

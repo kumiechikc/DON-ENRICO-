@@ -1,7 +1,8 @@
 import { PHONE_DISPLAY, PHONE_TEL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/cart/whatsapp"
+import { site } from "@/lib/site"
 
 const links = [
-  { label: "Festa", href: "#festa" },
+  { label: "Encomendas para festa", href: "#festa" },
   { label: "Box degustação", href: "#box" },
   { label: "Congelados", href: "#congelados" },
   { label: "Como encomendar", href: "#como-encomendar" },
@@ -9,23 +10,30 @@ const links = [
 
 export function Footer() {
   return (
-    <footer className="bg-fg text-white/70 py-12">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+    <footer className="relative border-t border-border bg-bg">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 py-16 md:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-12 md:gap-8">
           <div>
-            <p className="type-display text-lg text-white">Don Enrico Lanches</p>
-            <p className="mt-2 text-sm italic">O sabor que impõe respeito</p>
-            <p className="mt-3 text-sm">Porto Alegre, RS</p>
+            <p className="type-display text-2xl md:text-3xl text-fg">
+              Don Enrico
+              <span className="block text-amber">Lanches</span>
+            </p>
+            <p className="mt-4 text-sm text-fg-muted italic max-w-xs">
+              {site.tagline}
+            </p>
+            <p className="mt-6 type-label text-[0.62rem] text-fg-muted">
+              {site.city} · {site.state}
+            </p>
           </div>
 
           <nav aria-label="Seções do site">
-            <p className="type-label text-[0.7rem] text-white mb-3">Cardápio</p>
-            <ul className="flex flex-col">
+            <p className="type-label text-[0.62rem] text-amber mb-4">Cardápio</p>
+            <ul>
               {links.map((link) => (
                 <li key={link.href}>
                   <a
                     href={link.href}
-                    className="inline-flex items-center min-h-[2.75rem] text-sm hover:text-white transition-colors duration-150"
+                    className="inline-flex items-center min-h-[2.75rem] text-sm text-fg-muted hover:text-fg transition-colors duration-300"
                   >
                     {link.label}
                   </a>
@@ -35,12 +43,12 @@ export function Footer() {
           </nav>
 
           <div>
-            <p className="type-label text-[0.7rem] text-white mb-3">Contato</p>
-            <ul className="flex flex-col">
+            <p className="type-label text-[0.62rem] text-amber mb-4">Contato</p>
+            <ul>
               <li>
                 <a
                   href={`tel:${PHONE_TEL}`}
-                  className="inline-flex items-center min-h-[2.75rem] text-sm hover:text-white transition-colors duration-150"
+                  className="inline-flex items-center min-h-[2.75rem] text-sm text-fg-muted hover:text-fg transition-colors duration-300"
                 >
                   {PHONE_DISPLAY}
                 </a>
@@ -50,7 +58,7 @@ export function Footer() {
                   href={INSTAGRAM_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center min-h-[2.75rem] text-sm hover:text-white transition-colors duration-150"
+                  className="inline-flex items-center min-h-[2.75rem] text-sm text-fg-muted hover:text-fg transition-colors duration-300"
                 >
                   {INSTAGRAM_HANDLE}
                 </a>
@@ -59,7 +67,7 @@ export function Footer() {
           </div>
         </div>
 
-        <p className="mt-10 pt-6 border-t border-white/15 text-xs">
+        <p className="mt-14 pt-6 border-t border-border text-xs text-fg-muted">
           &copy; {new Date().getFullYear()} Don Enrico Lanches
         </p>
       </div>

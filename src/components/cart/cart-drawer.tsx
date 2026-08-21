@@ -47,7 +47,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] text-fg hover:text-accent transition-colors duration-150"
+            className="inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] text-fg hover:text-red transition-colors duration-150"
             aria-label="Fechar pedido"
           >
             <X className="w-5 h-5" aria-hidden="true" />
@@ -64,7 +64,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             <a
               href="#festa"
               onClick={onClose}
-              className="mt-2 inline-flex items-center justify-center min-h-[3rem] px-6 bg-accent text-white font-bold text-sm uppercase tracking-wider hover:bg-accent-hover transition-colors duration-150"
+              className="mt-2 inline-flex items-center justify-center min-h-[3rem] px-6 bg-red-deep text-white font-bold text-sm uppercase tracking-wider hover:bg-red-deep transition-colors duration-150"
             >
               Ver cardápio
             </a>
@@ -89,7 +89,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 href={getWhatsAppUrl(items, totalPrice)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2.5 w-full min-h-[3.25rem] bg-accent text-white font-bold text-sm uppercase tracking-wider hover:bg-accent-hover transition-colors duration-150"
+                className="inline-flex items-center justify-center gap-2.5 w-full min-h-[3.25rem] bg-red-deep text-white font-bold text-sm uppercase tracking-wider hover:bg-red-deep transition-colors duration-150"
               >
                 <WhatsAppIcon className="w-5 h-5" />
                 Enviar pelo WhatsApp
@@ -102,7 +102,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               <button
                 type="button"
                 onClick={clearCart}
-                className="text-xs text-fg-muted hover:text-accent underline underline-offset-2 transition-colors duration-150 self-center min-h-[2.25rem]"
+                className="text-xs text-fg-muted hover:text-red underline underline-offset-2 transition-colors duration-150 self-center min-h-[2.25rem]"
               >
                 Limpar pedido
               </button>

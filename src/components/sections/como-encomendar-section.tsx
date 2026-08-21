@@ -38,12 +38,12 @@ export function ComoEncomendarSection() {
 
         <ol className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {steps.map((step) => (
-            <li key={step.n} className="border-t-4 border-brand pt-5">
+            <li key={step.n} className="border-t-4 border-amber pt-5">
               {/*
                 Âmbar puro não alcança 3:1 sobre o creme, então o número usa a
                 variante escura — a barra acima é que carrega o âmbar cheio.
               */}
-              <span className="type-display text-5xl md:text-6xl text-brand-deep">
+              <span className="type-display text-5xl md:text-6xl text-amber">
                 {step.n}
               </span>
               <h3 className="mt-3 text-lg font-bold text-fg">{step.title}</h3>

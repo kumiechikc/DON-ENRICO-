@@ -107,10 +107,16 @@ export async function checkA11y(browser, url) {
   notes.push(`primeiro Tab: "${firstStop?.text ?? "nada"}" (contorno ${firstStop?.outline})`)
 
   // Foco tem que ser visível em qualquer botão.
+  // Foca e mede num quadro seguinte: ler no instante do foco pega qualquer
+  // transição pela metade e reporta largura zero num anel que existe.
+  await page.evaluate(() => {
+    const btn = document.querySelector("main button")
+    if (btn instanceof HTMLElement) btn.focus()
+  })
+  await page.waitForTimeout(120)
   const focusRing = await page.evaluate(() => {
     const btn = document.querySelector("main button")
     if (!btn) return null
-    btn.focus()
     const cs = getComputedStyle(btn)
     return { width: cs.outlineWidth, style: cs.outlineStyle, color: cs.outlineColor }
   })

@@ -1,56 +1,77 @@
 @import "tailwindcss";
 
 /*
-  Don Enrico Lanches — "cartaz de boteco".
-  Fundo creme quente para a comida frita aparecer dourada: fundo escuro deixa
-  fritura com cara de gordurosa. O âmbar da marca só entra como preenchimento
-  com texto escuro por cima — âmbar nunca alcança 3:1 sobre o creme, então não
-  pode ser traço fino nem texto pequeno sozinho; para isso existe --brand-deep.
-  Todas as razões de contraste anotadas abaixo foram medidas, não estimadas.
+  Don Enrico Lanches — chiaroscuro quente.
+  ─────────────────────────────────────────────────────────────────────────────
+  A marca é um Don de chapéu com o slogan "o sabor que impõe respeito". Isso é
+  um personagem de cinema, não uma padaria: o site trabalha a linguagem de
+  cartaz de filme de máfia cruzada com boteco brasileiro.
+
+  Por que escuro, se comida frita costuma pedir fundo claro: o que estraga
+  fritura é fundo escuro FRIO e CHAPADO. Escuro com luz âmbar direcional é
+  exatamente como fotógrafo de comida ilumina fritura para marca premium — o
+  dourado ganha contraste e brilho contra a sombra quente.
+
+  Ganho concreto desta paleta: no fundo claro anterior o âmbar da marca não
+  alcançava nem 3:1 e não podia ser texto. Aqui ele é 9.55:1 — vira cor de
+  texto, de traço e de destaque. Todas as razões abaixo foram medidas.
 */
 :root {
-  --bg: #fdf7ef;
-  --surface: #ffffff;
-  --surface-2: #f6eadb;
+  /* Sombra quente, nunca preto puro nem cinza azulado. */
+  --bg: #120b08;
+  --surface: #1c110c;
+  --surface-2: #2a1a12;
+  --elevated: #38251a;
 
-  --fg: #241610; /* 16.48:1 sobre bg */
-  --fg-muted: #6b5648; /* 6.47:1 sobre bg */
+  --fg: #f8efe3; /* 17.13:1 sobre bg */
+  --fg-muted: #b9a08b; /* 7.86:1 sobre bg */
 
-  --brand: #e8940c; /* preenchimento; texto --fg por cima = 7.24:1 */
-  --brand-deep: #9a5b06; /* 5.09:1 sobre bg — seguro para texto e traço */
+  /* A luz da cena. Legível como texto, diferente da paleta clara. */
+  --amber: #f5a524; /* 9.55:1 sobre bg */
+  --amber-bright: #ffb93d; /* 11.38:1 — usada no foco e no brilho */
 
-  --accent: #c1121f; /* branco por cima = 6.22:1 */
-  --accent-hover: #a00e19; /* branco por cima = 8.17:1 */
+  /* Acento de sangue. O tom claro é o único seguro sobre superfície elevada. */
+  --red: #f25c63; /* 6.02:1 sobre bg, 5.17:1 sobre surface-2 */
+  --red-deep: #c1121f; /* fundo de botão; branco por cima = 6.22:1 */
 
-  --border: #e4d5c3; /* divisória decorativa */
-  --border-strong: #9d8264; /* limite de controle — 3.39:1 sobre bg */
-  --ring: #c1121f;
+  --border: rgba(248, 239, 227, 0.1);
+  --border-strong: rgba(248, 239, 227, 0.28);
+  /*
+    Nome próprio, não `--ring`: o Tailwind v4 usa `--ring` no próprio tema, e a
+    colisão fazia `var(--ring)` resolver para vazio dentro dos utilitários. Uma
+    declaração com var() inválida é descartada inteira — inclusive com
+    !important — e o contorno caía no `outline: 0 solid` do preflight.
+  */
+  --focus-ring: #ffb93d;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-elevated: var(--elevated);
   --color-fg: var(--fg);
   --color-fg-muted: var(--fg-muted);
-  --color-brand: var(--brand);
-  --color-brand-deep: var(--brand-deep);
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
+  --color-amber: var(--amber);
+  --color-amber-bright: var(--amber-bright);
+  --color-red: var(--red);
+  --color-red-deep: var(--red-deep);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
-  --color-ring: var(--ring);
+  --color-focus-ring: var(--focus-ring);
 
   --font-display: var(--font-archivo-black);
   --font-body: var(--font-archivo);
-
-  --radius-card: 4px;
 }
 
 html {
-  scroll-behavior: smooth;
-  /* A navbar fixa não pode cobrir o título ao pular por âncora. */
+  /*
+    O scroll suave é feito pelo Lenis em JavaScript. Deixar `scroll-behavior:
+    smooth` no CSS junto faz os dois brigarem pelo mesmo scroll e produz um
+    solavanco em cada âncora.
+  */
   scroll-padding-top: 5rem;
+  background: var(--bg);
 }
 
 body {
@@ -59,34 +80,78 @@ body {
   font-family: var(--font-body), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-/*
-  Display em caixa alta com tracking apertado: a voz dos encartes impressos da
-  marca. Archivo Black tem só o peso 400 — o peso vem do desenho da fonte.
-*/
 .type-display {
   font-family: var(--font-display), var(--font-body), system-ui, sans-serif;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: -0.02em;
-  line-height: 0.95;
+  letter-spacing: -0.03em;
+  line-height: 0.88;
 }
 
-/* Etiqueta pequena em caixa alta, para sobrelinhas e rótulos de categoria. */
 .type-label {
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.16em;
 }
 
 /*
-  Foco: anel vermelho sólido com deslocamento, visível sobre creme, branco e
-  âmbar. Nunca removido — é o único indicador para quem navega por teclado.
+  Grão de filme. Uma camada fixa de ruído SVG sobre a página inteira: é o que
+  dá textura de impresso e tira o aspecto de gradiente digital liso. Custa uma
+  imagem inline e nenhum JavaScript — bem mais barato que fazer o mesmo com
+  WebGL, que é a alternativa comum e pesada.
 */
-:focus-visible {
-  outline: 3px solid var(--ring);
-  outline-offset: 2px;
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Brilho quente atrás de um elemento, como luz de fritadeira na sombra. */
+.glow-amber {
+  box-shadow: 0 0 80px -20px rgba(245, 165, 36, 0.45);
+}
+
+/*
+  Estado inicial das revelações. O JavaScript de animação remove isto assim que
+  assume o elemento; se o JS não rodar, a regra `.no-js` abaixo devolve tudo ao
+  estado final — conteúdo nunca fica preso invisível.
+*/
+[data-reveal] {
+  opacity: 0;
+}
+
+html.no-motion [data-reveal],
+html.no-js [data-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/*
+  Foco visível.
+
+  Escrito com seletores explícitos e `!important` de propósito: o preflight do
+  Tailwind aplica `outline: 0 solid` em todo elemento, e a cor do contorno cai
+  em `currentColor` — num botão âmbar com texto escuro isso resulta em contorno
+  invisível sobre fundo claro. Foco visível é garantia de acessibilidade para
+  quem navega por teclado, não pode ficar à mercê de disputa de cascata com uma
+  classe utilitária.
+*/
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--focus-ring) !important;
+  outline-offset: 3px !important;
   border-radius: 2px;
 }
 
@@ -104,7 +169,8 @@ a[href] {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  html {
-    scroll-behavior: auto;
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

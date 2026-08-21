@@ -8,7 +8,7 @@ import type { FlavorPack } from "@/lib/data/menu"
 
 /*
  * Linha de um pacote de sabor único (congelados). O tamanho do pacote aparece
- * uma vez no cabeçalho da coluna, não repetido em cada uma das dezenove linhas.
+ * uma vez no cabeçalho da coluna, não repetido nas dezenove linhas.
  */
 export function ProductCard({ pack }: { pack: FlavorPack }) {
   const { addItem } = useCart()
@@ -31,23 +31,23 @@ export function ProductCard({ pack }: { pack: FlavorPack }) {
   }, [added])
 
   return (
-    <li className="flex items-center justify-between gap-3 bg-surface border border-border pl-4 pr-2 py-2">
-      <h4 className="text-sm sm:text-base font-semibold text-fg leading-snug min-w-0">
+    <li className="group flex items-center justify-between gap-3 border-b border-border py-1 transition-colors duration-300 hover:border-amber">
+      <h4 className="text-sm sm:text-base text-fg leading-snug min-w-0 transition-colors duration-300 group-hover:text-amber">
         {pack.name}
       </h4>
 
-      <div className="flex items-center gap-2 shrink-0">
-        <span className="text-base font-bold text-fg tabular-nums">
+      <div className="flex items-center gap-3 shrink-0">
+        <span className="text-sm sm:text-base font-bold text-fg tabular-nums">
           {formatPrice(pack.price)}
         </span>
         <button
           type="button"
           onClick={handleAdd}
           className={cn(
-            "inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] border transition-colors duration-150",
+            "inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] border transition-[color,background-color,border-color,opacity] duration-300",
             added
-              ? "bg-fg border-fg text-white"
-              : "bg-bg border-border-strong text-fg hover:border-fg hover:bg-brand"
+              ? "bg-amber border-amber text-bg"
+              : "border-border-strong text-fg-muted hover:border-amber hover:text-amber"
           )}
           aria-label={
             added

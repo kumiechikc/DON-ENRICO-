@@ -62,7 +62,7 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
           <button
             type="button"
             onClick={onCartOpen}
-            className="relative inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] lg:px-3 text-fg hover:text-accent transition-colors duration-150"
+            className="relative inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] lg:px-3 text-fg hover:text-red transition-colors duration-150"
             aria-label={
               totalItems > 0
                 ? `Abrir pedido — ${totalItems} ${totalItems === 1 ? "item" : "itens"}`
@@ -74,7 +74,7 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
             {totalItems > 0 && (
               <span
                 aria-hidden="true"
-                className="absolute top-1 right-1 min-w-[1.15rem] h-[1.15rem] px-1 bg-accent text-white text-[0.7rem] font-bold flex items-center justify-center rounded-full tabular-nums"
+                className="absolute top-1 right-1 min-w-[1.15rem] h-[1.15rem] px-1 bg-red-deep text-white text-[0.7rem] font-bold flex items-center justify-center rounded-full tabular-nums"
               >
                 {totalItems}
               </span>
@@ -116,7 +116,7 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
               key={link.href}
               href={link.href}
               onClick={closeMenu}
-              className="type-display text-2xl text-fg hover:text-accent transition-colors duration-150"
+              className="type-display text-2xl text-fg hover:text-red transition-colors duration-150"
             >
               {link.label}
             </a>

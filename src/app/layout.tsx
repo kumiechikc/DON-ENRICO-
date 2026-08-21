@@ -56,7 +56,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${archivoBlack.variable} ${archivo.variable} h-full antialiased`}
+      className={`${archivoBlack.variable} ${archivo.variable} h-full antialiased grain`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
