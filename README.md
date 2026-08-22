@@ -50,9 +50,12 @@ fonte só, e o CI falha se as duas saírem de sincronia.
 ## Verificação
 
 ```bash
-npm run check           # navegador: responsividade, contraste, teclado, pedido, sem-JS
+npm run check           # navegador: responsividade, contraste, teclado, pedido, sem-JS, vídeo
 npm run check:planilha  # regras da planilha, fora do Google
+npm run check:pix       # o código do Pix (BR Code do Banco Central)
+npm run check:midia     # clipes: arquivos, orçamento, dimensões
 npm run catalogo        # regera apps-script/Catalogo.gs a partir do menu.ts
+npm run clipe -- <arquivo.mp4> <nome> [--secao]   # comprime um clipe do Flow
 npm run lint
 npm run build
 ```
@@ -61,6 +64,8 @@ npm run build
 
 - **`docs/DESIGN.md`** — o sistema de design e o motivo de cada escolha. Várias parecem
   arbitrárias e não são (o âmbar não pode ser texto, o vermelho tem função específica).
+- **`docs/FILME.md`** — a direção de arte dos clipes de vídeo, com os prompts prontos e o
+  passo a passo. O encanamento está pronto; faltam os clipes.
 - **`docs/PERGUNTAS-CLIENTE.md`** — o que ainda falta saber do dono. Boa parte do que o
   site não mostra está ausente de propósito.
 
