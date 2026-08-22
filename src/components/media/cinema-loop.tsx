@@ -58,31 +58,45 @@ export function CinemaLoop({
   enquadramento?: string
 }) {
   const clipe = acharClipe(id)
-  const { motionEnabled } = useMotion()
+  /*
+   * `videoEnabled`, e não `motionEnabled`: o vídeo continua fora do ar para
+   * quem pediu menos movimento, mas volta para o aparelho fraco. Decodificar
+   * H.264 em hardware é mais barato que o shader que este clipe substituiu, e
+   * era esse aparelho que ficava sem a peça principal da página.
+   */
+  const { videoEnabled } = useMotion()
   /*
    * `jaApareceu` gruda: uma vez baixado, o vídeo não é desmontado ao sair da
    * tela. Desmontar jogaria fora o que já foi baixado e obrigaria a baixar de
    * novo na volta — o oposto do que a economia pretende.
    */
   const { ref: containerRef, visivel, jaApareceu } = useVisivel<HTMLDivElement>(
-    motionEnabled && Boolean(clipe)
+    videoEnabled && Boolean(clipe)
   )
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const [tocando, setTocando] = useState(false)
 
   useEffect(() => {
-    if (visivel) {
-      videoRef.current?.play().catch(() => {
-        /*
-         * O navegador pode recusar o autoplay mesmo com `muted`, por economia
-         * de bateria ou preferência do usuário. Não é erro: o pôster continua
-         * no lugar e a página segue igual.
-         */
-      })
-    } else {
+    if (!visivel) {
       videoRef.current?.pause()
+      return
     }
+
+    videoRef.current?.play().catch(() => {
+      /*
+       * O navegador pode recusar o autoplay mesmo com `muted` — o modo de
+       * economia de bateria do iOS faz isso sempre. Não é erro, e o pôster
+       * continua no lugar; mas depois do primeiro toque na página a permissão
+       * existe, então vale tentar de novo uma vez. Sem isso, quem está com
+       * pouca bateria nunca vê o clipe, mesmo tendo o arquivo baixado.
+       */
+      const tentarDeNovo = () => {
+        videoRef.current?.play().catch(() => {})
+      }
+      window.addEventListener("pointerdown", tentarDeNovo, { once: true })
+      window.addEventListener("touchstart", tentarDeNovo, { once: true })
+    })
   }, [visivel])
 
   if (!clipe) return null
