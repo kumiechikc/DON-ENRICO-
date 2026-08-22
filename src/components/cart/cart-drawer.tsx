@@ -1,8 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import { X, ShoppingBag } from "lucide-react"
 import { useCart } from "@/lib/cart/cart-context"
 import { getWhatsAppUrl } from "@/lib/cart/whatsapp"
+import { gerarCodigoPedido, registrarPedido, registroAtivo } from "@/lib/cart/registro"
 import { useDialog } from "@/lib/hooks/use-dialog"
 import { formatPrice } from "@/lib/utils"
 import { WhatsAppIcon } from "@/components/ui/whatsapp-icon"
@@ -16,6 +18,17 @@ interface CartDrawerProps {
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const { items, totalItems, totalPrice, clearCart } = useCart()
   const panelRef = useDialog(open, onClose)
+
+  /*
+   * Um código por abertura do carrinho, sorteado uma vez e usado nos dois
+   * lugares: na mensagem que vai para o WhatsApp e no registro que vai para a
+   * planilha. Sorteá-lo a cada renderização faria os dois discordarem, e o
+   * código existe justamente para eles concordarem.
+   *
+   * Clicar duas vezes reenvia o mesmo código; a planilha reconhece e não abre
+   * um segundo pedido.
+   */
+  const [codigo] = useState(gerarCodigoPedido)
 
   if (!open) return null
 
@@ -86,9 +99,10 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               </div>
 
               <a
-                href={getWhatsAppUrl(items, totalPrice)}
+                href={getWhatsAppUrl(items, totalPrice, codigo)}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => registrarPedido(items, codigo)}
                 className="inline-flex items-center justify-center gap-2.5 w-full min-h-[3.25rem] bg-amber text-bg font-bold text-sm uppercase tracking-wider hover:bg-amber-bright transition-colors duration-150"
               >
                 <WhatsAppIcon className="w-5 h-5" />
@@ -97,6 +111,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
               <p className="text-center text-xs text-fg-muted">
                 O pedido abre no WhatsApp já escrito, com os sabores e o total.
+                {registroAtivo() ? ` Código #${codigo}.` : null}
               </p>
 
               <button

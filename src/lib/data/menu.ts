@@ -33,9 +33,27 @@ export interface AssortedCategory {
  */
 export interface FlavorPack {
   id: string
+  /*
+   * Identidade do produto fora do site: é por este código que o pedido chega na
+   * planilha de operação e encontra o preço e a linha de produção. Fica junto do
+   * cardápio, e não montado em outro lugar, porque duas listas do mesmo produto
+   * divergem na primeira mudança — e a divergência só aparece quando um pedido
+   * real cai na planilha com SKU que ninguém reconhece.
+   */
+  sku: string
   name: string
   price: number
   packSize: number
+}
+
+/**
+ * SKU de uma faixa de linha sortida ("Clássicos Fritos, 100 unidades").
+ *
+ * O gerador da planilha chama esta mesma função, então o código que sai do
+ * carrinho e o que está cadastrado no Catálogo são o mesmo por construção.
+ */
+export function assortedSku(categoryId: string, quantity: number): string {
+  return `${categoryId}-${quantity}`
 }
 
 export const boxDegustacao: AssortedCategory = {
@@ -144,26 +162,26 @@ export const festaCategories: AssortedCategory[] = [
 export const CONGELADOS_PACK_SIZE = 50
 
 export const congeladosFritar: FlavorPack[] = [
-  { id: "coxinha-frango", name: "Coxinha de frango", price: 25, packSize: CONGELADOS_PACK_SIZE },
-  { id: "calabresa-cheddar", name: "Calabresa c/ cheddar", price: 25, packSize: CONGELADOS_PACK_SIZE },
-  { id: "bolinha-queijo", name: "Bolinha de queijo", price: 25, packSize: CONGELADOS_PACK_SIZE },
-  { id: "risoles-presunto-queijo", name: "Risoles presunto e queijo", price: 25, packSize: CONGELADOS_PACK_SIZE },
-  { id: "enrolado-salsicha", name: "Enrolado de salsicha", price: 22, packSize: CONGELADOS_PACK_SIZE },
-  { id: "croquete-requeijao", name: "Croquete c/ requeijão", price: 27, packSize: CONGELADOS_PACK_SIZE },
-  { id: "pastelzinho-carne", name: "Pastelzinho de carne", price: 25, packSize: CONGELADOS_PACK_SIZE },
-  { id: "pastelzinho-queijo", name: "Pastelzinho de queijo", price: 25, packSize: CONGELADOS_PACK_SIZE },
-  { id: "mini-churros", name: "Mini churros", price: 27, packSize: CONGELADOS_PACK_SIZE },
-  { id: "sortidos", name: "Sortidos", price: 25, packSize: CONGELADOS_PACK_SIZE },
+  { id: "coxinha-frango", sku: "cong-frito-coxinha-frango", name: "Coxinha de frango", price: 25, packSize: CONGELADOS_PACK_SIZE },
+  { id: "calabresa-cheddar", sku: "cong-frito-calabresa-cheddar", name: "Calabresa c/ cheddar", price: 25, packSize: CONGELADOS_PACK_SIZE },
+  { id: "bolinha-queijo", sku: "cong-frito-bolinha-queijo", name: "Bolinha de queijo", price: 25, packSize: CONGELADOS_PACK_SIZE },
+  { id: "risoles-presunto-queijo", sku: "cong-frito-risoles-presunto-queijo", name: "Risoles presunto e queijo", price: 25, packSize: CONGELADOS_PACK_SIZE },
+  { id: "enrolado-salsicha", sku: "cong-frito-enrolado-salsicha", name: "Enrolado de salsicha", price: 22, packSize: CONGELADOS_PACK_SIZE },
+  { id: "croquete-requeijao", sku: "cong-frito-croquete-requeijao", name: "Croquete c/ requeijão", price: 27, packSize: CONGELADOS_PACK_SIZE },
+  { id: "pastelzinho-carne", sku: "cong-frito-pastelzinho-carne", name: "Pastelzinho de carne", price: 25, packSize: CONGELADOS_PACK_SIZE },
+  { id: "pastelzinho-queijo", sku: "cong-frito-pastelzinho-queijo", name: "Pastelzinho de queijo", price: 25, packSize: CONGELADOS_PACK_SIZE },
+  { id: "mini-churros", sku: "cong-frito-mini-churros", name: "Mini churros", price: 27, packSize: CONGELADOS_PACK_SIZE },
+  { id: "sortidos", sku: "cong-frito-sortidos", name: "Sortidos", price: 25, packSize: CONGELADOS_PACK_SIZE },
 ]
 
 export const congeladosAssados: FlavorPack[] = [
-  { id: "esfiha-frango", name: "Esfiha de frango", price: 30, packSize: CONGELADOS_PACK_SIZE },
-  { id: "esfiha-carne", name: "Esfiha de carne", price: 30, packSize: CONGELADOS_PACK_SIZE },
-  { id: "empadinha-frango", name: "Empadinha de frango", price: 30, packSize: CONGELADOS_PACK_SIZE },
-  { id: "empadinha-brocolis", name: "Empadinha de brócolis", price: 35, packSize: CONGELADOS_PACK_SIZE },
-  { id: "enrolado-salsicha-assado", name: "Enrolado de salsicha", price: 25, packSize: CONGELADOS_PACK_SIZE },
-  { id: "pastelzinho-carne-assado", name: "Pastelzinho de carne", price: 30, packSize: CONGELADOS_PACK_SIZE },
-  { id: "mini-pizza-mussarela", name: "Mini pizza mussarela", price: 35, packSize: CONGELADOS_PACK_SIZE },
-  { id: "mini-pizza-frango", name: "Mini pizza frango", price: 35, packSize: CONGELADOS_PACK_SIZE },
-  { id: "mini-pizza-calabresa", name: "Mini pizza calabresa", price: 35, packSize: CONGELADOS_PACK_SIZE },
+  { id: "esfiha-frango", sku: "cong-assado-esfiha-frango", name: "Esfiha de frango", price: 30, packSize: CONGELADOS_PACK_SIZE },
+  { id: "esfiha-carne", sku: "cong-assado-esfiha-carne", name: "Esfiha de carne", price: 30, packSize: CONGELADOS_PACK_SIZE },
+  { id: "empadinha-frango", sku: "cong-assado-empadinha-frango", name: "Empadinha de frango", price: 30, packSize: CONGELADOS_PACK_SIZE },
+  { id: "empadinha-brocolis", sku: "cong-assado-empadinha-brocolis", name: "Empadinha de brócolis", price: 35, packSize: CONGELADOS_PACK_SIZE },
+  { id: "enrolado-salsicha-assado", sku: "cong-assado-enrolado-salsicha-assado", name: "Enrolado de salsicha", price: 25, packSize: CONGELADOS_PACK_SIZE },
+  { id: "pastelzinho-carne-assado", sku: "cong-assado-pastelzinho-carne-assado", name: "Pastelzinho de carne", price: 30, packSize: CONGELADOS_PACK_SIZE },
+  { id: "mini-pizza-mussarela", sku: "cong-assado-mini-pizza-mussarela", name: "Mini pizza mussarela", price: 35, packSize: CONGELADOS_PACK_SIZE },
+  { id: "mini-pizza-frango", sku: "cong-assado-mini-pizza-frango", name: "Mini pizza frango", price: 35, packSize: CONGELADOS_PACK_SIZE },
+  { id: "mini-pizza-calabresa", sku: "cong-assado-mini-pizza-calabresa", name: "Mini pizza calabresa", price: 35, packSize: CONGELADOS_PACK_SIZE },
 ]

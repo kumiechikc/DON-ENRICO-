@@ -47,6 +47,16 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Cardápio e planilha em sincronia
+        run: |
+          npm run catalogo
+          # O Catalogo.gs é gerado do menu.ts. Se o commit mexeu no cardápio sem
+          # regerar, a planilha continuaria com o preço velho e o pedido do site
+          # cairia lá com valor de outro mês. Falhar aqui é barato; descobrir
+          # pela planilha, não.
+          git diff --exit-code apps-script/Catalogo.gs
+          npm run check:planilha
+
       # O export estático do GitHub Pages tem restrições que o build comum não
       # expõe (rotas de imagem precisam ser force-static, por exemplo). Validar
       # aqui evita descobrir isso só na hora de publicar.
@@ -61,6 +71,13 @@ jobs:
 
       - name: Build de produção
         run: npm run build
+        env:
+          # O envio do pedido para a planilha é decidido em tempo de build: sem
+          # estas variáveis o código nem chega a existir no pacote, e a suíte não
+          # teria o que conferir. A URL é falsa e o navegador substitui o envio
+          # durante o teste — nada sai daqui.
+          NEXT_PUBLIC_REGISTRO_URL: https://exemplo.invalido/registro
+          NEXT_PUBLIC_REGISTRO_TOKEN: token-de-teste
 
       - name: Subir o servidor
         run: |

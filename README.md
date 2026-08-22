@@ -36,6 +36,25 @@ src/components/    seções, cards de produto, carrinho, layout
 src/lib/data/      o cardápio — fonte única de preço e sabor
 src/lib/cart/      carrinho e geração da mensagem de WhatsApp
 scripts/checks/    a suíte de verificação
+apps-script/       a planilha de operação (pedidos, estoque, taxas de maquininha)
+```
+
+O `apps-script/` é um sistema à parte, que roda no Google Sheets e substitui o caderno
+onde os pedidos são anotados hoje. O site manda o pedido para lá no mesmo clique que
+abre o WhatsApp, e os dois carregam o mesmo código curto (`#A7K2`) para o dono ligar a
+conversa à linha da planilha. Instalação em `apps-script/README.md`.
+
+O `Catalogo.gs` é **gerado** do `menu.ts` (`npm run catalogo`) — o cardápio tem uma
+fonte só, e o CI falha se as duas saírem de sincronia.
+
+## Verificação
+
+```bash
+npm run check           # navegador: responsividade, contraste, teclado, pedido, sem-JS
+npm run check:planilha  # regras da planilha, fora do Google
+npm run catalogo        # regera apps-script/Catalogo.gs a partir do menu.ts
+npm run lint
+npm run build
 ```
 
 ## Antes de mexer
@@ -56,9 +75,13 @@ seção sai ou fica marcada em comentário para preencher depois.
   encomenda, entrega, horário e pagamento
 - A regra "máximo dois sabores por cento" é ambígua para 25 e 50 unidades; os valores em
   `menu.ts` são leitura conservadora e precisam de confirmação
+- O Box Degustação provavelmente é sortido, não de escolher sabor — o aviso de sabores
+  não aparece no encarte dele (ver `docs/PERGUNTAS-CLIENTE.md` 1.1b)
+- A planilha de operação está pronta mas não instalada; faltam as taxas das maquininhas
+  e os números de estoque (Bloco 4b)
 
 ## Planejado, não implementado
 
-`docs/ARQUITETURA-BACKEND.md` (cardápio editável, registro de pedidos, automação),
+`docs/ARQUITETURA-BACKEND.md` (cardápio editável pela planilha, automação de WhatsApp),
 `agent/AGENT.md` e `agent/MEMORY.md` (atendente de WhatsApp), `docs/INSTAGRAM.md`
 (perfil e captação).

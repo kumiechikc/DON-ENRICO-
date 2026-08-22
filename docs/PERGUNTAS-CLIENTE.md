@@ -26,6 +26,20 @@ e 2 sabores em 50 — chute conservador, precisa confirmar.
 - Se o cliente pedir 200 unidades, são 4 sabores (2 por cento) ou continua 2 no total?
 - Existe taxa ou preço diferente para pedir mais variedade?
 
+### 1.1b Box Degustação é sortido ou de escolher? 🔴
+Reparando no encarte: o aviso "máximo dois sabores por cento" aparece **só nas
+Encomendas para Festa**. O Box Degustação não tem esse aviso, o nome é "degustação" e a
+foto mostra uma caixa com salgados variados.
+
+Isso sugere que o Box é **sortido** (vai um pouco de cada), e não uma faixa em que o
+cliente escolhe 1 ou 2 sabores — que é como o site está hoje.
+
+- No Box Degustação o cliente **escolhe** os sabores ou vem o sortido da casa?
+- Se vem sortido, ele pode pedir "sem X"?
+
+Se for sortido, o site precisa parar de pedir escolha de sabor ali — é uma mudança de
+duas linhas, mas muda o que o cliente entende que está comprando.
+
 ### 1.2 Prazo de encomenda
 - Com **quanto tempo de antecedência** o pedido precisa ser feito? (24h? 48h? 3 dias?)
 - O prazo muda conforme o tamanho? Ex.: 50 unidades em 1 dia, 500 unidades em 1 semana.
@@ -132,6 +146,57 @@ removidos.
 - **Quanto tempo dura** o congelado no freezer?
 - Tem **bebida, doce ou algo mais** que vende junto e não está no encarte?
 - Faz **kit festa** (salgado + doce + bebida)? Isso costuma aumentar bastante o ticket.
+
+---
+
+## Bloco 4b — Planilha de operação e estoque 🔴
+
+Já está pronta e no repositório (`apps-script/`), montada a partir do que você me contou:
+caderno, planilha e controle de estoque. Para ela sair do papel faltam respostas.
+
+### 4b.1 Pagamento
+**Resolvido:** taxa de maquininha saiu do escopo. O parcelamento é combinado na conversa
+e a máquina vai na entrega, então a planilha não teria como saber a taxa de cada venda —
+e coluna que fica vazia ou errada é pior que coluna nenhuma.
+
+O que ficou pendente é o **Pix no site** (QR Code + copia e cola, para o cliente pagar
+antes e mandar o comprovante no WhatsApp):
+
+- Chave Pix e **tipo** (CPF, CNPJ, celular, e-mail, aleatória).
+- **Nome do titular exatamente como aparece** no comprovante — é ele que vai no QR.
+- Cidade do titular (entra no código BR Code).
+- Paga tudo adiantado ou dá sinal? Quanto de sinal?
+- Devolve se cancelar? Até quantos dias antes?
+
+### 4b.2 Produtos que são a mesma coisa
+O congelador conta produto físico, e alguns aparecem em duas partes do encarte. Assumi
+que são o mesmo produto:
+
+- **Mini pizza** (mussarela, frango, calabresa) da Seleção Don Enrico = a dos Congelados
+  Assados?
+- **Empadinha de brócolis** da Seleção = a dos Congelados Assados?
+
+E assumi que são **diferentes**:
+
+- **Empadinha de frango** dos Assados Especiais ≠ a dos Folhados Premium (massa
+  diferente) — confere?
+- **Enroladinho de salsicha** assado ≠ folhado — confere?
+
+Se eu errei em algum, o conserto é editar uma célula na aba Sabores, não mexer em código.
+
+### 4b.3 Estoque
+- Você produz **por encomenda** ou mantém estoque parado no congelador?
+- Se mantém: quantas unidades de cada sabor costuma ter?
+- Qual o **mínimo** que quer ter de cada um antes de a planilha avisar "repor"?
+- Produz em **lote de quanto**? (ex.: sempre 100 coxinhas por vez)
+- Tem **perda** relevante? (quebra, vencimento) Quanto por mês, mais ou menos?
+
+### 4b.4 Como você quer usar
+- Prefere lançar o pedido na planilha **na hora** que chega no WhatsApp, ou juntar e
+  lançar uma vez por dia?
+- Mais alguém vai mexer na planilha, ou só você?
+- Usa planilha no **celular** ou só no computador? (Muda o que vale a pena deixar em
+  menu e o que vale deixar em coluna.)
 
 ---
 

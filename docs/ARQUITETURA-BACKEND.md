@@ -74,26 +74,73 @@ Montar banco em tempo real para isso é usar caminhão para carregar uma sacola.
 
 ## 4. Pergunta B — registrar pedidos
 
-Antes de escolher a ferramenta: **hoje o registro é a própria conversa do WhatsApp.**
-Ela já tem data, cliente, o que foi pedido e fica no histórico. Com ~5 pedidos por
-semana, isso não está quebrado.
+> **Esta seção mudou de resposta.** Eu tinha recomendado não registrar nada agora, com o
+> argumento de que a conversa do WhatsApp já é o registro. Faltava um dado: **o sócio
+> anota tudo num caderno.**
+>
+> Isso vira a conclusão do avesso. Não se trata de criar um trabalho de digitação que
+> não existia — ele já digita, no papel, e já pediu planilha. E controle de estoque, que
+> é a outra coisa que ele quer, o WhatsApp não tem como dar em hipótese nenhuma: a
+> conversa registra o que foi vendido, nunca o que sobrou no congelador.
+>
+> Com o caderno na conta, a planilha deixa de ser duplicação e passa a ser substituição.
+> **Feito e no repositório**, em `apps-script/`.
 
-O registro passa a valer a pena quando: o volume subir a ponto de perder pedido, ou
-quando quisermos relatório (o que vende mais, quem sumiu, de onde vem o cliente).
+### O que existe agora
 
-| Opção | Prós | Contras |
-|---|---|---|
-| **Só WhatsApp** (hoje) | zero custo, zero manutenção, dono já usa | sem relatório, sem busca, sem visão do mês |
-| **Planilha via Apps Script** | dono vê e edita; grátis; fácil de fazer relatório | endpoint fica público no site estático (só acrescenta linha, mas dá para poluir); dado pessoal numa planilha exige cuidado de acesso |
-| **Supabase** | banco de verdade, seguro, escala, pronto para a automação | projeto **hiberna após ~1 semana parado** no plano free; dono precisaria de painel feito sob medida |
+Google Sheets + Apps Script, sete abas:
 
-**Recomendação: não fazer agora.** Registrar pedido só faz sentido junto com a
-automação (Pergunta C) — antes disso é duplicar no papel o que já está no WhatsApp.
+| Aba | Para quê |
+|---|---|
+| **Resumo** | faturamento do mês, quanto veio em Pix, o que repor, o que entregar |
+| **Pedidos** | um por linha, com status, forma de pagamento e total |
+| **Itens** | o que tem em cada pedido; preço vem do catálogo, não digitado |
+| **Estoque** | saldo, comprometido e livre por produto — tudo calculado |
+| **Movimentos** | o razão: produção, reserva, venda, perda, ajuste |
+| **Catálogo** | os 29 SKUs, gerados do `menu.ts` do site |
+| **Sabores** | qual produto do congelador cada sabor consome |
 
-Quando fizermos, **Supabase**, porque a automação vai precisar de banco de verdade de
-qualquer jeito, e manter duas fontes de dado é pior que manter uma.
+**O pedido do site cai direto na planilha.** No mesmo clique que abre o WhatsApp, o
+site envia o pedido em segundo plano. A mensagem e a linha da planilha carregam o mesmo
+código curto (`#A7K2`), então ligar uma coisa à outra é olhar.
 
----
+### As três decisões que sustentam isso
+
+**1. Estoque é razão, não célula de saldo.**
+Ninguém digita saldo. O saldo é entradas menos saídas, e cada linha diz quando, quanto
+e por quê. É o que separa uma planilha de estoque que ainda bate depois de seis meses
+de uma que ninguém confia mais — porque alguém "ajustou" um número e não dá mais para
+reconstruir de onde veio a diferença.
+
+**2. Reserva na confirmação, baixa na entrega.**
+Confirmar não tira salgado do congelador, mas tira da disponibilidade. Sem isso a
+planilha diz que há 300 coxinhas livres enquanto 250 já estão prometidas para o sábado,
+e o pedido que não tem como entregar é aceito com a planilha aberta na tela.
+
+**3. Preço nunca vem do navegador.**
+O site manda SKU e quantidade; a planilha busca o valor no catálogo. O endpoint é
+público — tem que ser, quem chama é o visitante — então qualquer valor vindo de lá é
+forjável. Mandar só o que dá para verificar do outro lado dispensa confiar no cliente.
+
+### Pagamento
+
+Decidido com o sócio: **sem controle de taxa de maquininha na planilha.** O
+parcelamento é combinado na conversa e a máquina vai na entrega, então a planilha não
+teria como saber a taxa de cada venda. Uma coluna que fica vazia ou errada é pior que
+coluna nenhuma, porque alguém acaba somando aquilo achando que é real.
+
+O que fica: a forma de pagamento (Pix, dinheiro, cartão na entrega) e quanto do mês
+entrou em Pix, que é o número que importa para saber se vale empurrar o Pix.
+
+**Próximo passo: Pix com QR Code e copia e cola no site**, para o cliente pagar antes e
+mandar o comprovante no WhatsApp. Falta a chave Pix e o nome do titular; o código do QR
+(padrão BR Code do Banco Central) é gerado a partir deles.
+
+### O que continua fora
+
+- **Pagamento pelo site.** Pix direto (0%) na conversa e maquininha que ele já tem.
+- **Supabase.** Só quando existir automação de WhatsApp precisando de webhook. Enquanto
+  o operador for humano, planilha é a ferramenta certa: ele já sabe usar.
 
 ## 5. Pergunta C — automatizar o atendimento
 
@@ -146,13 +193,18 @@ e o dono topar migrar o número.
 2. Fotos dos produtos.
 3. Google Meu Negócio (grátis, e é como aparecer no mapa quando buscam salgados).
 
+**Feito**
+- Planilha de operação com pedidos, estoque e taxas (`apps-script/`, instalação no
+  README de lá). Falta o sócio instalar e cadastrar as maquininhas.
+
 **Depois que o site estiver com os dados reais**
-4. Planilha lida no build, para o dono editar preço sozinho.
+4. Cardápio editável pela própria planilha, lido no build do site — a aba Catálogo já
+   existe, falta o Action que a lê e regera o `menu.ts`.
 5. Medir de onde vêm os pedidos, para saber onde investir.
 
 **Quando o volume subir (indicador: pedido começar a se perder)**
-6. Supabase + registro de pedidos.
-7. Agente em modo assistente (sugere, dono envia).
+6. Agente em modo assistente (sugere, dono envia), lendo a planilha.
+7. Supabase, se e quando a automação exigir webhook.
 
 **Só se o dono topar migrar o número**
 8. Cloud API oficial e atendimento automatizado de verdade.

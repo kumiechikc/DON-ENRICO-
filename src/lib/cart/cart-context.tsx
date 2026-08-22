@@ -64,7 +64,7 @@ function parseStoredCart(raw: string): CartItem[] {
 
   return parsed.flatMap((entry): CartItem[] => {
     if (typeof entry !== "object" || entry === null) return []
-    const { id, name, price, quantity, flavors } = entry as Record<string, unknown>
+    const { id, sku, name, price, quantity, flavors } = entry as Record<string, unknown>
 
     if (typeof id !== "string" || id === "") return []
     if (typeof name !== "string" || name === "") return []
@@ -76,6 +76,14 @@ function parseStoredCart(raw: string): CartItem[] {
     return [
       {
         id,
+        /*
+         * Carrinho salvo antes de o SKU existir não tem esse campo. Em vez de
+         * descartar o pedido de alguém que estava montando, cai no id sem os
+         * sabores: nas linhas de festa isso já é o SKU certo, e nas demais o
+         * registro na planilha anota o item como "conferir" — o pedido no
+         * WhatsApp continua completo de qualquer jeito.
+         */
+        sku: typeof sku === "string" && sku !== "" ? sku : id.split("__")[0],
         name,
         price,
         quantity,

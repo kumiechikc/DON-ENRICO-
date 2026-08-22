@@ -14,7 +14,11 @@ function formatBRL(value: number): string {
  * sabores escolhidos, o dono precisa perguntar tudo de novo por WhatsApp — que
  * é exatamente onde o pedido se perde hoje.
  */
-export function generateWhatsAppMessage(items: CartItem[], total: number): string {
+export function generateWhatsAppMessage(
+  items: CartItem[],
+  total: number,
+  codigo?: string
+): string {
   const itemLines = items
     .map((item) => {
       const line = `• ${item.quantity}x ${item.name} — R$ ${formatBRL(
@@ -25,16 +29,23 @@ export function generateWhatsAppMessage(items: CartItem[], total: number): strin
     })
     .join("\n")
 
-  return `Olá! Gostaria de fazer um pedido na Don Enrico Lanches:
+  /*
+   * O código no topo é o que liga esta conversa à linha do pedido na planilha
+   * de operação. Ele existe para o dono não ter que reconstruir o pedido lendo
+   * a conversa de novo — que é onde o pedido se perde hoje.
+   */
+  const cabecalho = codigo
+    ? `Olá! Gostaria de fazer um pedido na Don Enrico Lanches.\n\n*Pedido #${codigo}*`
+    : `Olá! Gostaria de fazer um pedido na Don Enrico Lanches:\n\n*Meu pedido*`
 
-*Meu pedido*
+  return `${cabecalho}
 ${itemLines}
 
 *Total: R$ ${formatBRL(total)}*`
 }
 
-export function getWhatsAppUrl(items: CartItem[], total: number): string {
-  const message = generateWhatsAppMessage(items, total)
+export function getWhatsAppUrl(items: CartItem[], total: number, codigo?: string): string {
+  const message = generateWhatsAppMessage(items, total, codigo)
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
 }
 
