@@ -9,6 +9,8 @@
  *   --de <s>       corta a entrada: começa neste segundo
  *   --ate <s>      corta a saída: termina neste segundo
  *   --crf <n>      qualidade do VP9 (padrão 40); o H.264 acompanha 10 abaixo
+ *   --laco <s>     costura o fim no começo com um fundido de <s> segundos, para
+ *                  o loop fechar sem pulo. Custa <s> segundos de duração.
  *
  * Exemplo:
  *   node scripts/comprimir-clipe.mjs ~/Downloads/veo-lampada.mp4 lampada
@@ -43,7 +45,7 @@
 import { existsSync, mkdirSync, statSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { dirname, join, resolve } from "node:path"
-import { acharFfmpeg, rodarFfmpeg } from "./lib/ffmpeg.mjs"
+import { acharFfmpeg, rodarFfmpeg, medirDuracao } from "./lib/ffmpeg.mjs"
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), "..")
 const destino = join(raiz, "public", "cinema")
@@ -82,11 +84,12 @@ const ate = opcaoNumero("--ate")
  */
 const crfVp9 = opcaoNumero("--crf") ?? 40
 const crfH264 = crfVp9 - 10
+const laco = opcaoNumero("--laco")
 
 if (!entrada || !nome) {
   process.stderr.write(
     "uso: node scripts/comprimir-clipe.mjs <entrada.mp4> <nome> " +
-      "[--secao] [--de <s>] [--ate <s>] [--crf <n>]\n"
+      "[--secao] [--de <s>] [--ate <s>] [--crf <n>] [--laco <s>]\n"
   )
   process.exit(1)
 }
@@ -120,7 +123,7 @@ const saidaPoster = join(destino, `${nome}-poster.webp`)
  * `scale=1280:-2` entrega em 1280 de largura. O `-2` mantém a proporção e
  * garante altura par, que o H.264 exige.
  */
-const filtro = "scale=1280:-2,fps=24"
+const filtroBase = "scale=1280:-2,fps=24"
 
 /*
  * O recorte vai ANTES do `-i`. Assim o ffmpeg pula direto para o ponto pedido
@@ -137,9 +140,60 @@ const trecho =
     ? "inteiro"
     : `${de ?? 0}s a ${ate ?? "fim"}${ate === undefined ? "" : "s"}`
 
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * A COSTURA DO LAÇO
+ *
+ * Um clipe de loop só fecha sem pulo se o último quadro for igual ao primeiro,
+ * e material gerado nunca é: fumaça é caótica, não repete. Medido no plano da
+ * lâmpada, a diferença entre o primeiro e o último quadro dava pico de 176 em
+ * 255 — um solavanco visível a cada volta, para sempre, no topo da página.
+ *
+ * A costura resolve por construção. Corta o rabo do clipe, funde ele por cima
+ * da cabeça, e o resultado começa e termina exatamente no mesmo quadro:
+ *
+ *   saída(0)   = rabo(0)      = original(D - X)
+ *   saída(fim) = cabeça(D-X)  = original(D - X)
+ *
+ * Não é aproximação, é o mesmo quadro. O preço é X segundos de duração.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+let filtroComplexo = null
+if (laco !== undefined) {
+  const duracaoTotal = medirDuracao(ffmpeg, entrada)
+  const duracao = ate !== undefined ? ate - (de ?? 0) : duracaoTotal - (de ?? 0)
+  if (laco <= 0 || laco >= duracao / 2) {
+    process.stderr.write(
+      `--laco ${laco} não cabe num trecho de ${duracao.toFixed(2)}s: ` +
+        "o fundido precisa ser menor que a metade.\n"
+    )
+    process.exit(1)
+  }
+  const corte = (duracao - laco).toFixed(3)
+  filtroComplexo =
+    `[0:v]${filtroBase},split[a][b];` +
+    /*
+     * O `fps=24` volta depois de cada `trim`: o `setpts` zera a base de tempo e
+     * o xfade recusa entrada sem taxa de quadros constante ("current rate of
+     * 1/0 is invalid"). Sem isto o filtro nem monta.
+     */
+    `[a]trim=start=0:end=${corte},setpts=PTS-STARTPTS,fps=24[cabeca];` +
+    `[b]trim=start=${corte},setpts=PTS-STARTPTS,fps=24[rabo];` +
+    `[rabo][cabeca]xfade=transition=fade:duration=${laco}:offset=0[v]`
+}
+
+/** Argumentos de filtro para um encode: complexo quando há costura, simples quando não. */
+const vf = filtroComplexo
+  ? ["-filter_complex", filtroComplexo, "-map", "[v]"]
+  : ["-vf", filtroBase]
+
 process.stdout.write(`\nComprimindo ${resolve(entrada)}\n`)
 process.stdout.write(`  origem: ${kb(entrada).toFixed(0)} KB\n`)
-process.stdout.write(`  trecho: ${trecho}, CRF ${crfVp9}/${crfH264}\n\n`)
+process.stdout.write(
+  `  trecho: ${trecho}, CRF ${crfVp9}/${crfH264}` +
+    (laco !== undefined ? `, laço costurado com ${laco}s de fundido` : "") +
+    "\n\n"
+)
 
 process.stdout.write("  VP9/WebM ... ")
 let t = Date.now()
@@ -153,7 +207,7 @@ rodar([
   "-row-mt", "1",
   "-deadline", "good",
   "-cpu-used", "3",
-  "-vf", filtro,
+  ...vf,
   saidaWebm,
 ])
 process.stdout.write(`${kb(saidaWebm).toFixed(0)} KB (${((Date.now() - t) / 1000).toFixed(0)}s)\n`)
@@ -167,7 +221,7 @@ rodar([
   "-c:v", "libx264",
   "-crf", String(crfH264),
   "-preset", "slow",
-  "-vf", filtro,
+  ...vf,
   // Sem faststart o navegador precisa baixar o arquivo inteiro antes do
   // primeiro quadro, porque o índice fica no fim.
   "-movflags", "+faststart",
@@ -175,12 +229,20 @@ rodar([
 ])
 process.stdout.write(`${kb(saidaMp4).toFixed(0)} KB (${((Date.now() - t) / 1000).toFixed(0)}s)\n`)
 
+/*
+ * O pôster sai do MESMO caminho de filtro do vídeo, e não do arquivo de
+ * entrada. Parece detalhe e não é: com a costura de laço, o vídeo passa a
+ * começar no segundo D-X, enquanto o pôster tirado da entrada continuava no
+ * segundo 0. Medi a diferença entre os dois e deu pico de 173 em 255 — ou
+ * seja, a página mostraria uma cena e o vídeo entraria noutra, com um pulo
+ * visível na hora em que ele começa a tocar.
+ */
 process.stdout.write("  poster ..... ")
 rodar([
   ...recorte,
   "-i", entrada,
-  "-vf", "select=eq(n\\,0),scale=1280:-2",
-  "-vframes", "1",
+  ...vf,
+  "-frames:v", "1",
   "-c:v", "libwebp",
   "-quality", "82",
   saidaPoster,

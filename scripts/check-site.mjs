@@ -15,6 +15,7 @@ import { setTimeout as sleep } from "node:timers/promises"
 
 import { checkViewports } from "./checks/viewport.mjs"
 import { checkContrast } from "./checks/contrast.mjs"
+import { checkContrastePintado } from "./checks/contraste-pintado.mjs"
 import { checkOrderFlow } from "./checks/order-flow.mjs"
 import { checkA11y } from "./checks/a11y.mjs"
 import { checkPerformance } from "./checks/performance.mjs"
@@ -155,6 +156,7 @@ try {
     ["Responsividade e console", () => checkViewports(browser, target, { screenshotDir: wantShots ? SHOT_DIR : null })],
     ["Fluxo do pedido", () => checkOrderFlow(browser, target, { screenshotDir: wantShots ? SHOT_DIR : null })],
     ["Contraste WCAG AA", () => checkContrast(browser, target)],
+    ["Contraste sobre vídeo", () => checkContrastePintado(browser, target)],
     ["Acessibilidade e teclado", () => checkA11y(browser, target)],
     ["Orçamento de performance", () => checkPerformance(browser, target, { isDev })],
     ["Site sem JavaScript", () => checkNoJs(browser, target)],

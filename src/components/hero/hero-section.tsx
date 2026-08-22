@@ -7,7 +7,7 @@ import { ArrowDown } from "lucide-react"
 import { useMotion } from "@/lib/motion/motion-provider"
 import { useSplitReveal } from "@/lib/motion/use-split-text"
 import { getWhatsAppDirectUrl } from "@/lib/cart/whatsapp"
-import { boxDegustacao, festaCategories } from "@/lib/data/menu"
+import { boxDegustacao } from "@/lib/data/menu"
 import { formatPrice } from "@/lib/utils"
 import { MagneticButton } from "@/components/ui/magnetic-button"
 import { CinemaLoop } from "@/components/media/cinema-loop"
@@ -42,7 +42,6 @@ export function HeroSection() {
     label: "Salgados para festa",
   })
   const supportRef = useRef<HTMLDivElement>(null)
-  const indexRef = useRef<HTMLDivElement>(null)
 
   /*
    * O shader só monta depois que a página assentou. Disputar CPU com a
@@ -59,11 +58,10 @@ export function HeroSection() {
   useEffect(() => {
     if (!motionEnabled) return
     const ctx = gsap.context(() => {
-      gsap.from([supportRef.current, indexRef.current], {
+      gsap.from(supportRef.current, {
         opacity: 0,
         y: 26,
         duration: 0.9,
-        stagger: 0.12,
         ease: "power3.out",
         delay: 0.85,
       })
@@ -72,10 +70,6 @@ export function HeroSection() {
   }, [motionEnabled])
 
   const entryPrice = Math.min(...boxDegustacao.tiers.map((t) => t.price))
-  const priceIndex = festaCategories.map((c) => ({
-    name: c.name,
-    from: Math.min(...c.tiers.map((t) => t.price)),
-  }))
 
   return (
     <section className="relative min-h-[100svh] flex flex-col justify-end overflow-hidden">
@@ -84,7 +78,19 @@ export function HeroSection() {
           fritadeira acesa na sombra, não um retângulo preto. */}
       <div className="absolute inset-0 z-0 bg-[radial-gradient(125%_90%_at_50%_118%,#8A4318_0%,#3A1809_42%,#120B08_76%)]">
         {clipeDoHero ? (
-          <CinemaLoop clipe="lampada" preencher className="absolute inset-0" />
+          <CinemaLoop
+            clipe="lampada"
+            preencher
+            className="absolute inset-0"
+            /*
+             * Em 390x844 o `object-cover` escala o clipe para 1500x844: a altura
+             * fecha exata e SÓ A LARGURA sobra. Ou seja o corte é horizontal, e
+             * `object-top` não faria nada — o que decide o que sobrevive é o
+             * eixo X. Com a lâmpada e a coxinha em x≈800 de 1280, a conta dá
+             * 66%. Confirmado na tela em 375, 390 e 430.
+             */
+            enquadramento="object-[66%_center] lg:object-center"
+          />
         ) : (
           shaderReady && <HeatShader />
         )}
@@ -98,9 +104,35 @@ export function HeroSection() {
         className="absolute inset-0 z-10 bg-[linear-gradient(105deg,rgba(18,11,8,0.86)_0%,rgba(18,11,8,0.55)_42%,rgba(18,11,8,0.12)_78%)]"
       />
 
+      {/*
+        Camada 3 — véu de baixo para cima, e ele existe por uma medição.
+
+        O véu direcional acima foi calibrado para o shader, que é escuro à
+        direita. O clipe da lâmpada não é: a mesa de metal reflete a luz e ocupa
+        a metade de baixo do quadro, justamente onde o conteúdo pousa. Sem este
+        véu, a conferência de contraste pintado reprova quatro textos do celular,
+        o pior deles em 1,08:1 contra os 4,5 exigidos.
+
+        As paradas não são gosto, são o resultado de medir. Todo o texto do hero
+        fica abaixo de 60% da altura (a página é `justify-end`), então o véu é
+        forte até ali e cai rápido acima — que é onde a lâmpada mora. Escurecer
+        o topo junto seria pagar a legibilidade com a cena, sem precisar.
+      */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-10 bg-[linear-gradient(to_top,rgba(18,11,8,0.96)_0%,rgba(18,11,8,0.93)_45%,rgba(18,11,8,0.75)_60%,rgba(18,11,8,0.25)_72%,transparent_84%)] lg:bg-[linear-gradient(to_top,rgba(18,11,8,0.9)_0%,rgba(18,11,8,0.55)_24%,rgba(18,11,8,0.15)_46%,transparent_66%)]"
+      />
+
       <div className="relative z-20 mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12 pb-14 md:pb-20 pt-32">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 lg:gap-20 items-end">
-          <div>
+        {/*
+          Uma coluna só. A grade de duas existia para o quadro de preços da
+          direita, que saiu daqui: ele repetia linha por linha o que os cards do
+          cardápio já mostram logo abaixo, e era a única coisa do hero em cima do
+          lado claro do clipe — onde o contraste medido dava 2,75 no desktop e
+          1,01 no celular, contra os 4,5 da WCAG AA. Tirar resolveu os dois
+          problemas de uma vez, e a metade direita passou a ser da cena.
+        */}
+        <div>
             <p className="type-label text-[0.68rem] sm:text-xs text-amber mb-6 sm:mb-8">
               Porto Alegre · O sabor que impõe respeito
             </p>
@@ -149,34 +181,6 @@ export function HeroSection() {
                 </MagneticButton>
               </div>
             </div>
-          </div>
-
-          {/* Quadro de preços: informação real ocupando a metade direita, no
-              lugar do vazio que a composição teria sem foto. */}
-          <div ref={indexRef} className="lg:w-80 lg:pb-2">
-            <p className="type-label text-[0.62rem] text-fg-muted pb-4 border-b border-border-strong">
-              Linhas para festa
-            </p>
-            <ul>
-              {priceIndex.map((line) => (
-                <li
-                  key={line.name}
-                  className="flex items-baseline justify-between gap-4 py-3 border-b border-border"
-                >
-                  <span className="text-sm text-fg">{line.name}</span>
-                  <span className="text-sm text-fg-muted tabular-nums whitespace-nowrap">
-                    desde{" "}
-                    <strong className="text-amber font-bold">
-                      {formatPrice(line.from)}
-                    </strong>
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-3 text-xs text-fg-muted">
-              Pacotes de 50 ou 100 unidades.
-            </p>
-          </div>
         </div>
 
         <a

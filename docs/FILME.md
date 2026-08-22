@@ -54,17 +54,18 @@ com clipe e as sem.
 
 | # | Plano | Onde | Duração | Modo | Estado |
 |---|---|---|---|---|---|
-| 1 | A lâmpada | hero | 6s | loop | a gerar |
+| 1 | A lâmpada | hero | 7,2s | loop | **no ar** |
 | 2 | O corte | abertura do cardápio | 4,15s | uma vez | **no ar** |
 | 3 | A esteira | Encomendas para Festa | 8s | loop | a gerar |
 | 4 | O freezer | Congelados | 6s | loop | a gerar |
 | 5 | A entrega | contato / rodapé | 8s | loop | a gerar |
 
-**O 2 está feito** e serviu para o que devia: confirmar que um clipe de verdade cabe no
-orçamento, e ensinar as duas correções que agora estão nos prompts de todos (o formato da
-coxinha e a proibição de fogo). As outras quatro gerações partem daí.
+**O 1 e o 2 estão no ar.** O 2 serviu para o que devia: confirmar que um clipe de verdade
+cabe no orçamento, e ensinar as duas correções que agora estão nos prompts de todos (o
+formato da coxinha e a proibição de fogo). O 1 chegou já com as correções aplicadas e
+passou de primeira. Faltam três.
 
-### 1. A lâmpada (hero)
+### 1. A lâmpada (hero) — feito
 
 Uma lâmpada pendurada balança devagar sobre uma mesa de metal. No cone de luz, sozinha:
 uma coxinha. A luz varre. Fumaça atravessa. **Nada mais acontece** — a contenção é a
@@ -282,7 +283,36 @@ que a coisa acontece.
 >
 > Foi assim que a chama apareceu como um pico de 96 para 166 entre 4,21s e 5,2s.
 
-#### Flutuando ou emoldurado: depende da cena ter chão
+#### Laço que fecha: a costura
+
+Um clipe de `loop` só fecha sem pulo se o último quadro for igual ao primeiro, e material
+gerado nunca é — fumaça é caótica, não repete. Medido no plano da lâmpada, a diferença
+entre o primeiro e o último quadro:
+
+| | YAVG | pico |
+|---|---|---|
+| como veio do Flow | 6,86 | 176 |
+| **costurado com 0,8s** | **1,40** | **83** |
+
+O que sobra é ruído de compressão. A costura não aproxima, ela constrói: corta o rabo do
+clipe e funde por cima da cabeça, de modo que `saída(0)` e `saída(fim)` são literalmente o
+mesmo quadro do original. O preço é 0,8s de duração.
+
+```bash
+npm run clipe -- arquivo.mp4 lampada --laco 0.8
+# 449 KB webm, 405 KB mp4, pôster de 28 KB — orçamento do hero é 600 KB
+```
+
+> **A costura quebrou o pôster, e eu só vi porque fui medir.** Com ela o vídeo passa a
+> começar no segundo D−X, mas o pôster continuava saindo do segundo 0 do arquivo:
+> diferença de pico 173 em 255. A página mostraria uma cena e o vídeo entraria noutra, com
+> um pulo na hora de tocar. O pôster agora sai do mesmo caminho de filtro do vídeo.
+
+Detalhe de ffmpeg que custou uma tentativa: o `xfade` recusa entrada sem taxa de quadros
+constante, e o `trim` + `setpts` zera a base de tempo. Sem repor `fps=24` depois de cada
+`trim`, o filtro nem monta — "current rate of 1/0 is invalid".
+
+#### Flutuando, emoldurado ou de fundo: depende do que a cena tem
 
 Isto decide como o clipe entra na página, e a resposta muda conforme o plano.
 
@@ -293,12 +323,57 @@ entre dentro e fora ficou em **2 de 255** por canal. Máscara de borda foi testa
 é pior: come as pontas do salgado junto.
 
 **Cena com cenário** (mesa, chão, luz de ambiente): moldura de uma linha, `border
-border-border`, a mesma dos cards do cardápio. É o caso do corte que entrou. A mesa de
-ardósia mede Y≈70 contra Y≈19 do fundo, e no modo screen ela acenderia numa faixa clara
-atravessando o quadro. Com cenário a cena é uma fotografia, e fotografia se emoldura.
+border-border`, a mesma dos cards do cardápio. É o caso do corte. A mesa de ardósia mede
+Y≈70 contra Y≈19 do fundo, e no modo screen ela acenderia numa faixa clara atravessando o
+quadro. Com cenário a cena é uma fotografia, e fotografia se emoldura.
 
-Nos dois casos, **sem `preencher`**: espremer 16:9 numa faixa larga dá zoom no meio do
-quadro e joga fora a composição, que é o que a cena tem de melhor.
+**Cena de fundo, com texto por cima** (o hero): `preencher`, e aí o assunto é outro —
+legibilidade. Ver abaixo.
+
+Nos dois primeiros casos, **sem `preencher`**: espremer 16:9 numa faixa larga dá zoom no
+meio do quadro e joga fora a composição, que é o que a cena tem de melhor.
+
+#### Texto sobre vídeo: o que o hero custou
+
+Botar o clipe no hero quebrou a legibilidade, e o número é feio:
+
+| Onde | Contraste medido | Exigido |
+|---|---|---|
+| índice de preços, celular | **1,01 a 1,51** | 4,5 |
+| eyebrow "Porto Alegre", celular | **1,33** | 4,5 |
+| índice de preços, desktop | **2,75 a 3,80** | 4,5 |
+
+O véu do hero tinha sido calibrado para o shader, que é escuro à direita. O clipe não é: a
+mesa de metal reflete a luz e ocupa a metade de baixo do quadro, onde o conteúdo pousa.
+
+**E `npm run check` passou.** A conferência de contraste que existia lê a cor de fundo
+declarada no CSS subindo a árvore até achar algo opaco — atrás do texto tem vídeo, e CSS
+não sabe disso. Ela achava `#120b08` e concluía 9,5:1.
+
+Três consertos, nessa ordem:
+
+1. **O índice de preços saiu do hero.** Era a única coisa em cima do lado claro do clipe, e
+   repetia linha por linha o que os cards do cardápio mostram logo abaixo. Uma
+   simplificação de verdade, não uma perda.
+2. **Véu de baixo para cima**, com as paradas escolhidas por medição e não por gosto: todo
+   o texto do hero fica abaixo de 60% da altura (a seção é `justify-end`), então o véu é
+   forte até ali e cai rápido acima, que é onde a lâmpada mora.
+3. **Enquadramento no celular.** Em 390×844 o `object-cover` escala o clipe para 1500×844:
+   a altura fecha exata e só a largura sobra, então o corte é horizontal e `object-top` não
+   faria nada. Com a lâmpada em x≈800 de 1280, a conta dá 66% — conferido na tela em 375,
+   390 e 430.
+
+E a ferramenta que faltava: **`scripts/checks/contraste-pintado.mjs`**, que mede o
+contraste contra o PIXEL, não contra o CSS. Ela pinta o texto de `transparent`, captura, e
+amostra o fundo real de cada linha de texto. Roda no celular e no desktop, dentro do
+`npm run check`.
+
+> **Dois erros meus que ela mesma pegou.** Primeiro escondi o texto com
+> `visibility: hidden`, o que apaga também o fundo do próprio elemento — um botão âmbar
+> passou a ser medido contra a página atrás dele e acusou 1,00:1 estando perfeito.
+> Segundo, media a caixa do ELEMENTO: um `<p>` é bloco e atravessa 1184px até a lâmpada,
+> então acusava 2,11:1 num texto de 375px que está em 9,58:1. A medida certa é a do nó de
+> texto, com `Range.getClientRects()`, que dá um retângulo por linha desenhada.
 
 ### 4. Registrar no manifesto
 

@@ -43,10 +43,19 @@ export function CinemaLoop({
   className,
   /** Preenche o container em vez de respeitar a própria proporção. Para fundo. */
   preencher = false,
+  /**
+   * Classes de `object-position` para escolher que parte do quadro sobrevive ao
+   * corte do `object-cover`. Só faz sentido com `preencher`.
+   *
+   * Vai no pôster E no vídeo, sempre juntas: se os dois discordarem, o quadro
+   * pula lateralmente no instante em que o vídeo sobe por cima.
+   */
+  enquadramento,
 }: {
   clipe: string
   className?: string
   preencher?: boolean
+  enquadramento?: string
 }) {
   const clipe = acharClipe(id)
   const { motionEnabled } = useMotion()
@@ -94,6 +103,12 @@ export function CinemaLoop({
   return (
     <div
       ref={containerRef}
+      /*
+       * Marca a peça para a conferência de contraste. Ela precisa saber quais
+       * seções têm vídeo atrás do texto, porque nessas o fundo declarado no CSS
+       * não é o fundo que a pessoa enxerga.
+       */
+      data-clipe={clipe.id}
       className={cn("relative overflow-hidden", className)}
       style={preencher ? undefined : { aspectRatio: `${clipe.largura} / ${clipe.altura}` }}
       /*
@@ -114,7 +129,7 @@ export function CinemaLoop({
         alt={decorativo ? "" : clipe.descricao}
         width={clipe.largura}
         height={clipe.altura}
-        className="absolute inset-0 h-full w-full object-cover"
+        className={cn("absolute inset-0 h-full w-full object-cover", enquadramento)}
       />
 
       {jaApareceu && (
@@ -134,6 +149,7 @@ export function CinemaLoop({
           onPlaying={() => setTocando(true)}
           className={cn(
             "absolute inset-0 h-full w-full object-cover transition-opacity duration-700",
+            enquadramento,
             tocando ? "opacity-100" : "opacity-0"
           )}
         >

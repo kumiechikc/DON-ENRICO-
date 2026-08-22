@@ -54,3 +54,21 @@ export function medirImagem(ffmpeg, caminho) {
   if (!achado) throw new Error(`não consegui medir ${caminho}`)
   return { largura: Number(achado[1]), altura: Number(achado[2]) }
 }
+
+/**
+ * Duração do arquivo, em segundos.
+ *
+ * Sai do mesmo relatório de stderr que a medida de tamanho, pela mesma razão:
+ * o `ffmpeg-static` não traz o `ffprobe`.
+ */
+export function medirDuracao(ffmpeg, caminho) {
+  let saida = ""
+  try {
+    execFileSync(ffmpeg, ["-hide_banner", "-i", caminho], { stdio: "pipe" })
+  } catch (erro) {
+    saida = String(erro.stderr || "")
+  }
+  const achado = saida.match(/Duration:\s*(\d+):(\d+):(\d+\.\d+)/)
+  if (!achado) throw new Error(`não consegui medir a duração de ${caminho}`)
+  return Number(achado[1]) * 3600 + Number(achado[2]) * 60 + Number(achado[3])
+}

@@ -39,6 +39,18 @@ export interface Clipe {
 
 export const clipes: Clipe[] = [
   {
+    id: "lampada",
+    /*
+     * Fundo do hero, puramente decorativo: o título "Salgados para festa" está
+     * por cima e já diz o que a página é. Descrever o vídeo aqui faria o leitor
+     * de tela anunciar uma cena antes do título, que é a informação.
+     */
+    descricao: "",
+    largura: 1280,
+    altura: 720,
+    modo: "loop",
+  },
+  {
     id: "corte",
     /*
      * A descrição diz o que a cena mostra, e o recheio aqui é frango desfiado —

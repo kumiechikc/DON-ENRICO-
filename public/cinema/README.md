@@ -6,9 +6,16 @@ Duas coisas moram nesta pasta, e elas são diferentes:
 - **Sequências** (`.webp`) — uma tira de quadros lado a lado que avança conforme
   a página rola. Quem dá o ritmo é o dedo de quem rola.
 
-Hoje mora aqui o plano 2, **o corte**: uma coxinha se partindo, 4,15s, 338 KB em
-VP9 e 300 KB em H.264, com pôster de 52 KB. Ele toca uma vez ao entrar na tela e
-para no último quadro.
+Hoje moram aqui dois planos:
+
+| | duração | VP9 | H.264 | pôster | modo |
+|---|---|---|---|---|---|
+| `lampada` (hero) | 7,2s | 449 KB | 405 KB | 28 KB | laço |
+| `corte` (cardápio) | 4,15s | 338 KB | 300 KB | 52 KB | uma vez |
+
+O da lâmpada tem o laço costurado com `--laco 0.8`, senão a emenda dava um pulo
+visível a cada volta. O do corte para no último quadro, porque repetir a quebra em
+laço vira desenho animado em vez de cinema.
 
 O caminho das sequências continua pronto e sem uso, verificado com uma tira
 sintética de 5 quadros de 274 px e o recorte conferido pixel a pixel.
