@@ -29,15 +29,21 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
  * hardware, e um `<video>` de fundo custa menos que o shader que ele substituiu.
  *
  *   "completo"  tudo ligado: Lenis, ScrollTrigger, revelações e vídeo.
- *   "video"     aparelho fraco. Sem rolagem interpolada, sem animação amarrada
- *               ao scroll, sem shader — mas o vídeo toca, porque é barato e é
- *               o que a página tem de melhor.
+ *   "leve"      aparelho fraco. Sem rolagem interpolada e sem nada amarrado ao
+ *               scroll — mas COM vídeo e COM os laços de transformação, que são
+ *               compostos na GPU e custam quase nada.
  *   "nenhum"    a pessoa PEDIU menos movimento. Aqui nada se mexe, nem o vídeo.
  *               É preferência declarada, não palpite sobre o aparelho.
+ *
+ * A separação entre "completo" e "leve" é por CUSTO REAL, e a primeira versão
+ * errou nisso. O caro é o Lenis, que sequestra a rolagem e interpola posição a
+ * cada quadro, e o ScrollTrigger, que mede layout a cada evento. O barato é uma
+ * `transform` em laço num elemento com `will-change` — a esteira de sabores é
+ * exatamente isso, e ficou desligada no celular do dono do site sem precisar.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-type Nivel = "completo" | "video" | "nenhum"
+type Nivel = "completo" | "leve" | "nenhum"
 
 const MotionContext = createContext<Nivel>("nenhum")
 
@@ -71,9 +77,9 @@ function getSnapshot(): Nivel {
   if (window.matchMedia(REDUCED_MOTION_QUERY).matches) return "nenhum"
 
   const nav = navigator as Navigator & { deviceMemory?: number }
-  if (typeof nav.deviceMemory === "number" && nav.deviceMemory < 4) return "video"
+  if (typeof nav.deviceMemory === "number" && nav.deviceMemory < 4) return "leve"
   if (typeof nav.hardwareConcurrency === "number" && nav.hardwareConcurrency < 4) {
-    return "video"
+    return "leve"
   }
   return "completo"
 }
@@ -132,13 +138,23 @@ export function MotionProvider({ children }: { children: ReactNode }) {
 }
 
 /**
- * `motionEnabled` — animação amarrada ao scroll, revelações, shader.
- * `videoEnabled` — o `<video>` pode ser montado e tocar.
+ * Três perguntas diferentes, porque três coisas custam diferente.
  *
- * Os dois só coincidem nos extremos. No meio fica o aparelho fraco, que ganha o
- * vídeo e não ganha o resto.
+ * `motionEnabled` — vale a pena o que é CARO: Lenis, ScrollTrigger, shader, e
+ *                   qualquer animação que precise medir o scroll.
+ * `videoEnabled`  — o `<video>` pode ser montado e tocar.
+ * `lacosLeves`    — laços de `transform` compostos na GPU, como a esteira de
+ *                   sabores. Custam quase nada e não medem layout.
+ *
+ * Um componente que pergunta `motionEnabled` para decidir sobre uma `transform`
+ * está desligando algo barato junto com o caro. Foi o que aconteceu com a
+ * esteira.
  */
 export function useMotion() {
   const nivel = useContext(MotionContext)
-  return { motionEnabled: nivel === "completo", videoEnabled: nivel !== "nenhum" }
+  return {
+    motionEnabled: nivel === "completo",
+    videoEnabled: nivel !== "nenhum",
+    lacosLeves: nivel !== "nenhum",
+  }
 }

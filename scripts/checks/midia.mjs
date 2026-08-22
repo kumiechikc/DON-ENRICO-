@@ -290,6 +290,102 @@ export async function checkMidia(browser, url) {
     notes.push(`em aparelho fraco: ${fraco.length} vídeo(s) baixado(s)`)
   }
 
+  /*
+   * O clipe que toca UMA VEZ tem que começar quando a pessoa chega nele.
+   *
+   * O observador que decide baixar tem 200px de folga, e por engano era ele
+   * quem mandava tocar também. Medido antes do conserto, num celular rolando
+   * devagar: ao chegar na peça o vídeo já estava em 3,25s de 4,17, e terminava
+   * um segundo depois. O dono do site viu uma "foto estática" — era o último
+   * quadro, parado.
+   */
+  for (const clipe of clipes.filter((c) => c.modo === "unico")) {
+    const ctx = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+    })
+    const page = await ctx.newPage()
+    await page.goto(url, { waitUntil: "load", timeout: 60000 })
+    await page.waitForTimeout(2000)
+
+    const topo = await page.evaluate((id) => {
+      const el = document.querySelector(`[data-clipe="${id}"]`)
+      return el ? el.getBoundingClientRect().top + window.scrollY : null
+    }, clipe.id)
+
+    if (topo === null) {
+      failures.push(`clipe "${clipe.id}": não achei a peça na página`)
+      await ctx.close()
+      continue
+    }
+
+    // Rolagem em passos, como um dedo — não um salto, que não reproduz o caso.
+    for (let y = 0; y <= Math.max(0, topo - 300); y += 120) {
+      await page.evaluate((v) => window.scrollTo(0, v), y)
+      await page.waitForTimeout(140)
+    }
+
+    const emQueTempo = await page.evaluate((id) => {
+      const v = document.querySelector(`[data-clipe="${id}"] video`)
+      return v ? Number(v.currentTime.toFixed(2)) : null
+    }, clipe.id)
+    await ctx.close()
+
+    if (emQueTempo === null) {
+      failures.push(`clipe "${clipe.id}": nenhum vídeo montado ao chegar na peça`)
+    } else if (emQueTempo > 1.5) {
+      failures.push(
+        `clipe "${clipe.id}": ao chegar na peça o vídeo já estava em ` +
+          `${emQueTempo}s — começou fora da tela e a pessoa pega o fim dele`
+      )
+    } else {
+      notes.push(`${clipe.id}: ao chegar na peça o vídeo estava em ${emQueTempo}s`)
+    }
+  }
+
+  /*
+   * A esteira de sabores é uma `transform` em laço, composta na GPU. Ficava
+   * desligada no aparelho fraco junto com o que é caro de verdade (Lenis e
+   * ScrollTrigger), e o dono do site viu a faixa parada no celular.
+   */
+  {
+    const ctx = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+    })
+    await ctx.addInitScript(() => {
+      Object.defineProperty(navigator, "hardwareConcurrency", { get: () => 2 })
+      Object.defineProperty(navigator, "deviceMemory", { get: () => 2 })
+    })
+    const page = await ctx.newPage()
+    await page.goto(url, { waitUntil: "load", timeout: 60000 })
+    await page.waitForTimeout(1200)
+
+    const andou = await page.evaluate(async () => {
+      const faixa = document.querySelector("[data-esteira]")
+      if (!faixa) return null
+      const ler = () =>
+        new DOMMatrixReadOnly(getComputedStyle(faixa).transform || "none").m41
+      const antes = ler()
+      await new Promise((r) => setTimeout(r, 1500))
+      return Math.abs(ler() - antes)
+    })
+
+    if (andou === null) {
+      failures.push("não achei a esteira de sabores na página")
+    } else if (andou < 5) {
+      failures.push(
+        `em aparelho fraco a esteira andou ${andou.toFixed(1)}px em 1,5s — está ` +
+          "parada, desligada junto com o que é caro de verdade"
+      )
+    } else {
+      notes.push(`em aparelho fraco a esteira andou ${andou.toFixed(0)}px em 1,5s`)
+    }
+    await ctx.close()
+  }
+
   /**
    * Percorre a página anotando em que quadro cada sequência parou.
    *

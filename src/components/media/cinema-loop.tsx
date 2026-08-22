@@ -70,20 +70,39 @@ export function CinemaLoop({
    * tela. Desmontar jogaria fora o que já foi baixado e obrigaria a baixar de
    * novo na volta — o oposto do que a economia pretende.
    */
-  const { ref: containerRef, visivel, jaApareceu } = useVisivel<HTMLDivElement>(
+  const { ref: containerRef, jaApareceu, bemVisivel } = useVisivel<HTMLDivElement>(
     videoEnabled && Boolean(clipe)
   )
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const [tocando, setTocando] = useState(false)
 
+  /*
+   * Toca quando está SENDO VISTO, não quando está perto.
+   *
+   * O clipe do corte toca uma vez e para no último quadro. Com a antecedência
+   * de 200px que serve para baixar, ele começava fora da tela e, num celular
+   * rolando devagar, acabava antes de a pessoa chegar nele — que foi o relato
+   * de "foto estática" que trouxe esta correção.
+   *
+   * E rebobina antes de tocar: sem isso, quem passa da seção e volta encontra o
+   * vídeo parado no fim, e o `play()` não tem para onde ir.
+   */
+  const modo = clipe?.modo
   useEffect(() => {
-    if (!visivel) {
-      videoRef.current?.pause()
+    const video = videoRef.current
+    if (!video) return
+
+    if (!bemVisivel) {
+      video.pause()
       return
     }
 
-    videoRef.current?.play().catch(() => {
+    if (modo === "unico" && video.currentTime >= video.duration - 0.05) {
+      video.currentTime = 0
+    }
+
+    video.play().catch(() => {
       /*
        * O navegador pode recusar o autoplay mesmo com `muted` — o modo de
        * economia de bateria do iOS faz isso sempre. Não é erro, e o pôster
@@ -97,7 +116,7 @@ export function CinemaLoop({
       window.addEventListener("pointerdown", tentarDeNovo, { once: true })
       window.addEventListener("touchstart", tentarDeNovo, { once: true })
     })
-  }, [visivel])
+  }, [bemVisivel, modo])
 
   if (!clipe) return null
 
