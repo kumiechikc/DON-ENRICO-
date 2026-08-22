@@ -14,7 +14,9 @@
     "check": "node scripts/check-site.mjs",
     "catalogo": "node scripts/gerar-catalogo.mjs",
     "check:planilha": "node scripts/check-planilha.mjs",
-    "check:pix": "node scripts/check-pix.mjs"
+    "check:pix": "node scripts/check-pix.mjs",
+    "check:midia": "node scripts/check-midia.mjs",
+    "clipe": "node scripts/comprimir-clipe.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
