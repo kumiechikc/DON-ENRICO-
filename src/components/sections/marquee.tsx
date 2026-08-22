@@ -18,14 +18,27 @@ import { useMotion } from "@/lib/motion/motion-provider"
  *    (reiniciar em 0) produz um piscar visível a cada volta.
  *
  * Sem movimento, vira uma faixa estática legível com os mesmos sabores.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * O LAÇO E A REAÇÃO À ROLAGEM SÃO DUAS COISAS, E CUSTAM DIFERENTE.
+ *
+ * O laço é uma `transform` num elemento com `will-change`: composta na GPU, sem
+ * medir layout, barata em qualquer aparelho. A reação à rolagem é ScrollTrigger,
+ * que mede a cada evento e é o que pesa.
+ *
+ * A primeira versão amarrava as duas ao mesmo `motionEnabled`, e no celular do
+ * dono do site a esteira ficava parada — desligada junto com o que era caro,
+ * sem precisar. Agora o laço roda com `lacosLeves`, e só o detalhe reativo
+ * espera o `motionEnabled`.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 export function Marquee({ items }: { items: string[] }) {
   const trackRef = useRef<HTMLDivElement>(null)
-  const { motionEnabled } = useMotion()
+  const { motionEnabled, lacosLeves } = useMotion()
 
   useEffect(() => {
     const track = trackRef.current
-    if (!track || !motionEnabled) return
+    if (!track || !lacosLeves) return
 
     const ctx = gsap.context(() => {
       // Metade da largura porque o conteúdo está duplicado: ao percorrer uma
@@ -40,6 +53,13 @@ export function Marquee({ items }: { items: string[] }) {
         repeat: -1,
         modifiers: { x: (value) => `${wrap(parseFloat(value))}px` },
       })
+
+      /*
+       * O detalhe reativo é o único pedaço caro, e fica de fora no aparelho
+       * fraco: quem tem pouco a gastar recebe a esteira correndo, que é o que
+       * importa, sem o ScrollTrigger medindo layout a cada evento de rolagem.
+       */
+      if (!motionEnabled) return () => tween.kill()
 
       // A rolagem empurra a faixa: velocidade e sentido acompanham o gesto.
       const st = ScrollTrigger.create({
@@ -60,13 +80,14 @@ export function Marquee({ items }: { items: string[] }) {
     }, track)
 
     return () => ctx.revert()
-  }, [motionEnabled])
+  }, [motionEnabled, lacosLeves])
 
   // Duplicado para o laço não ter emenda. A segunda cópia é decorativa: quem usa
   // leitor de tela não deve ouvir a lista dos sabores duas vezes.
   return (
     <div className="relative border-y border-border bg-surface overflow-hidden py-5 md:py-7">
-      <div ref={trackRef} className="flex w-max will-change-transform">
+      {/* Marca a faixa para a conferência que cobra que ela ande. */}
+      <div ref={trackRef} data-esteira className="flex w-max will-change-transform">
         {[0, 1].map((copy) => (
           <ul
             key={copy}
