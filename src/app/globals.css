@@ -89,6 +89,21 @@ body {
   line-height: 0.88;
 }
 
+/*
+ * O 0.88 acima é certo para uma linha só, e é o que dá o bloco compacto do
+ * título do hero. Assim que a frase quebra em duas, o til do "IMPÕE" encosta na
+ * linha de cima. Esta classe abre a entrelinha para quem quebra.
+ *
+ * Mora aqui, e não numa utilidade do Tailwind nem num `style` inline, por dois
+ * motivos que já custaram tentativa: `.type-display` está FORA de `@layer`, e
+ * CSS sem camada ganha de `@layer utilities` — um `leading-[1.02]` é ignorado.
+ * E o `style` inline é sobrescrito pelo GSAP, que escreve no mesmo atributo ao
+ * animar o elemento.
+ */
+.type-display-duas-linhas {
+  line-height: 1.02;
+}
+
 .type-label {
   font-weight: 700;
   text-transform: uppercase;

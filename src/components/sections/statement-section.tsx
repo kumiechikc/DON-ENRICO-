@@ -1,11 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
-import { gsap } from "gsap"
-// O registro do ScrollTrigger acontece em lib/motion/use-reveal, importado por
-// toda página que anima — aqui só consumimos.
-import "@/lib/motion/use-reveal"
-import { useMotion } from "@/lib/motion/motion-provider"
+import { useReveal } from "@/lib/motion/use-reveal"
 import { site } from "@/lib/site"
 
 /*
@@ -13,74 +8,35 @@ import { site } from "@/lib/site"
  *
  * Entre o cardápio e os congelados o site precisa parar de vender por alguns
  * segundos: sem isso são três mil pixels de card atrás de card, o que cansa e
- * achata tudo. Aqui a marca fala uma frase só, em escala que não cabe na tela,
- * e a rolagem arrasta a frase na horizontal.
+ * achata tudo. Aqui a marca fala uma frase só, grande, e nada mais acontece.
  *
- * O deslize é feito com transform, não com rolagem real, para não criar barra
- * lateral nem sequestrar o gesto de quem só quer descer a página.
+ * ─────────────────────────────────────────────────────────────────────────────
+ * A VERSÃO ANTERIOR ARRASTAVA A FRASE NA HORIZONTAL, E ESTAVA ERRADA.
+ *
+ * A frase saía em 160px e 2696px de largura numa tela de 1440 — quase o dobro
+ * do quadro. A ideia era que a rolagem revelasse o resto; o efeito real era um
+ * texto cortado dos dois lados em qualquer momento da travessia, que lê como
+ * defeito e não como intenção. Reduzir só o tamanho não resolvia: em 88px ela
+ * ainda media 1483px e continuava cortada.
+ *
+ * Então a frase passa a CABER, e a deriva sai junto. Duas razões de peso:
+ *
+ *  1. Uma frase que cabe não tem o que revelar — manter a deriva seria
+ *     maquinário rodando a cada quadro para mover vinte pixels que ninguém vê.
+ *  2. A página JÁ tem uma faixa de texto correndo na horizontal, a dos sabores,
+ *     logo depois do hero. Duas eram repetição, e a dos sabores diz algo (os
+ *     sabores que existem) enquanto esta só se mexia.
+ *
+ * O que ficou no lugar é a revelação de entrada que o resto do site usa, pelo
+ * `useReveal` — reaproveitando o que já existe em vez de manter uma animação
+ * própria só para esta seção.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 export function StatementSection() {
-  const sectionRef = useRef<HTMLElement>(null)
-  const lineRef = useRef<HTMLParagraphElement>(null)
-  const { motionEnabled } = useMotion()
-
-  useEffect(() => {
-    const section = sectionRef.current
-    const line = lineRef.current
-    if (!section || !line) return
-
-    /*
-     * O texto é mais largo que a tela de propósito, então precisa começar
-     * CENTRADO — deslocado para a esquerda por metade do que sobra — e só então
-     * derivar. A primeira versão partia do excedente inteiro e jogava a frase
-     * para fora da tela: a seção virava um retângulo escuro vazio.
-     */
-    const centre = () => {
-      const overflow = line.scrollWidth - section.clientWidth
-      return overflow > 0 ? -overflow / 2 : 0
-    }
-
-    if (!motionEnabled) {
-      gsap.set(line, { x: centre() })
-      return
-    }
-
-    const ctx = gsap.context(() => {
-      const mid = centre()
-      /*
-       * A deriva vale exatamente metade do excedente, de modo que a rolagem
-       * percorre a frase de ponta a ponta: em x = 0 a primeira letra encosta na
-       * borda esquerda, no outro extremo a última encosta na direita. Com uma
-       * deriva menor as pontas nunca apareciam e ninguém chegava a ler a frase
-       * inteira — o efeito ficava bonito e mudo.
-       */
-      const drift = Math.abs(mid)
-
-      gsap.fromTo(
-        line,
-        { x: mid + drift },
-        {
-          x: mid - drift,
-          ease: "none",
-          scrollTrigger: {
-            trigger: section,
-            start: "top bottom",
-            end: "bottom top",
-            // `scrub: 1` amarra ao scroll com leve atraso: a frase parece ter
-            // massa em vez de grudar no pixel da barra de rolagem.
-            scrub: 1,
-            invalidateOnRefresh: true,
-          },
-        }
-      )
-    }, section)
-
-    return () => ctx.revert()
-  }, [motionEnabled])
+  const ref = useReveal<HTMLParagraphElement>("rise", { start: "top 78%" })
 
   return (
     <section
-      ref={sectionRef}
       aria-label="Nosso lema"
       className="relative overflow-hidden border-y border-border py-24 md:py-40"
     >
@@ -91,8 +47,15 @@ export function StatementSection() {
       />
 
       <p
-        ref={lineRef}
-        className="relative type-display text-[clamp(3rem,12vw,10rem)] text-fg whitespace-nowrap will-change-transform w-max"
+        ref={ref}
+        data-reveal
+        /*
+         * `text-balance` reparte as linhas quando a frase quebra, em vez de
+         * deixar uma palavra órfã na segunda. O teto de 6vw mantém a frase
+         * inteira dentro do quadro no desktop, com margem.
+         *
+         */
+        className="relative mx-auto max-w-5xl px-5 sm:px-8 text-center text-balance type-display type-display-duas-linhas text-[clamp(2rem,6vw,4.5rem)] text-fg"
       >
         {site.tagline}
       </p>

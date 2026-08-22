@@ -465,9 +465,26 @@ Tudo abaixo está mergeado e testado. Não precisa mexer.
    vídeo entra depois, por cima. Se o vídeo fosse o elemento principal, o LCP sairia de
    ~900 ms para o tempo de baixar megabytes no 4G — e LCP é o que decide se a pessoa
    espera ou fecha a aba.
-2. **Aparelho fraco e movimento reduzido não baixam vídeo nenhum.** O `<video>` nem é
-   montado, então o navegador não tem o que pedir. Quem está no Android de entrada
-   economiza o download inteiro e vê o pôster, que é uma imagem boa.
+2. **Movimento reduzido não baixa vídeo nenhum. Aparelho fraco baixa.** O `<video>` nem é
+   montado quando a pessoa pediu menos movimento no sistema, então o navegador não tem o
+   que pedir.
+
+   > **Esta regra já esteve errada, e o dono do site foi quem percebeu.** A primeira
+   > versão tratava aparelho fraco igual a movimento reduzido: uma chave só, ou anima
+   > tudo ou nada. Medido, um aparelho reportando 2 núcleos ou 2 GB não pedia vídeo
+   > nenhum — ou seja, o Android de entrada, que é boa parte do público, ficava sem a
+   > peça principal da página.
+   >
+   > O motivo original da trava era o shader WebGL, que é caro de verdade. Vídeo não é a
+   > mesma coisa: todo celular dos últimos dez anos decodifica H.264 em hardware, e um
+   > `<video>` de fundo custa menos que o shader que ele substituiu.
+   >
+   > Hoje são três níveis. Aparelho fraco perde Lenis, ScrollTrigger e shader, e **fica
+   > com o vídeo**. Só a preferência declarada tira tudo — porque isso é pedido da
+   > pessoa, e o resto é palpite sobre a máquina dela.
+   >
+   > O `npm run check` abre uma aba fingindo 2 núcleos e 2 GB e cobra que o vídeo seja
+   > pedido, para a regra não voltar sozinha.
 3. **Só carrega ao entrar na tela**, e pausa ao sair. Cinco clipes decodificando junto
    esquenta o celular e come bateria por um fundo que ninguém está olhando.
 4. **Proporção declarada sempre.** Sem largura e altura a página pula quando o vídeo

@@ -14,17 +14,32 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 /*
  * Fundação de movimento do site.
  *
- * Uma decisão define tudo o que vem depois: `motionEnabled` é a chave mestra.
- * Quando ela é falsa — porque a pessoa pediu menos movimento no sistema, ou
- * porque o aparelho não dá conta — nenhuma animação é registrada, o scroll
- * suave nem inicia, e o conteúdo aparece direto no estado final. Não existe
- * "meia animação": ou anima direito, ou é estático e perfeitamente legível.
+ * ─────────────────────────────────────────────────────────────────────────────
+ * SÃO TRÊS ESTADOS, E NÃO DOIS. A DIFERENÇA IMPORTA.
  *
- * É o que separa site premiado de demo bonita: a demo assume desktop potente,
- * o site profissional trata o resto do mundo como caso principal.
+ * A primeira versão tinha uma chave só: ou anima tudo, ou nada. O "nada" valia
+ * para dois casos muito diferentes — quem PEDIU menos movimento no sistema, e
+ * quem tem um aparelho fraco. Tratá-los igual custou caro: com o hero virando
+ * vídeo, o aparelho fraco passou a ficar sem a peça principal do site, e a
+ * página inteira perdia a personalidade justamente para o público que ela
+ * atende.
+ *
+ * O motivo original da trava era o shader WebGL, que é caro de verdade. Vídeo
+ * não é a mesma coisa: todo celular dos últimos dez anos decodifica H.264 em
+ * hardware, e um `<video>` de fundo custa menos que o shader que ele substituiu.
+ *
+ *   "completo"  tudo ligado: Lenis, ScrollTrigger, revelações e vídeo.
+ *   "video"     aparelho fraco. Sem rolagem interpolada, sem animação amarrada
+ *               ao scroll, sem shader — mas o vídeo toca, porque é barato e é
+ *               o que a página tem de melhor.
+ *   "nenhum"    a pessoa PEDIU menos movimento. Aqui nada se mexe, nem o vídeo.
+ *               É preferência declarada, não palpite sobre o aparelho.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 
-const MotionContext = createContext<boolean>(false)
+type Nivel = "completo" | "video" | "nenhum"
+
+const MotionContext = createContext<Nivel>("nenhum")
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)"
 
@@ -40,29 +55,39 @@ function subscribe(onChange: () => void) {
 }
 
 /*
- * Além da preferência declarada, olha memória e núcleos: rodar shader e
- * ScrollTrigger num Android de entrada — que é boa parte do público de um site
- * de salgados em Porto Alegre — trava a rolagem e gasta bateria. A ausência das
- * duas informações é tratada como "provavelmente dá conta", para não punir quem
- * só usa um navegador que não as expõe.
+ * A preferência declarada vem primeiro e é absoluta. Memória e núcleos vêm
+ * depois e só rebaixam para "video": rodar Lenis e ScrollTrigger num Android de
+ * entrada trava a rolagem, mas tirar o vídeo dele seria punir o aparelho por
+ * algo que ele faz bem.
+ *
+ * A ausência das duas informações é tratada como "dá conta", para não castigar
+ * quem usa navegador que não as expõe — o Safari, por exemplo, não tem
+ * `deviceMemory`.
+ *
+ * Devolve string e não objeto de propósito: `useSyncExternalStore` compara por
+ * identidade, e um objeto novo a cada leitura faria a página renderizar em laço.
  */
-function getSnapshot(): boolean {
-  if (window.matchMedia(REDUCED_MOTION_QUERY).matches) return false
+function getSnapshot(): Nivel {
+  if (window.matchMedia(REDUCED_MOTION_QUERY).matches) return "nenhum"
 
   const nav = navigator as Navigator & { deviceMemory?: number }
-  if (typeof nav.deviceMemory === "number" && nav.deviceMemory < 4) return false
+  if (typeof nav.deviceMemory === "number" && nav.deviceMemory < 4) return "video"
   if (typeof nav.hardwareConcurrency === "number" && nav.hardwareConcurrency < 4) {
-    return false
+    return "video"
   }
-  return true
+  return "completo"
 }
 
-// No servidor não há movimento: o HTML sai no estado final e o cliente decide
-// depois se anima. Isso mantém a primeira renderização idêntica dos dois lados.
-const getServerSnapshot = () => false
+/*
+ * No servidor o nível é "nenhum": o HTML sai no estado final, sem vídeo e sem
+ * animação, e o cliente decide depois. Isso mantém a primeira renderização
+ * idêntica dos dois lados, que é o que evita erro de hidratação.
+ */
+const getServerSnapshot = (): Nivel => "nenhum"
 
 export function MotionProvider({ children }: { children: ReactNode }) {
-  const motionEnabled = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+  const nivel = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+  const motionEnabled = nivel === "completo"
 
   useEffect(() => {
     // A classe deixa o CSS desligar as revelações sem depender de JavaScript
@@ -103,11 +128,17 @@ export function MotionProvider({ children }: { children: ReactNode }) {
     }
   }, [motionEnabled])
 
-  return (
-    <MotionContext.Provider value={motionEnabled}>{children}</MotionContext.Provider>
-  )
+  return <MotionContext.Provider value={nivel}>{children}</MotionContext.Provider>
 }
 
+/**
+ * `motionEnabled` — animação amarrada ao scroll, revelações, shader.
+ * `videoEnabled` — o `<video>` pode ser montado e tocar.
+ *
+ * Os dois só coincidem nos extremos. No meio fica o aparelho fraco, que ganha o
+ * vídeo e não ganha o resto.
+ */
 export function useMotion() {
-  return { motionEnabled: useContext(MotionContext) }
+  const nivel = useContext(MotionContext)
+  return { motionEnabled: nivel === "completo", videoEnabled: nivel !== "nenhum" }
 }

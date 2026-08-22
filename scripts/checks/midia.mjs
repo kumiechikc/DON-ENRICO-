@@ -208,13 +208,25 @@ export async function checkMidia(browser, url) {
    * Olha a requisição, não o DOM: é o download que custa os megabytes do
    * cliente no 4G, e ele pode acontecer sem nenhum `<video>` visível.
    */
-  async function pedidosDeVideo({ reducedMotion }) {
+  async function pedidosDeVideo({ reducedMotion, aparelhoFraco = false }) {
     const ctx = await browser.newContext({
       viewport: { width: 390, height: 844 },
       isMobile: true,
       hasTouch: true,
       reducedMotion,
     })
+    /*
+     * Finge um aparelho de entrada. É o caso que o `MotionProvider` rebaixa
+     * para "video": sem rolagem interpolada e sem animação amarrada ao scroll,
+     * mas COM o clipe — decodificar vídeo em hardware é barato, e era esse
+     * aparelho que ficava sem a peça principal da página.
+     */
+    if (aparelhoFraco) {
+      await ctx.addInitScript(() => {
+        Object.defineProperty(navigator, "hardwareConcurrency", { get: () => 2 })
+        Object.defineProperty(navigator, "deviceMemory", { get: () => 2 })
+      })
+    }
     const page = await ctx.newPage()
     const videos = []
     page.on("request", (r) => {
@@ -256,6 +268,26 @@ export async function checkMidia(browser, url) {
       )
     }
     notes.push(`com movimento normal: ${normal.length} vídeo(s) baixado(s)`)
+
+    /*
+     * A metade que existe por um defeito real: o clipe do hero estava preso
+     * atrás do mesmo portão das animações, e sumia em qualquer aparelho que
+     * reportasse menos de 4 núcleos ou menos de 4 GB. O dono do site abriu a
+     * página e não viu animação nenhuma.
+     *
+     * Aparelho fraco perde Lenis, ScrollTrigger e shader. NÃO perde o vídeo.
+     */
+    const fraco = await pedidosDeVideo({
+      reducedMotion: "no-preference",
+      aparelhoFraco: true,
+    })
+    if (fraco.length === 0) {
+      failures.push(
+        "num aparelho fraco (2 núcleos, 2 GB) nenhum vídeo foi pedido — o clipe " +
+          "voltou a ficar preso atrás do portão das animações"
+      )
+    }
+    notes.push(`em aparelho fraco: ${fraco.length} vídeo(s) baixado(s)`)
   }
 
   /**
