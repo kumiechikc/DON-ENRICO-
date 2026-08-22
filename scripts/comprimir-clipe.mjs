@@ -2,11 +2,20 @@
 /**
  * Transforma o arquivo que sai do Flow/Veo nos três arquivos que o site usa.
  *
- *   node scripts/comprimir-clipe.mjs <entrada.mp4> <nome> [--secao]
+ *   node scripts/comprimir-clipe.mjs <entrada.mp4> <nome> [opções]
+ *
+ * Opções:
+ *   --secao        usa o orçamento de clipe de seção (350 KB) e não o do hero
+ *   --de <s>       corta a entrada: começa neste segundo
+ *   --ate <s>      corta a saída: termina neste segundo
+ *   --crf <n>      qualidade do VP9 (padrão 40); o H.264 acompanha 10 abaixo
+ *   --laco <s>     costura o fim no começo com um fundido de <s> segundos, para
+ *                  o loop fechar sem pulo. Custa <s> segundos de duração.
  *
  * Exemplo:
  *   node scripts/comprimir-clipe.mjs ~/Downloads/veo-lampada.mp4 lampada
- *   node scripts/comprimir-clipe.mjs ~/Downloads/veo-corte.mp4 corte --secao
+ *   node scripts/comprimir-clipe.mjs ~/Downloads/veo-corte.mp4 corte --secao \
+ *     --de 2.5 --ate 6.5 --crf 42
  *
  * Gera em public/cinema/:
  *   <nome>.webm         VP9, o arquivo que quase todo mundo vai baixar
@@ -33,10 +42,10 @@
  * o orçamento, o aviso aponta o grão primeiro porque é a causa quase sempre.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-import { execFileSync } from "node:child_process"
 import { existsSync, mkdirSync, statSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { dirname, join, resolve } from "node:path"
+import { acharFfmpeg, rodarFfmpeg, medirDuracao } from "./lib/ffmpeg.mjs"
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), "..")
 const destino = join(raiz, "public", "cinema")
@@ -49,42 +58,43 @@ const destino = join(raiz, "public", "cinema")
  */
 const ORCAMENTO_KB = { hero: 600, secao: 350 }
 
-/**
- * Acha o ffmpeg.
- *
- * Aceita o do sistema ou o binário estático do pacote `ffmpeg-static`, que não
- * é dependência do projeto de propósito: são ~70 MB que só quem for comprimir
- * clipe precisa ter, e isso acontece três vezes por ano.
- */
-function acharFfmpeg() {
-  try {
-    execFileSync("ffmpeg", ["-version"], { stdio: "ignore" })
-    return "ffmpeg"
-  } catch {
-    // segue para o estático
-  }
-  try {
-    const mod = join(raiz, "node_modules", "ffmpeg-static", "ffmpeg")
-    if (existsSync(mod)) return mod
-  } catch {
-    // segue para o erro
-  }
-  throw new Error(
-    "ffmpeg não encontrado.\n" +
-      "  Instale no sistema (apt install ffmpeg / brew install ffmpeg)\n" +
-      "  ou rode: npm i -D ffmpeg-static"
-  )
-}
-
 const args = process.argv.slice(2)
 const entrada = args[0]
 const nome = args[1]
 const ehSecao = args.includes("--secao")
 
+/** Lê `--chave valor` e devolve número, ou `undefined` se a chave não veio. */
+function opcaoNumero(chave) {
+  const i = args.indexOf(chave)
+  if (i === -1) return undefined
+  const valor = Number(args[i + 1])
+  if (!Number.isFinite(valor)) {
+    process.stderr.write(`${chave} precisa de um número: ${chave} 2.5\n`)
+    process.exit(1)
+  }
+  return valor
+}
+
+const de = opcaoNumero("--de")
+const ate = opcaoNumero("--ate")
+/*
+ * Um botão só de qualidade. O H.264 fica dez pontos abaixo porque é a distância
+ * que dá peso parecido nos dois codecs — a relação dos padrões (40 e 30), agora
+ * mantida quando o número muda.
+ */
+const crfVp9 = opcaoNumero("--crf") ?? 40
+const crfH264 = crfVp9 - 10
+const laco = opcaoNumero("--laco")
+
 if (!entrada || !nome) {
   process.stderr.write(
-    "uso: node scripts/comprimir-clipe.mjs <entrada.mp4> <nome> [--secao]\n"
+    "uso: node scripts/comprimir-clipe.mjs <entrada.mp4> <nome> " +
+      "[--secao] [--de <s>] [--ate <s>] [--crf <n>] [--laco <s>]\n"
   )
+  process.exit(1)
+}
+if (de !== undefined && ate !== undefined && ate <= de) {
+  process.stderr.write(`--ate (${ate}) precisa ser maior que --de (${de})\n`)
   process.exit(1)
 }
 if (!existsSync(entrada)) {
@@ -95,11 +105,7 @@ if (!existsSync(entrada)) {
 const ffmpeg = acharFfmpeg()
 mkdirSync(destino, { recursive: true })
 
-function rodar(argumentos) {
-  execFileSync(ffmpeg, ["-hide_banner", "-loglevel", "error", "-y", ...argumentos], {
-    stdio: ["ignore", "inherit", "inherit"],
-  })
-}
+const rodar = (argumentos) => rodarFfmpeg(ffmpeg, argumentos)
 
 const kb = (caminho) => statSync(caminho).size / 1024
 
@@ -117,23 +123,91 @@ const saidaPoster = join(destino, `${nome}-poster.webp`)
  * `scale=1280:-2` entrega em 1280 de largura. O `-2` mantém a proporção e
  * garante altura par, que o H.264 exige.
  */
-const filtro = "scale=1280:-2,fps=24"
+const filtroBase = "scale=1280:-2,fps=24"
+
+/*
+ * O recorte vai ANTES do `-i`. Assim o ffmpeg pula direto para o ponto pedido
+ * em vez de decodificar o trecho descartado — e os três arquivos saem do mesmo
+ * pedaço, inclusive o pôster, que é o primeiro quadro DO CLIPE e não do
+ * arquivo original.
+ */
+const recorte = []
+if (de !== undefined) recorte.push("-ss", String(de))
+if (ate !== undefined) recorte.push("-t", String(ate - (de ?? 0)))
+
+const trecho =
+  de === undefined && ate === undefined
+    ? "inteiro"
+    : `${de ?? 0}s a ${ate ?? "fim"}${ate === undefined ? "" : "s"}`
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * A COSTURA DO LAÇO
+ *
+ * Um clipe de loop só fecha sem pulo se o último quadro for igual ao primeiro,
+ * e material gerado nunca é: fumaça é caótica, não repete. Medido no plano da
+ * lâmpada, a diferença entre o primeiro e o último quadro dava pico de 176 em
+ * 255 — um solavanco visível a cada volta, para sempre, no topo da página.
+ *
+ * A costura resolve por construção. Corta o rabo do clipe, funde ele por cima
+ * da cabeça, e o resultado começa e termina exatamente no mesmo quadro:
+ *
+ *   saída(0)   = rabo(0)      = original(D - X)
+ *   saída(fim) = cabeça(D-X)  = original(D - X)
+ *
+ * Não é aproximação, é o mesmo quadro. O preço é X segundos de duração.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+let filtroComplexo = null
+if (laco !== undefined) {
+  const duracaoTotal = medirDuracao(ffmpeg, entrada)
+  const duracao = ate !== undefined ? ate - (de ?? 0) : duracaoTotal - (de ?? 0)
+  if (laco <= 0 || laco >= duracao / 2) {
+    process.stderr.write(
+      `--laco ${laco} não cabe num trecho de ${duracao.toFixed(2)}s: ` +
+        "o fundido precisa ser menor que a metade.\n"
+    )
+    process.exit(1)
+  }
+  const corte = (duracao - laco).toFixed(3)
+  filtroComplexo =
+    `[0:v]${filtroBase},split[a][b];` +
+    /*
+     * O `fps=24` volta depois de cada `trim`: o `setpts` zera a base de tempo e
+     * o xfade recusa entrada sem taxa de quadros constante ("current rate of
+     * 1/0 is invalid"). Sem isto o filtro nem monta.
+     */
+    `[a]trim=start=0:end=${corte},setpts=PTS-STARTPTS,fps=24[cabeca];` +
+    `[b]trim=start=${corte},setpts=PTS-STARTPTS,fps=24[rabo];` +
+    `[rabo][cabeca]xfade=transition=fade:duration=${laco}:offset=0[v]`
+}
+
+/** Argumentos de filtro para um encode: complexo quando há costura, simples quando não. */
+const vf = filtroComplexo
+  ? ["-filter_complex", filtroComplexo, "-map", "[v]"]
+  : ["-vf", filtroBase]
 
 process.stdout.write(`\nComprimindo ${resolve(entrada)}\n`)
-process.stdout.write(`  origem: ${kb(entrada).toFixed(0)} KB\n\n`)
+process.stdout.write(`  origem: ${kb(entrada).toFixed(0)} KB\n`)
+process.stdout.write(
+  `  trecho: ${trecho}, CRF ${crfVp9}/${crfH264}` +
+    (laco !== undefined ? `, laço costurado com ${laco}s de fundido` : "") +
+    "\n\n"
+)
 
 process.stdout.write("  VP9/WebM ... ")
 let t = Date.now()
 rodar([
+  ...recorte,
   "-i", entrada,
   "-an",
   "-c:v", "libvpx-vp9",
-  "-crf", "40",
+  "-crf", String(crfVp9),
   "-b:v", "0",
   "-row-mt", "1",
   "-deadline", "good",
   "-cpu-used", "3",
-  "-vf", filtro,
+  ...vf,
   saidaWebm,
 ])
 process.stdout.write(`${kb(saidaWebm).toFixed(0)} KB (${((Date.now() - t) / 1000).toFixed(0)}s)\n`)
@@ -141,12 +215,13 @@ process.stdout.write(`${kb(saidaWebm).toFixed(0)} KB (${((Date.now() - t) / 1000
 process.stdout.write("  H.264/MP4 .. ")
 t = Date.now()
 rodar([
+  ...recorte,
   "-i", entrada,
   "-an",
   "-c:v", "libx264",
-  "-crf", "30",
+  "-crf", String(crfH264),
   "-preset", "slow",
-  "-vf", filtro,
+  ...vf,
   // Sem faststart o navegador precisa baixar o arquivo inteiro antes do
   // primeiro quadro, porque o índice fica no fim.
   "-movflags", "+faststart",
@@ -154,11 +229,20 @@ rodar([
 ])
 process.stdout.write(`${kb(saidaMp4).toFixed(0)} KB (${((Date.now() - t) / 1000).toFixed(0)}s)\n`)
 
+/*
+ * O pôster sai do MESMO caminho de filtro do vídeo, e não do arquivo de
+ * entrada. Parece detalhe e não é: com a costura de laço, o vídeo passa a
+ * começar no segundo D-X, enquanto o pôster tirado da entrada continuava no
+ * segundo 0. Medi a diferença entre os dois e deu pico de 173 em 255 — ou
+ * seja, a página mostraria uma cena e o vídeo entraria noutra, com um pulo
+ * visível na hora em que ele começa a tocar.
+ */
 process.stdout.write("  poster ..... ")
 rodar([
+  ...recorte,
   "-i", entrada,
-  "-vf", "select=eq(n\\,0),scale=1280:-2",
-  "-vframes", "1",
+  ...vf,
+  "-frames:v", "1",
   "-c:v", "libwebp",
   "-quality", "82",
   saidaPoster,
@@ -178,9 +262,10 @@ if (maior > limite) {
       "  Na ordem, o que tentar:\n" +
       "  1. O clipe veio com grão? É a causa em 9 de 10 casos. Gere de novo\n" +
       "     pedindo 'clean digital image, no film grain, no noise'.\n" +
-      "  2. Corte a duração. Loop de fundo funciona com 4s.\n" +
-      "  3. Suba o CRF (VP9 para 44, H.264 para 34) antes de baixar a\n" +
-      "     resolução: numa cena escura a perda quase não aparece.\n"
+      "  2. Corte a duração: --de 2.5 --ate 6.5. Quase sempre é a metade\n" +
+      "     que não tem ação nenhuma que está pagando a conta.\n" +
+      "  3. Suba o CRF: --crf 44. Antes de baixar a resolução — numa cena\n" +
+      "     escura a perda quase não aparece.\n"
   )
   process.exit(1)
 }

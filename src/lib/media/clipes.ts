@@ -37,25 +37,46 @@ export interface Clipe {
   modo: "loop" | "unico"
 }
 
-/*
- * VAZIO DE PROPÓSITO.
- *
- * Os clipes ainda não foram gerados. O caminho inteiro está pronto e testado
- * com um clipe sintético (62 KB em VP9), mas colocar aqui um arquivo que não
- * existe faria o site pedir um vídeo 404 para todo visitante.
- *
- * Quando o primeiro plano chegar do Flow, a entrada é assim:
- *
- *   { id: "corte", descricao: "Uma coxinha se parte ao meio e o recheio escorre",
- *     largura: 1280, altura: 720, modo: "unico" }
- */
-export const clipes: Clipe[] = []
+export const clipes: Clipe[] = [
+  {
+    id: "lampada",
+    /*
+     * Fundo do hero, puramente decorativo: o título "Salgados para festa" está
+     * por cima e já diz o que a página é. Descrever o vídeo aqui faria o leitor
+     * de tela anunciar uma cena antes do título, que é a informação.
+     */
+    descricao: "",
+    largura: 1280,
+    altura: 720,
+    modo: "loop",
+  },
+  {
+    id: "corte",
+    /*
+     * A descrição diz o que a cena mostra, e o recheio aqui é frango desfiado —
+     * que é a coxinha de frango do cardápio, não o croquete c/ requeijão. São
+     * linhas diferentes com preços diferentes, e prometer no site uma e entregar
+     * outra na porta é o tipo de detalhe que o cliente percebe.
+     */
+    descricao:
+      "Uma coxinha se parte ao meio e mostra o frango desfiado por dentro, com vapor subindo",
+    largura: 1280,
+    altura: 720,
+    modo: "unico",
+  },
+]
 
 export function acharClipe(id: string): Clipe | undefined {
   return clipes.find((c) => c.id === id)
 }
 
-/** Caminhos dos três arquivos que o script de compressão gera. */
+/**
+ * Caminhos dos três arquivos que o script de compressão gera.
+ *
+ * CRUS, sem o prefixo do site. Quem renderiza passa por `arquivoPublico()` —
+ * este arquivo é lido direto pelo Node nas conferências, e um import de módulo
+ * do app aqui derrubaria a leitura.
+ */
 export function arquivosDoClipe(id: string) {
   return {
     webm: `/cinema/${id}.webm`,

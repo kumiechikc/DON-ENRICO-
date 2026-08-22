@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useMotion } from "@/lib/motion/motion-provider"
+import { useVisivel } from "@/lib/motion/use-visivel"
 import { acharClipe, arquivosDoClipe } from "@/lib/media/clipes"
+import { arquivoPublico } from "@/lib/caminho-publico"
 import { cn } from "@/lib/utils"
 
 /**
@@ -41,59 +43,72 @@ export function CinemaLoop({
   className,
   /** Preenche o container em vez de respeitar a própria proporção. Para fundo. */
   preencher = false,
+  /**
+   * Classes de `object-position` para escolher que parte do quadro sobrevive ao
+   * corte do `object-cover`. Só faz sentido com `preencher`.
+   *
+   * Vai no pôster E no vídeo, sempre juntas: se os dois discordarem, o quadro
+   * pula lateralmente no instante em que o vídeo sobe por cima.
+   */
+  enquadramento,
 }: {
   clipe: string
   className?: string
   preencher?: boolean
+  enquadramento?: string
 }) {
   const clipe = acharClipe(id)
   const { motionEnabled } = useMotion()
-  const containerRef = useRef<HTMLDivElement>(null)
+  /*
+   * `jaApareceu` gruda: uma vez baixado, o vídeo não é desmontado ao sair da
+   * tela. Desmontar jogaria fora o que já foi baixado e obrigaria a baixar de
+   * novo na volta — o oposto do que a economia pretende.
+   */
+  const { ref: containerRef, visivel, jaApareceu } = useVisivel<HTMLDivElement>(
+    motionEnabled && Boolean(clipe)
+  )
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  const [deveCarregar, setDeveCarregar] = useState(false)
   const [tocando, setTocando] = useState(false)
 
-  /*
-   * Observa a entrada na tela. A margem de 200px monta o vídeo um pouco antes
-   * de aparecer, para ele já estar rodando quando o olho chegar — sem isso o
-   * primeiro quadro visível é sempre o pôster congelado.
-   */
   useEffect(() => {
-    if (!clipe || !motionEnabled) return
-    const el = containerRef.current
-    if (!el) return
-
-    const obs = new IntersectionObserver(
-      ([entrada]) => {
-        if (entrada.isIntersecting) {
-          setDeveCarregar(true)
-          videoRef.current?.play().catch(() => {
-            /*
-             * O navegador pode recusar o autoplay mesmo com `muted`, por
-             * economia de bateria ou preferência do usuário. Não é erro: o
-             * pôster continua no lugar e a página segue igual.
-             */
-          })
-        } else {
-          videoRef.current?.pause()
-        }
-      },
-      { rootMargin: "200px" }
-    )
-
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [clipe, motionEnabled])
+    if (visivel) {
+      videoRef.current?.play().catch(() => {
+        /*
+         * O navegador pode recusar o autoplay mesmo com `muted`, por economia
+         * de bateria ou preferência do usuário. Não é erro: o pôster continua
+         * no lugar e a página segue igual.
+         */
+      })
+    } else {
+      videoRef.current?.pause()
+    }
+  }, [visivel])
 
   if (!clipe) return null
 
-  const arquivos = arquivosDoClipe(clipe.id)
+  /*
+   * O manifesto guarda caminho cru para poder ser lido pelo Node nas
+   * conferências; o prefixo do site entra aqui, num lugar só. Sem ele o vídeo
+   * responde 404 no GitHub Pages, onde o site mora em /DON-ENRICO-/.
+   */
+  const crus = arquivosDoClipe(clipe.id)
+  const arquivos = {
+    webm: arquivoPublico(crus.webm),
+    mp4: arquivoPublico(crus.mp4),
+    poster: arquivoPublico(crus.poster),
+  }
   const decorativo = clipe.descricao === ""
 
   return (
     <div
       ref={containerRef}
+      /*
+       * Marca a peça para a conferência de contraste. Ela precisa saber quais
+       * seções têm vídeo atrás do texto, porque nessas o fundo declarado no CSS
+       * não é o fundo que a pessoa enxerga.
+       */
+      data-clipe={clipe.id}
       className={cn("relative overflow-hidden", className)}
       style={preencher ? undefined : { aspectRatio: `${clipe.largura} / ${clipe.altura}` }}
       /*
@@ -114,10 +129,10 @@ export function CinemaLoop({
         alt={decorativo ? "" : clipe.descricao}
         width={clipe.largura}
         height={clipe.altura}
-        className="absolute inset-0 h-full w-full object-cover"
+        className={cn("absolute inset-0 h-full w-full object-cover", enquadramento)}
       />
 
-      {motionEnabled && deveCarregar && (
+      {jaApareceu && (
         <video
           ref={videoRef}
           width={clipe.largura}
@@ -134,6 +149,7 @@ export function CinemaLoop({
           onPlaying={() => setTocando(true)}
           className={cn(
             "absolute inset-0 h-full w-full object-cover transition-opacity duration-700",
+            enquadramento,
             tocando ? "opacity-100" : "opacity-0"
           )}
         >
