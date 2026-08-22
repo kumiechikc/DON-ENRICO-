@@ -16,7 +16,8 @@
     "check:planilha": "node scripts/check-planilha.mjs",
     "check:pix": "node scripts/check-pix.mjs",
     "check:midia": "node scripts/check-midia.mjs",
-    "clipe": "node scripts/comprimir-clipe.mjs"
+    "clipe": "node scripts/comprimir-clipe.mjs",
+    "sequencia": "node scripts/preparar-sequencia.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

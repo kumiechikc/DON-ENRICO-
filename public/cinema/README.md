@@ -1,7 +1,15 @@
-# Os clipes do filme
+# A mídia em movimento
 
-Vazio até os planos serem gerados. O caminho inteiro está pronto e foi verificado
-com um clipe sintético: 62 KB em VP9, 148 KB em H.264, pôster de 8 KB.
+Duas coisas moram nesta pasta, e elas são diferentes:
+
+- **Clipes** (`.webm` + `.mp4` + `-poster.webp`) — vídeo que toca sozinho.
+- **Sequências** (`.webp`) — uma tira de quadros lado a lado que avança conforme
+  a página rola. Quem dá o ritmo é o dedo de quem rola.
+
+Vazio até o material ser gerado. Os dois caminhos estão prontos e foram
+verificados com peça sintética: o clipe deu 62 KB em VP9, 148 KB em H.264 e
+pôster de 8 KB; a tira deu 5 quadros de 274 px com o recorte conferido pixel a
+pixel.
 
 ## Para colocar um clipe no ar
 
@@ -16,6 +24,27 @@ npm run clipe -- ~/Downloads/veo-corte.mp4 corte --secao
 npm run check:midia
 npm run check
 ```
+
+## Para colocar uma sequência no ar
+
+```bash
+# 1. recortar e remontar com largura exata
+npm run sequencia -- ~/Downloads/coxinha-tira.png corte 5
+
+# 2. copiar a entrada que o script imprime para src/lib/media/sequencias.ts
+
+# 3. conferir
+npm run check:midia
+npm run check
+```
+
+O passo de recortar e remontar não é enfeite. A primeira tira que chegou aqui
+tinha 1376 px para 5 quadros, e 1376 ÷ 5 = 275,2. Sem número inteiro cada passo
+desalinha um pouco mais que o anterior, e no último quadro aparece uma fatia do
+vizinho. O script mede o arquivo, recorta cada quadro na posição real e remonta
+com largura garantidamente divisível — e o `check:midia` mede o arquivo de novo
+para confirmar, porque conferir pelo manifesto seria comparar a anotação com ela
+mesma.
 
 ## O que decide o peso
 
@@ -33,7 +62,10 @@ inteira e custa zero byte.
 |---|---|
 | hero | 600 KB |
 | clipe de seção | 350 KB |
-| soma de tudo | 2 MB |
+| soma dos clipes | 2 MB |
+| sequência | 250 KB |
 
-O `npm run check` reprova acima disso, e também reprova se com
-`prefers-reduced-motion` qualquer vídeo for baixado.
+O `npm run check` reprova acima disso. Reprova também se com
+`prefers-reduced-motion` qualquer vídeo for baixado ou qualquer sequência sair do
+último quadro, e se o HTML do servidor não trouxer o último quadro — que é o que
+aparece para quem não roda JavaScript.

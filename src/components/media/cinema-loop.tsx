@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useMotion } from "@/lib/motion/motion-provider"
+import { useVisivel } from "@/lib/motion/use-visivel"
 import { acharClipe, arquivosDoClipe } from "@/lib/media/clipes"
 import { cn } from "@/lib/utils"
 
@@ -48,43 +49,31 @@ export function CinemaLoop({
 }) {
   const clipe = acharClipe(id)
   const { motionEnabled } = useMotion()
-  const containerRef = useRef<HTMLDivElement>(null)
+  /*
+   * `jaApareceu` gruda: uma vez baixado, o vídeo não é desmontado ao sair da
+   * tela. Desmontar jogaria fora o que já foi baixado e obrigaria a baixar de
+   * novo na volta — o oposto do que a economia pretende.
+   */
+  const { ref: containerRef, visivel, jaApareceu } = useVisivel<HTMLDivElement>(
+    motionEnabled && Boolean(clipe)
+  )
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  const [deveCarregar, setDeveCarregar] = useState(false)
   const [tocando, setTocando] = useState(false)
 
-  /*
-   * Observa a entrada na tela. A margem de 200px monta o vídeo um pouco antes
-   * de aparecer, para ele já estar rodando quando o olho chegar — sem isso o
-   * primeiro quadro visível é sempre o pôster congelado.
-   */
   useEffect(() => {
-    if (!clipe || !motionEnabled) return
-    const el = containerRef.current
-    if (!el) return
-
-    const obs = new IntersectionObserver(
-      ([entrada]) => {
-        if (entrada.isIntersecting) {
-          setDeveCarregar(true)
-          videoRef.current?.play().catch(() => {
-            /*
-             * O navegador pode recusar o autoplay mesmo com `muted`, por
-             * economia de bateria ou preferência do usuário. Não é erro: o
-             * pôster continua no lugar e a página segue igual.
-             */
-          })
-        } else {
-          videoRef.current?.pause()
-        }
-      },
-      { rootMargin: "200px" }
-    )
-
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [clipe, motionEnabled])
+    if (visivel) {
+      videoRef.current?.play().catch(() => {
+        /*
+         * O navegador pode recusar o autoplay mesmo com `muted`, por economia
+         * de bateria ou preferência do usuário. Não é erro: o pôster continua
+         * no lugar e a página segue igual.
+         */
+      })
+    } else {
+      videoRef.current?.pause()
+    }
+  }, [visivel])
 
   if (!clipe) return null
 
@@ -117,7 +106,7 @@ export function CinemaLoop({
         className="absolute inset-0 h-full w-full object-cover"
       />
 
-      {motionEnabled && deveCarregar && (
+      {jaApareceu && (
         <video
           ref={videoRef}
           width={clipe.largura}

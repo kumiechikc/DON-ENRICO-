@@ -33,10 +33,10 @@
  * o orçamento, o aviso aponta o grão primeiro porque é a causa quase sempre.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-import { execFileSync } from "node:child_process"
 import { existsSync, mkdirSync, statSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { dirname, join, resolve } from "node:path"
+import { acharFfmpeg, rodarFfmpeg } from "./lib/ffmpeg.mjs"
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), "..")
 const destino = join(raiz, "public", "cinema")
@@ -48,33 +48,6 @@ const destino = join(raiz, "public", "cinema")
  * loops de seção só carregam quando a seção entra na tela, e são vários.
  */
 const ORCAMENTO_KB = { hero: 600, secao: 350 }
-
-/**
- * Acha o ffmpeg.
- *
- * Aceita o do sistema ou o binário estático do pacote `ffmpeg-static`, que não
- * é dependência do projeto de propósito: são ~70 MB que só quem for comprimir
- * clipe precisa ter, e isso acontece três vezes por ano.
- */
-function acharFfmpeg() {
-  try {
-    execFileSync("ffmpeg", ["-version"], { stdio: "ignore" })
-    return "ffmpeg"
-  } catch {
-    // segue para o estático
-  }
-  try {
-    const mod = join(raiz, "node_modules", "ffmpeg-static", "ffmpeg")
-    if (existsSync(mod)) return mod
-  } catch {
-    // segue para o erro
-  }
-  throw new Error(
-    "ffmpeg não encontrado.\n" +
-      "  Instale no sistema (apt install ffmpeg / brew install ffmpeg)\n" +
-      "  ou rode: npm i -D ffmpeg-static"
-  )
-}
 
 const args = process.argv.slice(2)
 const entrada = args[0]
@@ -95,11 +68,7 @@ if (!existsSync(entrada)) {
 const ffmpeg = acharFfmpeg()
 mkdirSync(destino, { recursive: true })
 
-function rodar(argumentos) {
-  execFileSync(ffmpeg, ["-hide_banner", "-loglevel", "error", "-y", ...argumentos], {
-    stdio: ["ignore", "inherit", "inherit"],
-  })
-}
+const rodar = (argumentos) => rodarFfmpeg(ffmpeg, argumentos)
 
 const kb = (caminho) => statSync(caminho).size / 1024
 
