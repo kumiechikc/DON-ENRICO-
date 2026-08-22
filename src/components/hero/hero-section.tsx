@@ -10,6 +10,8 @@ import { getWhatsAppDirectUrl } from "@/lib/cart/whatsapp"
 import { boxDegustacao, festaCategories } from "@/lib/data/menu"
 import { formatPrice } from "@/lib/utils"
 import { MagneticButton } from "@/components/ui/magnetic-button"
+import { CinemaLoop } from "@/components/media/cinema-loop"
+import { acharClipe } from "@/lib/media/clipes"
 
 /*
  * O shader entra por import dinâmico e sem SSR: WebGL não existe no servidor, e
@@ -23,6 +25,18 @@ const HeatShader = dynamic(() => import("./heat-shader"), {
 
 export function HeroSection() {
   const { motionEnabled } = useMotion()
+  /*
+   * Queda em três níveis, do melhor para o que sempre funciona:
+   *
+   *   1. o clipe, quando existe no manifesto;
+   *   2. o shader de calor, que é WebGL e não precisa de arquivo nenhum;
+   *   3. o gradiente em CSS, que funciona até sem JavaScript.
+   *
+   * A escolha é feita aqui e não dentro do CinemaLoop porque o shader custa
+   * bateria: rodar os dois ao mesmo tempo seria pagar duas vezes pelo mesmo
+   * fundo.
+   */
+  const clipeDoHero = acharClipe("lampada")
   const titleRef = useSplitReveal<HTMLHeadingElement>({
     delay: 0.35,
     label: "Salgados para festa",
@@ -69,7 +83,11 @@ export function HeroSection() {
           (aparelho fraco, movimento desligado), a cena continua sendo uma
           fritadeira acesa na sombra, não um retângulo preto. */}
       <div className="absolute inset-0 z-0 bg-[radial-gradient(125%_90%_at_50%_118%,#8A4318_0%,#3A1809_42%,#120B08_76%)]">
-        {shaderReady && <HeatShader />}
+        {clipeDoHero ? (
+          <CinemaLoop clipe="lampada" preencher className="absolute inset-0" />
+        ) : (
+          shaderReady && <HeatShader />
+        )}
       </div>
 
       {/* Camada 2 — véu direcional. Escurece onde o texto pousa (embaixo à

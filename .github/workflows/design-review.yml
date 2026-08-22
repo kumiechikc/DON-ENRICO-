@@ -57,6 +57,7 @@ jobs:
           git diff --exit-code apps-script/Catalogo.gs
           npm run check:planilha
           npm run check:pix
+          npm run check:midia
 
       # O export estático do GitHub Pages tem restrições que o build comum não
       # expõe (rotas de imagem precisam ser force-static, por exemplo). Validar

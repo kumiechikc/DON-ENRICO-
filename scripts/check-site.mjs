@@ -19,6 +19,7 @@ import { checkOrderFlow } from "./checks/order-flow.mjs"
 import { checkA11y } from "./checks/a11y.mjs"
 import { checkPerformance } from "./checks/performance.mjs"
 import { checkNoJs } from "./checks/no-js.mjs"
+import { checkMidia } from "./checks/midia.mjs"
 
 const args = process.argv.slice(2)
 const urlArg = args.indexOf("--url")
@@ -147,6 +148,7 @@ try {
     ["Acessibilidade e teclado", () => checkA11y(browser, target)],
     ["Orçamento de performance", () => checkPerformance(browser, target, { isDev })],
     ["Site sem JavaScript", () => checkNoJs(browser, target)],
+    ["Clipes de vídeo", () => checkMidia(browser, target)],
   ]
 
   const allFailures = []
