@@ -132,9 +132,34 @@ coluna nenhuma, porque alguém acaba somando aquilo achando que é real.
 O que fica: a forma de pagamento (Pix, dinheiro, cartão na entrega) e quanto do mês
 entrou em Pix, que é o número que importa para saber se vale empurrar o Pix.
 
-**Próximo passo: Pix com QR Code e copia e cola no site**, para o cliente pagar antes e
-mandar o comprovante no WhatsApp. Falta a chave Pix e o nome do titular; o código do QR
-(padrão BR Code do Banco Central) é gerado a partir deles.
+### Pix no site
+
+**Feito:** o gerador do BR Code (`src/lib/pix/br-code.ts`), que é a parte que não muda
+seja qual for a resposta do sócio. Monta o "copia e cola" no padrão do Banco Central, com
+valor e identificador opcionais. Verificado em `npm run check:pix` (29 conferências):
+o CRC bate com o valor de conferência público do CRC-16/CCITT-FALSE, e o código é lido de
+volta campo a campo, sem sobra. Sem chave configurada, nada disso entra no site.
+
+**Falta, e depende do sócio:** chave, nome do titular e cidade (bloco 1 do questionário).
+
+**Falta decidir, e vale conversar:** onde o Pix aparece.
+
+O pedido de "comprar direto do site" tem um problema de ordem. Hoje o cliente monta o
+pedido e vai para o WhatsApp; é lá que se combina data, entrega e se o pedido cabe na
+agenda. Um botão de pagar antes dessa conversa deixa alguém pagar por uma encomenda que
+talvez não dê para fazer — e aí vira estorno, que é pior que a venda perdida.
+
+Duas saídas, e a escolha é do sócio:
+
+1. **Pagar depois de combinar** (mais seguro): o Pix fica numa seção própria da página,
+   com o valor digitado pelo cliente ou passado pelo dono na conversa. O QR entra na
+   página, não no carrinho.
+2. **Pagar junto com o pedido** (menos atrito): o QR sai com o total do carrinho já
+   embutido, ao lado do botão do WhatsApp. Só faz sentido se o dono aceitar praticamente
+   todo pedido que chega, ou se o valor for sinal e não o total.
+
+A resposta de 1.4 e 1.5 do questionário (tudo adiantado ou sinal) decide qual das duas.
+Enquanto ela não vem, não faço a interface: seria retrabalho garantido.
 
 ### O que continua fora
 
