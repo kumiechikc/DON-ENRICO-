@@ -52,16 +52,17 @@ com clipe e as sem.
 
 ## Os cinco planos
 
-| # | Plano | Onde | Duração | Modo |
-|---|---|---|---|---|
-| 1 | A lâmpada | hero | 6s | loop |
-| 2 | O corte | Clássicos Fritos | 5s | uma vez |
-| 3 | A esteira | Encomendas para Festa | 8s | loop |
-| 4 | O freezer | Congelados | 6s | loop |
-| 5 | A entrega | contato / rodapé | 8s | loop |
+| # | Plano | Onde | Duração | Modo | Estado |
+|---|---|---|---|---|---|
+| 1 | A lâmpada | hero | 6s | loop | a gerar |
+| 2 | O corte | abertura do cardápio | 4,15s | uma vez | **no ar** |
+| 3 | A esteira | Encomendas para Festa | 8s | loop | a gerar |
+| 4 | O freezer | Congelados | 6s | loop | a gerar |
+| 5 | A entrega | contato / rodapé | 8s | loop | a gerar |
 
-**Comece pelo 2.** É o que dá mais fome, e serve para confirmar o peso de um clipe real
-antes de gastar as outras quatro gerações. Se só um for feito, é esse.
+**O 2 está feito** e serviu para o que devia: confirmar que um clipe de verdade cabe no
+orçamento, e ensinar as duas correções que agora estão nos prompts de todos (o formato da
+coxinha e a proibição de fogo). As outras quatro gerações partem daí.
 
 ### 1. A lâmpada (hero)
 
@@ -86,7 +87,7 @@ No text. No people. No hands. No plates. No cheese. No color other than amber an
 deep warm brown.
 ```
 
-### 2. O corte (Clássicos Fritos) — comece por aqui
+### 2. O corte (abertura do cardápio) — feito
 
 Macro extremo. A coxinha se parte ao meio. A casquinha estilhaça em câmera lenta, o
 recheio escorre, o vapor sobe contra a luz. Sem contexto, sem mesa, só textura.
@@ -113,8 +114,16 @@ requeijão filling stretches and slowly falls. Hot steam rises against a hard am
 rim light. Pitch black background. 1000fps look, razor shallow depth of field.
 Clean digital image, no film grain, no noise.
 Not oval. Not round. Not a ball. Not a sphere. Not symmetric left to right.
-No hands. No text. No plate. No table. No people.
+No fire. No flames. No burning. Steam only, never fire.
+No hands. No text. No plate. No people.
 ```
+
+> **A segunda geração acertou a forma e inventou fogo.** No meio do clipe saía uma
+> labareda de dentro da coxinha. Ninguém pediu: o modelo juntou "hot steam", "hard amber
+> rim light" e "1000fps" e concluiu chama. Para um negócio de comida isso lê como
+> queimado, e não é o que acontece quando você parte um salgado. Daí as negativas de
+> fogo acima, e o `No table` saiu porque o Veo põe a superfície de qualquer jeito e ela
+> ficou boa: ardósia escura, que combina com a página.
 
 ### 3. A esteira (Encomendas para Festa)
 
@@ -171,6 +180,7 @@ brown shadows (#120B08), no cool tones anywhere, anamorphic shallow depth of
 field, no camera shake, clean digital image, no film grain, no noise.
 Every coxinha is teardrop shaped: wide rounded base narrowing to one pointed tip,
 like a small chicken drumstick. Never oval, never round, never a ball.
+No fire, no flames, no burning anywhere. Steam only.
 ```
 
 A linha do formato está aqui e não só no plano 2 de propósito: coxinha aparece em quatro
@@ -226,56 +236,69 @@ dizendo o que tentar e em que ordem:
 
 Precisa de `ffmpeg` no sistema, ou `npm i -D ffmpeg-static`.
 
-#### O que o primeiro arquivo de verdade ensinou
+#### O que os arquivos de verdade ensinaram
 
-O clipe que voltou do Flow tinha 8s, 1280×720, H.264, sem marca d'água. **Sem grão** —
-medi a variação temporal numa faixa preta e deu 0,02, ou seja, os prompts limpos
-funcionaram. Ainda assim estourou:
+Dois clipes voltaram do Flow antes de um entrar no site. Os dois com 8s, 1280×720, sem
+marca d'água, e **sem grão** — medi a variação temporal numa faixa preta e deu 0,02, ou
+seja, os prompts limpos funcionaram desde o começo.
+
+**O primeiro** tinha o formato errado (oval, tipo bolinho) e foi descartado. Ainda assim
+mediu o peso:
 
 | | VP9/WebM | H.264/MP4 |
 |---|---|---|
 | 8s inteiros, CRF 40/30 | 683 KB | 605 KB |
 | 8s inteiros, CRF 44/34 | 492 KB | 386 KB |
-| **4s de ação, CRF 42/32** | **314 KB** | **266 KB** |
+| 4s de ação, CRF 42/32 | 314 KB | 266 KB |
 
-O peso não era defeito: era vapor, farofa voando e a textura da farinha, que é conteúdo
-real. Mas **metade do clipe não tinha ação nenhuma** — 2,5s de coxinha quase parada no
-começo e 1,5s de vapor à deriva no fim. Cortar essa metade resolveu quase tudo, e ainda
-deixou o plano melhor: agora ele começa no instante em que a quebra começa.
-
-Por isso o script ganhou as opções de corte:
+**O segundo** acertou a forma e é o que está no ar. Tinha uma labareda entre 4,21s e
+5,2s; cortando antes dela sobra o arco inteiro da quebra, e o clipe fecha o orçamento no
+CRF padrão:
 
 ```bash
-npm run clipe -- arquivo.mp4 corte --secao --de 2.5 --ate 6.5 --crf 42
+npm run clipe -- arquivo.mp4 corte --secao --ate 4.15
+# 338 KB webm, 300 KB mp4, pôster de 52 KB
 ```
 
-`--de` e `--ate` cortam em segundos, `--crf` é um botão só de qualidade (o H.264
-acompanha dez pontos abaixo). O pôster sai do primeiro quadro **do trecho**, não do
-arquivo original.
+O peso não é defeito: é vapor, farofa voando e a textura da farinha, que é conteúdo real.
+Mas **quase sempre metade do clipe não tem ação nenhuma**, e é ela que paga a conta.
+Cortar essa metade também deixa o plano melhor, porque ele passa a começar no instante em
+que a coisa acontece.
 
-> **Antes de cortar, ache onde está a ação.** Uma grade de contato responde em um
-> comando:
+> **Antes de cortar, ache onde está a ação — e onde está o defeito.** Uma grade de contato
+> responde em um comando:
 >
 > ```bash
 > ffmpeg -i arquivo.mp4 -vf "fps=2,scale=320:-1,tile=4x4" -frames:v 1 grade.jpg
 > ```
 >
-> Dá 16 quadros de meio em meio segundo. Os que forem iguais ao vizinho são os que você
-> corta.
+> Dá 16 quadros de meio em meio segundo. E quando o defeito é de brilho (chama, estouro,
+> flash), dá para achar o segundo exato medindo em vez de olhar:
+>
+> ```bash
+> ffmpeg -i arquivo.mp4 -vf "fps=4,crop=260:300:510:60,signalstats,metadata=print" \
+>   -f null - 2>&1 | grep -E "pts_time|YAVG"
+> ```
+>
+> Foi assim que a chama apareceu como um pico de 96 para 166 entre 4,21s e 5,2s.
 
-#### O preto da cena e o preto da página
+#### Flutuando ou emoldurado: depende da cena ter chão
 
-Medido: o preto do vídeo fica em Y≈17, que é o preto de vídeo (16) e não o preto do CSS.
-O fundo da página é `#120b08`. Colar o retângulo do vídeo em cima disso deixaria uma
-borda visível.
+Isto decide como o clipe entra na página, e a resposta muda conforme o plano.
 
-A saída é `mix-blend-screen` no contêiner: a cena é um objeto claro sobre preto, e no
-modo screen o preto some contra o fundo. Medido na tela, a diferença entre dentro e fora
-do retângulo ficou em **2 de 255** por canal — invisível. Máscara de borda foi testada
-antes e é pior: come as pontas do salgado junto.
+**Cena sem cenário** (o salgado no vazio preto): `mix-blend-screen` no contêiner. A cena é
+um objeto claro sobre preto, e no modo screen o preto some contra o fundo — sobra o
+salgado flutuando no escuro, sem borda de retângulo nenhuma. Medido na tela, a diferença
+entre dentro e fora ficou em **2 de 255** por canal. Máscara de borda foi testada antes e
+é pior: come as pontas do salgado junto.
 
-E **sem `preencher`**: espremer 16:9 numa faixa larga dá zoom no meio do quadro e joga
-fora a composição, que é o que a cena tem de melhor.
+**Cena com cenário** (mesa, chão, luz de ambiente): moldura de uma linha, `border
+border-border`, a mesma dos cards do cardápio. É o caso do corte que entrou. A mesa de
+ardósia mede Y≈70 contra Y≈19 do fundo, e no modo screen ela acenderia numa faixa clara
+atravessando o quadro. Com cenário a cena é uma fotografia, e fotografia se emoldura.
+
+Nos dois casos, **sem `preencher`**: espremer 16:9 numa faixa larga dá zoom no meio do
+quadro e joga fora a composição, que é o que a cena tem de melhor.
 
 ### 4. Registrar no manifesto
 
@@ -285,7 +308,8 @@ Em `src/lib/media/clipes.ts`, com as dimensões que o script reportou:
 export const clipes: Clipe[] = [
   {
     id: "corte",
-    descricao: "Uma coxinha se parte ao meio e o recheio escorre",
+    descricao:
+      "Uma coxinha se parte ao meio e mostra o frango desfiado por dentro, com vapor subindo",
     largura: 1280,
     altura: 720,
     modo: "unico",
@@ -310,13 +334,23 @@ decisão.
 
 ```tsx
 // src/components/sections/festa-section.tsx, antes do <SectionHeading>
-<div className="mx-auto mb-12 w-full max-w-4xl px-4 sm:px-6 mix-blend-screen">
-  <CinemaLoop clipe="corte" />
+<div className="mx-auto mb-14 max-w-6xl px-4 sm:px-6 lg:px-8">
+  <div className="max-w-3xl">
+    <CinemaLoop clipe="corte" className="border border-border" />
+  </div>
 </div>
 ```
 
+**A largura e o alinhamento não são chute.** Na largura total do cardápio a peça ocupava
+dois terços da tela no desktop e empurrava o título inteiro para fora: quem descia do
+hero levava uma tela cheia de vídeo antes de qualquer informação. Centralizada, brigava
+com o título, que é alinhado à esquerda. Compartilhando a margem esquerda com ele, as
+duas viram a mesma peça. No celular nada disso muda, porque lá a coluna já é mais
+estreita que o limite.
+
 Testado no navegador em 390, 768, 1024 e 1440: sem rolagem lateral, CLS zero, LCP de
-1,0 s contra o build de produção, e com movimento reduzido nenhum byte de vídeo é pedido.
+1,0 s e 224 KB de JavaScript contra o build de produção, e com movimento reduzido nenhum
+byte de vídeo é pedido.
 
 ### 5. Conferir
 

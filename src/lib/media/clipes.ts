@@ -37,19 +37,22 @@ export interface Clipe {
   modo: "loop" | "unico"
 }
 
-/*
- * VAZIO DE PROPÓSITO.
- *
- * Os clipes ainda não foram gerados. O caminho inteiro está pronto e testado
- * com um clipe sintético (62 KB em VP9), mas colocar aqui um arquivo que não
- * existe faria o site pedir um vídeo 404 para todo visitante.
- *
- * Quando o primeiro plano chegar do Flow, a entrada é assim:
- *
- *   { id: "corte", descricao: "Uma coxinha se parte ao meio e o recheio escorre",
- *     largura: 1280, altura: 720, modo: "unico" }
- */
-export const clipes: Clipe[] = []
+export const clipes: Clipe[] = [
+  {
+    id: "corte",
+    /*
+     * A descrição diz o que a cena mostra, e o recheio aqui é frango desfiado —
+     * que é a coxinha de frango do cardápio, não o croquete c/ requeijão. São
+     * linhas diferentes com preços diferentes, e prometer no site uma e entregar
+     * outra na porta é o tipo de detalhe que o cliente percebe.
+     */
+    descricao:
+      "Uma coxinha se parte ao meio e mostra o frango desfiado por dentro, com vapor subindo",
+    largura: 1280,
+    altura: 720,
+    modo: "unico",
+  },
+]
 
 export function acharClipe(id: string): Clipe | undefined {
   return clipes.find((c) => c.id === id)

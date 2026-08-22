@@ -6,10 +6,12 @@ Duas coisas moram nesta pasta, e elas são diferentes:
 - **Sequências** (`.webp`) — uma tira de quadros lado a lado que avança conforme
   a página rola. Quem dá o ritmo é o dedo de quem rola.
 
-Vazio até o material ser gerado. Os dois caminhos estão prontos e foram
-verificados com peça sintética: o clipe deu 62 KB em VP9, 148 KB em H.264 e
-pôster de 8 KB; a tira deu 5 quadros de 274 px com o recorte conferido pixel a
-pixel.
+Hoje mora aqui o plano 2, **o corte**: uma coxinha se partindo, 4,15s, 338 KB em
+VP9 e 300 KB em H.264, com pôster de 52 KB. Ele toca uma vez ao entrar na tela e
+para no último quadro.
+
+O caminho das sequências continua pronto e sem uso, verificado com uma tira
+sintética de 5 quadros de 274 px e o recorte conferido pixel a pixel.
 
 ## Para colocar um clipe no ar
 
