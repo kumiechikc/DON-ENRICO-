@@ -94,12 +94,25 @@ recheio escorre, o vapor sobe contra a luz. Sem contexto, sem mesa, só textura.
 Toca uma vez ao entrar na tela e para no último quadro. Em laço, a quebra repetida vira
 desenho animado em vez de cinema.
 
+> **A primeira geração saiu com o formato errado, e a culpa era do prompt.** A versão
+> anterior dizia só "a golden fried Brazilian coxinha breaks apart in the middle", e o
+> Veo devolveu um oval simétrico, tipo bolinho ou croquete — não uma coxinha. O modelo
+> não sabe o formato pelo nome, e "breaks apart in the middle" ainda empurra para uma
+> peça simétrica que abre no meio. O prompt abaixo descreve a silhueta e diz onde a
+> quebra acontece. Se voltar redondo de novo, some com a palavra "coxinha" e descreva só
+> a forma: é o nome que puxa o modelo para a média das imagens erradas.
+
 ```
-Extreme macro slow motion. A golden fried Brazilian coxinha breaks apart in the
-middle. The crisp golden crust shatters into visible crumbs. Creamy shredded
-chicken and melted requeijão filling stretches and slowly falls. Hot steam rises
-against a hard amber rim light. Pitch black background. 1000fps look, razor
-shallow depth of field. Clean digital image, no film grain, no noise.
+Extreme macro slow motion. A single golden fried Brazilian coxinha, teardrop
+shaped: a wide rounded belly at the bottom narrowing to one sharp pointed tip at
+the top, like a small chicken drumstick. It splits open along its length, from
+the pointed tip down, and the two halves lean apart. Both halves keep the
+teardrop silhouette, wide at the base, pointed at the top. The crisp golden
+breadcrumb crust shatters into visible crumbs. Creamy shredded chicken and melted
+requeijão filling stretches and slowly falls. Hot steam rises against a hard amber
+rim light. Pitch black background. 1000fps look, razor shallow depth of field.
+Clean digital image, no film grain, no noise.
+Not oval. Not round. Not a ball. Not a sphere. Not symmetric left to right.
 No hands. No text. No plate. No table. No people.
 ```
 
@@ -156,7 +169,13 @@ diferentes:
 Consistent look across shots: single warm amber key light (#F5A524), deep warm
 brown shadows (#120B08), no cool tones anywhere, anamorphic shallow depth of
 field, no camera shake, clean digital image, no film grain, no noise.
+Every coxinha is teardrop shaped: wide rounded base narrowing to one pointed tip,
+like a small chicken drumstick. Never oval, never round, never a ball.
 ```
+
+A linha do formato está aqui e não só no plano 2 de propósito: coxinha aparece em quatro
+dos cinco planos, e o erro de forma aconteceu uma vez. Repetir a descrição custa uma
+linha e evita gastar geração à toa.
 
 ---
 
@@ -207,6 +226,57 @@ dizendo o que tentar e em que ordem:
 
 Precisa de `ffmpeg` no sistema, ou `npm i -D ffmpeg-static`.
 
+#### O que o primeiro arquivo de verdade ensinou
+
+O clipe que voltou do Flow tinha 8s, 1280×720, H.264, sem marca d'água. **Sem grão** —
+medi a variação temporal numa faixa preta e deu 0,02, ou seja, os prompts limpos
+funcionaram. Ainda assim estourou:
+
+| | VP9/WebM | H.264/MP4 |
+|---|---|---|
+| 8s inteiros, CRF 40/30 | 683 KB | 605 KB |
+| 8s inteiros, CRF 44/34 | 492 KB | 386 KB |
+| **4s de ação, CRF 42/32** | **314 KB** | **266 KB** |
+
+O peso não era defeito: era vapor, farofa voando e a textura da farinha, que é conteúdo
+real. Mas **metade do clipe não tinha ação nenhuma** — 2,5s de coxinha quase parada no
+começo e 1,5s de vapor à deriva no fim. Cortar essa metade resolveu quase tudo, e ainda
+deixou o plano melhor: agora ele começa no instante em que a quebra começa.
+
+Por isso o script ganhou as opções de corte:
+
+```bash
+npm run clipe -- arquivo.mp4 corte --secao --de 2.5 --ate 6.5 --crf 42
+```
+
+`--de` e `--ate` cortam em segundos, `--crf` é um botão só de qualidade (o H.264
+acompanha dez pontos abaixo). O pôster sai do primeiro quadro **do trecho**, não do
+arquivo original.
+
+> **Antes de cortar, ache onde está a ação.** Uma grade de contato responde em um
+> comando:
+>
+> ```bash
+> ffmpeg -i arquivo.mp4 -vf "fps=2,scale=320:-1,tile=4x4" -frames:v 1 grade.jpg
+> ```
+>
+> Dá 16 quadros de meio em meio segundo. Os que forem iguais ao vizinho são os que você
+> corta.
+
+#### O preto da cena e o preto da página
+
+Medido: o preto do vídeo fica em Y≈17, que é o preto de vídeo (16) e não o preto do CSS.
+O fundo da página é `#120b08`. Colar o retângulo do vídeo em cima disso deixaria uma
+borda visível.
+
+A saída é `mix-blend-screen` no contêiner: a cena é um objeto claro sobre preto, e no
+modo screen o preto some contra o fundo. Medido na tela, a diferença entre dentro e fora
+do retângulo ficou em **2 de 255** por canal — invisível. Máscara de borda foi testada
+antes e é pior: come as pontas do salgado junto.
+
+E **sem `preencher`**: espremer 16:9 numa faixa larga dá zoom no meio do quadro e joga
+fora a composição, que é o que a cena tem de melhor.
+
 ### 4. Registrar no manifesto
 
 Em `src/lib/media/clipes.ts`, com as dimensões que o script reportou:
@@ -225,6 +295,28 @@ export const clipes: Clipe[] = [
 
 Registrar aqui é o que põe o clipe no ar. Com a lista vazia, o site funciona exatamente
 como hoje e nenhum byte de vídeo é pedido.
+
+A descrição diz **o que a imagem mostra**, não qual item do cardápio ela é. A cena tem
+frango desfiado e queijo derretido puxando — isso é o croquete c/ requeijão, não a
+coxinha de frango, que são linhas diferentes e preços diferentes. Nomear o produto errado
+aqui é prometer no site uma coisa e entregar outra na porta.
+
+### 4b. Onde ele entra na página
+
+"Clássicos Fritos" não é uma seção: é o primeiro card dentro de `FestaSection`. O lugar
+do plano é **acima do título da seção**, como cartela de abertura do cardápio — o
+visitante chega da faixa de sabores, encontra a quebra, e só então a página pede uma
+decisão.
+
+```tsx
+// src/components/sections/festa-section.tsx, antes do <SectionHeading>
+<div className="mx-auto mb-12 w-full max-w-4xl px-4 sm:px-6 mix-blend-screen">
+  <CinemaLoop clipe="corte" />
+</div>
+```
+
+Testado no navegador em 390, 768, 1024 e 1440: sem rolagem lateral, CLS zero, LCP de
+1,0 s contra o build de produção, e com movimento reduzido nenhum byte de vídeo é pedido.
 
 ### 5. Conferir
 

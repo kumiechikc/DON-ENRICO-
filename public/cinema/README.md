@@ -18,6 +18,9 @@ pixel.
 npm run clipe -- ~/Downloads/veo-lampada.mp4 lampada
 npm run clipe -- ~/Downloads/veo-corte.mp4 corte --secao
 
+# cortando o trecho e ajustando a qualidade, quando estourar o orçamento
+npm run clipe -- ~/Downloads/veo-corte.mp4 corte --secao --de 2.5 --ate 6.5 --crf 42
+
 # 2. registrar em src/lib/media/clipes.ts com as dimensões que o script reportou
 
 # 3. conferir

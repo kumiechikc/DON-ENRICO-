@@ -10,7 +10,7 @@
  */
 import { chromium } from "playwright"
 import { spawn } from "node:child_process"
-import { mkdirSync } from "node:fs"
+import { mkdirSync, globSync } from "node:fs"
 import { setTimeout as sleep } from "node:timers/promises"
 
 import { checkViewports } from "./checks/viewport.mjs"
@@ -99,12 +99,22 @@ function stopDevServer(proc) {
   }
 }
 
-/** Chromium do ambiente; cai no caminho pré-instalado das imagens de CI. */
+/**
+ * Chromium do ambiente, e o pré-instalado das imagens de CI como reserva.
+ *
+ * A reserva procura o binário em vez de apontar para um caminho fixo: a imagem
+ * traz o Chromium numa pasta com o número da build (`chromium-1194/`), e quando
+ * esse número não bate com o que o Playwright instalado espera, o primeiro
+ * `launch` falha. Apontar para a pasta pai não resolvia — é diretório, não
+ * executável, e a suíte inteira ficava sem como rodar fora do CI.
+ */
 async function launchBrowser() {
   try {
     return await chromium.launch()
-  } catch {
-    return await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" })
+  } catch (erro) {
+    const achados = globSync("/opt/pw-browsers/chromium*/chrome-linux/chrome")
+    if (achados.length === 0) throw erro
+    return await chromium.launch({ executablePath: achados[0] })
   }
 }
 
