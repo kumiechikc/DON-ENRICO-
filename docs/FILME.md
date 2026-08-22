@@ -352,6 +352,13 @@ Testado no navegador em 390, 768, 1024 e 1440: sem rolagem lateral, CLS zero, LC
 1,0 s e 224 KB de JavaScript contra o build de produção, e com movimento reduzido nenhum
 byte de vídeo é pedido.
 
+> **O caminho do arquivo precisa do prefixo do site.** No GitHub Pages o site mora em
+> `/DON-ENRICO-/`, e o Next NÃO prefixa caminho escrito à mão para `public/`. Por isso o
+> componente passa por `arquivoPublico()` (`src/lib/caminho-publico.ts`) antes de montar
+> o `src`. O manifesto guarda o caminho cru de propósito, porque é lido direto pelo Node
+> nas conferências. Quem garante que ninguém esquece é o `npm run check:export`, que lê o
+> HTML exportado e reprova caminho sem prefixo ou apontando para arquivo inexistente.
+
 ### 5. Conferir
 
 ```bash

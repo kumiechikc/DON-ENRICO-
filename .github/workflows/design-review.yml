@@ -71,6 +71,14 @@ jobs:
         env:
           GITHUB_PAGES: 'true'
 
+      # Compilar não prova que o site funciona no ar. No Pages ele mora em
+      # /DON-ENRICO-/, e caminho escrito à mão para arquivo de public/ não ganha
+      # esse prefixo: sai do build apontando para a raiz do domínio e responde
+      # 404, com todo o resto passando. Esta conferência lê o out/ e cobra que
+      # cada arquivo referenciado tenha o prefixo e exista.
+      - name: Conferir o site exportado
+        run: npm run check:export
+
       - name: Build de produção
         run: npm run build
         env:

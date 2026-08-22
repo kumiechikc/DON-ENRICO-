@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useMotion } from "@/lib/motion/motion-provider"
 import { useVisivel } from "@/lib/motion/use-visivel"
 import { acharSequencia, arquivoDaSequencia } from "@/lib/media/sequencias"
+import { arquivoPublico } from "@/lib/caminho-publico"
 import { cn } from "@/lib/utils"
 
 /**
@@ -112,7 +113,7 @@ export function Sequencia({
       */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={arquivoDaSequencia(seq.id)}
+        src={arquivoPublico(arquivoDaSequencia(seq.id))}
         alt=""
         width={seq.largura * seq.quadros}
         height={seq.altura}

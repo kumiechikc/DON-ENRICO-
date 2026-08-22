@@ -58,7 +58,13 @@ export function acharClipe(id: string): Clipe | undefined {
   return clipes.find((c) => c.id === id)
 }
 
-/** Caminhos dos três arquivos que o script de compressão gera. */
+/**
+ * Caminhos dos três arquivos que o script de compressão gera.
+ *
+ * CRUS, sem o prefixo do site. Quem renderiza passa por `arquivoPublico()` —
+ * este arquivo é lido direto pelo Node nas conferências, e um import de módulo
+ * do app aqui derrubaria a leitura.
+ */
 export function arquivosDoClipe(id: string) {
   return {
     webm: `/cinema/${id}.webm`,

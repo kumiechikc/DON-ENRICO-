@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useMotion } from "@/lib/motion/motion-provider"
 import { useVisivel } from "@/lib/motion/use-visivel"
 import { acharClipe, arquivosDoClipe } from "@/lib/media/clipes"
+import { arquivoPublico } from "@/lib/caminho-publico"
 import { cn } from "@/lib/utils"
 
 /**
@@ -77,7 +78,17 @@ export function CinemaLoop({
 
   if (!clipe) return null
 
-  const arquivos = arquivosDoClipe(clipe.id)
+  /*
+   * O manifesto guarda caminho cru para poder ser lido pelo Node nas
+   * conferências; o prefixo do site entra aqui, num lugar só. Sem ele o vídeo
+   * responde 404 no GitHub Pages, onde o site mora em /DON-ENRICO-/.
+   */
+  const crus = arquivosDoClipe(clipe.id)
+  const arquivos = {
+    webm: arquivoPublico(crus.webm),
+    mp4: arquivoPublico(crus.mp4),
+    poster: arquivoPublico(crus.poster),
+  }
   const decorativo = clipe.descricao === ""
 
   return (

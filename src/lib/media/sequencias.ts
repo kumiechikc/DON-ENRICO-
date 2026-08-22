@@ -48,6 +48,7 @@ export function acharSequencia(id: string): Sequencia | undefined {
   return sequencias.find((s) => s.id === id)
 }
 
+/** Caminho CRU da tira. Quem renderiza passa por `arquivoPublico()`. */
 export function arquivoDaSequencia(id: string): string {
   return `/cinema/${id}.webp`
 }
