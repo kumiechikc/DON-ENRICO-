@@ -60,12 +60,36 @@ export function checkExport() {
 
   for (const pagina of html) {
     const texto = readFileSync(pagina, "utf8")
-    for (const achado of texto.matchAll(/(?:src|href|content)="(\/[^"]*)"/g)) {
+    const anotar = (bruto) => {
       // O `?v=` que o Next põe em alguns arquivos não faz parte do nome.
-      const caminho = achado[1].split("?")[0]
-      if (!EXTENSOES.test(caminho)) continue
+      const caminho = bruto.split("?")[0]
+      if (!caminho.startsWith("/")) return
+      if (!EXTENSOES.test(caminho)) return
       if (!referencias.has(caminho)) referencias.set(caminho, new Set())
       referencias.get(caminho).add(pagina.slice(saida.length + 1))
+    }
+
+    for (const achado of texto.matchAll(/(?:src|href|content)="(\/[^"]*)"/g)) {
+      anotar(achado[1])
+    }
+
+    /*
+     * `srcset` também, e ele é o mais perigoso dos três.
+     *
+     * As fotos de produto entram com duas larguras, e o `src` aponta só para a
+     * maior. Se a variante estreita ficasse de fora desta conferência, ela
+     * poderia sair sem prefixo, ou nem existir no export, e o defeito
+     * apareceria APENAS em tela pequena — que é onde ninguém confere e onde
+     * está a maior parte dos clientes.
+     *
+     * O formato é "url 640w, url 1080w": separar por vírgula e ficar com o
+     * primeiro pedaço de cada item devolve as URLs.
+     */
+    for (const achado of texto.matchAll(/srcset="([^"]*)"/gi)) {
+      for (const item of achado[1].split(",")) {
+        const url = item.trim().split(/\s+/)[0]
+        if (url) anotar(url)
+      }
     }
   }
 

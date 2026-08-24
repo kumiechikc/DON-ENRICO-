@@ -1,6 +1,7 @@
 "use client"
 
 import { useReveal } from "@/lib/motion/use-reveal"
+import { ProductImage } from "@/components/ui/product-image"
 import { site } from "@/lib/site"
 
 /*
@@ -156,11 +157,31 @@ export function ComoEncomendarSection() {
             `position: absolute` precisaria de uma altura calculada à mão, e ela
             passaria a mentir no dia em que um passo virasse duas linhas.
           */}
-          <ol className="self-start border-l border-border-strong lg:mt-4">
-            {steps.map((step, i) => (
-              <Step key={step.title} step={step} index={i} />
-            ))}
-          </ol>
+          <div className="self-start">
+            <ol className="border-l border-border-strong lg:mt-4">
+              {steps.map((step, i) => (
+                <Step key={step.title} step={step} index={i} />
+              ))}
+            </ol>
+
+            {/*
+              Onze caixas prontas, embaixo dos passos.
+
+              Ela não é ilustração: é a única prova na página de que a cozinha dá
+              conta de uma encomenda grande, e é o argumento que o prazo da
+              coluna ao lado faz sozinho no texto. "Peça hoje, receba amanhã"
+              vale mais com a foto de um dia de entrega ao lado.
+
+              E é aqui, e não numa linha do cardápio, porque a cena mistura
+              fritos e assados de várias linhas: pendurá-la em qualquer uma
+              delas seria mostrar um produto e vender outro.
+            */}
+            <ProductImage
+              foto="encomenda-pronta"
+              className="mt-12 aspect-[16/9]"
+              sizes="(min-width: 1024px) 45vw, 90vw"
+            />
+          </div>
         </div>
       </div>
     </section>

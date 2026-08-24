@@ -25,7 +25,7 @@ export async function checkOrderFlow(browser, url, { screenshotDir } = {}) {
   const thirdFlavor = pressables[TIER_BUTTONS + 2]
 
   // Botão de adicionar sem sabor escolhido deve guiar, nunca ficar inerte.
-  const addButton = card.getByRole("button", { name: /Adicionar —/ })
+  const addButton = card.locator("[data-adicionar]")
   if (await addButton.isDisabled()) {
     failures.push("botão adicionar começa desabilitado — vira beco sem saída")
   }
@@ -172,7 +172,8 @@ export async function checkOrderFlow(browser, url, { screenshotDir } = {}) {
   await page.reload({ waitUntil: "networkidle" })
   await page.waitForTimeout(400)
   const badgeAfterReload = await page
-    .getByRole("button", { name: /Abrir pedido — 1 item/ })
+    // O que importa aqui é "1 item", não a pontuação que separa o rótulo.
+    .getByRole("button", { name: /Abrir pedido.*\b1 item\b/ })
     .count()
   if (badgeAfterReload === 0) {
     failures.push("pedido não sobrevive ao recarregar a página")
@@ -199,13 +200,13 @@ export async function checkOrderFlow(browser, url, { screenshotDir } = {}) {
   await primeiraFesta.getByRole("button", { name: /100 un/ }).click()
   await chipsFesta[TIER_BUTTONS].click()
   await chipsFesta[TIER_BUTTONS + 1].click()
-  await primeiraFesta.getByRole("button", { name: /Adicionar —/ }).click()
+  await primeiraFesta.locator("[data-adicionar]").click()
   await page.waitForTimeout(250)
 
   const boxCard = page.locator("#box .bg-surface").first()
   const chipsBox = await boxCard.locator("button[aria-pressed]").all()
   await chipsBox[TIER_BUTTONS].click()
-  await boxCard.getByRole("button", { name: /Adicionar —/ }).click()
+  await boxCard.locator("[data-adicionar]").click()
   await page.waitForTimeout(250)
 
   // Um congelado adicionado duas vezes: exercita a multiplicação por quantidade.

@@ -1,47 +1,62 @@
 # Fotos de produto
 
-Onde as fotos do cliente entram. Enquanto não há foto, **nenhum espaço vazio aparece no
-site** — o bloco de imagem só é renderizado quando existe arquivo apontado. Nada quebra
-e a página não fica com cara de inacabada.
+Onde as fotos do cliente entram. Enquanto uma linha não tem foto, **nenhum espaço vazio
+aparece no site** — o bloco de imagem só existe quando há foto registrada. Nada quebra e a
+página não fica com cara de inacabada.
 
 ## Como publicar uma foto
 
-1. Salve o arquivo em `public/produtos/` usando o `id` do item como nome.
-2. Em `src/lib/data/menu.ts`, adicione `image: "/produtos/<arquivo>"` ao item.
-3. Rode `npm run check` e confira.
-
-Exemplo:
-
-```ts
-{
-  id: "classicos-fritos",
-  image: "/produtos/classicos-fritos.jpg",
-  name: "Clássicos Fritos",
-  ...
-}
+```bash
+node scripts/tratar-foto.mjs <original> <id> --corte L:A:X:Y
 ```
+
+O script recorta, corrige o que dá para corrigir e exporta duas larguras em WebP. Depois:
+
+1. registre a foto em `src/lib/media/fotos.ts`, com as dimensões que o script reportou;
+2. aponte o `id` no campo `image` da linha, em `src/lib/data/menu.ts`;
+3. `npm run check:midia`.
+
+O manifesto existe pelo mesmo motivo do de clipes: as dimensões viram os atributos
+`width` e `height` da tag, e são elas que reservam o espaço antes de a imagem chegar. A
+conferência mede o ARQUIVO e compara com o que está escrito ali — foi assim que ela pegou
+uma altura anotada como 675 num arquivo de 676.
+
+## O que o script NÃO faz
+
+Ele não inventa pixel. Nada de "melhorar com IA": um modelo que redesenha a coxinha
+entrega uma coxinha que não é a da casa, e quem pediu confiando na foto recebe outra
+coisa. A qualidade máxima da saída é a qualidade da entrada.
+
+Consequência prática: **peça sempre o arquivo original**. Foto que chega pelo WhatsApp já
+perdeu metade dos pixels no caminho — as que chegaram assim aqui vieram com 0,11 a 0,16
+byte por pixel, quando uma foto de celular sai da câmera com dez vezes isso. Mandar como
+"documento" em vez de como "foto" preserva o arquivo, e é de graça.
 
 ## Onde a foto aparece hoje
 
-| Local | Arquivos esperados | Proporção |
-|---|---|---|
-| Encomendas para festa | `classicos-fritos`, `assados-especiais`, `folhados-premium`, `selecao-don-enrico` | 16:9 |
-| Box Degustação | `box-degustacao` | 16:9 |
+| Local | Id esperado | Proporção | Situação |
+|---|---|---|---|
+| Box Degustação | `box-degustacao` | 16:9 | no ar |
+| Clássicos Fritos | `classicos-fritos` | 16:9 | no ar |
+| Assados Especiais | `assados-especiais` | 16:9 | falta |
+| Folhados Premium | `folhados-premium` | 16:9 | falta |
+| Seleção Don Enrico | `selecao-don-enrico` | 16:9 | falta |
+| Como encomendar | `encomenda-pronta` | 16:9 | no ar |
 
 As linhas de **congelados não mostram foto** — são 19 sabores em lista compacta, e
-miniatura ali viraria ruído visual e 19 requisições de imagem. Se um dia quisermos,
-é preciso voltar o campo `image` em `FlavorPack` junto com o componente que o lê.
+miniatura ali viraria ruído visual e 19 requisições de imagem.
 
 ## Formato
 
-- **JPG ou WebP**, no máximo ~300 KB por foto (é celular em 4G do outro lado).
-- Proporção **16:9**, mínimo 1200px de largura.
-- Fundo limpo, luz natural. O guia de como fotografar está em
-  `docs/PERGUNTAS-CLIENTE.md`, item 2.2.
+- **WebP**, gerado pelo script. Teto de 200 KB na versão grande e 100 KB na estreita.
+- Proporção **16:9**. O script não amplia: recorte com menos de 1200 px sai no tamanho
+  que tem, porque esticar só espalha o borrão da compressão.
 
 ## Antes de publicar
 
-As fotos precisam ser **dos produtos reais da Don Enrico**. Se forem de banco de
-imagens, não podem ir para o site como se fossem do produto — é propaganda enganosa e
-pode dar problema de direito autoral. Essa pergunta está no item 2.3 do questionário e
-ainda não foi respondida.
+A foto precisa ser **do produto real da Don Enrico**, e a cena precisa bater com a linha
+em que ela é pendurada. Trocar de linha para preencher um espaço vazio é prometer um
+salgado e entregar outro.
+
+Duas fotos enviadas ficaram de fora por essa regra. O motivo de cada uma está escrito no
+fim de `src/lib/media/fotos.ts`.

@@ -96,8 +96,7 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
 
       {category.image && (
         <ProductImage
-          src={category.image}
-          alt={`${category.name} — Don Enrico Lanches`}
+          foto={category.image}
           className="aspect-[16/9] border-0 border-b border-border"
           sizes="(min-width: 1024px) 45vw, 92vw"
         />
@@ -186,6 +185,16 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
             type="button"
             onClick={handleAdd}
             aria-describedby={showHint ? hintId : undefined}
+            /*
+             * Marca estável para a conferência do fluxo de pedido.
+             *
+             * Ela procurava o botão pelo texto, com /Adicionar —/. Trocar o
+             * travessão por um ponto médio na etiqueta derrubou a suíte inteira,
+             * sem que nada do PEDIDO tivesse mudado. Uma conferência de
+             * comportamento não deve depender da pontuação de um rótulo: o
+             * rótulo é copy, e copy muda.
+             */
+            data-adicionar=""
             className={cn(
               "w-full min-h-[3.5rem] px-5 font-bold text-sm uppercase tracking-[0.14em] transition-[color,background-color,border-color,opacity] duration-300",
               justAdded
@@ -193,7 +202,13 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
                 : "bg-fg text-bg hover:bg-amber"
             )}
           >
-            {justAdded ? "Adicionado ao pedido" : `Adicionar — ${formatPrice(tier.price)}`}
+            {/*
+              Ponto médio, e não travessão. O travessão é o sinal de pontuação
+              que mais entrega texto escrito por gerador, e aqui ele nem estava
+              pontuando: estava separando duas coisas numa etiqueta de botão,
+              que é trabalho de espaço ou de ponto.
+            */}
+            {justAdded ? "Adicionado ao pedido" : `Adicionar · ${formatPrice(tier.price)}`}
           </button>
 
           {showHint && (

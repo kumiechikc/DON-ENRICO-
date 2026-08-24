@@ -8,11 +8,16 @@
  * preparar uma tira. A parte que precisa de navegador — com movimento reduzido
  * nada é baixado e nenhuma sequência avança — roda dentro de `npm run check`.
  */
-import { checkMidiaEstatica, checkSequenciasEstatica } from "./checks/midia.mjs"
+import {
+  checkMidiaEstatica,
+  checkSequenciasEstatica,
+  checkFotosEstatica,
+} from "./checks/midia.mjs"
 
 const blocos = [
   ["Clipes de vídeo", await checkMidiaEstatica()],
   ["Sequências de quadros", await checkSequenciasEstatica()],
+  ["Fotos de produto", await checkFotosEstatica()],
 ]
 
 let total = 0
