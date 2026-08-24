@@ -345,45 +345,93 @@ export async function checkMidia(browser, url) {
   }
 
   /*
-   * A esteira de sabores é uma `transform` em laço, composta na GPU. Ficava
-   * desligada no aparelho fraco junto com o que é caro de verdade (Lenis e
-   * ScrollTrigger), e o dono do site viu a faixa parada no celular.
+  /*
+   * A esteira de sabores, medida em px/s e não em "andou alguma coisa".
+   *
+   * Duas frentes, e a segunda é a que pegou o defeito de verdade:
+   *
+   * 1. Ela roda no aparelho fraco? É uma `transform` em laço composta na GPU, e
+   *    ficava desligada junto com o que é caro (Lenis, ScrollTrigger).
+   * 2. Ela roda numa VELOCIDADE LEGÍVEL, e a mesma em qualquer tela? A versão
+   *    anterior fixava a duração em 28s e deixava a velocidade sair do tamanho
+   *    do trilho: 502 px/s no desktop e 336 no celular. Texto acima de ~150
+   *    px/s vira borrão, e o dono do site relatou não conseguir ler os sabores.
+   *    Pior: acrescentar um sabor no cardápio acelerava a faixa.
+   *
+   * A conferência anterior exigia "andou mais de 5px em 1,5s" — passava com 502
+   * px/s tranquilamente. Medir que se move não basta; é preciso medir o passo.
    */
   {
-    const ctx = await browser.newContext({
-      viewport: { width: 390, height: 844 },
-      isMobile: true,
-      hasTouch: true,
-    })
-    await ctx.addInitScript(() => {
-      Object.defineProperty(navigator, "hardwareConcurrency", { get: () => 2 })
-      Object.defineProperty(navigator, "deviceMemory", { get: () => 2 })
-    })
-    const page = await ctx.newPage()
-    await page.goto(url, { waitUntil: "load", timeout: 60000 })
-    await page.waitForTimeout(1200)
+    const FAIXA_LEGIVEL = { min: 40, max: 110 }
+    const medidas = []
 
-    const andou = await page.evaluate(async () => {
-      const faixa = document.querySelector("[data-esteira]")
-      if (!faixa) return null
-      const ler = () =>
-        new DOMMatrixReadOnly(getComputedStyle(faixa).transform || "none").m41
-      const antes = ler()
-      await new Promise((r) => setTimeout(r, 1500))
-      return Math.abs(ler() - antes)
-    })
+    for (const [rotulo, largura, altura, fraco] of [
+      ["celular fraco", 390, 844, true],
+      ["desktop", 1440, 900, false],
+    ]) {
+      const ctx = await browser.newContext({
+        viewport: { width: largura, height: altura },
+        isMobile: largura < 500,
+        hasTouch: largura < 500,
+      })
+      if (fraco) {
+        await ctx.addInitScript(() => {
+          Object.defineProperty(navigator, "hardwareConcurrency", { get: () => 2 })
+          Object.defineProperty(navigator, "deviceMemory", { get: () => 2 })
+        })
+      }
+      const page = await ctx.newPage()
+      await page.goto(url, { waitUntil: "load", timeout: 60000 })
+      await page.waitForTimeout(1500)
 
-    if (andou === null) {
-      failures.push("não achei a esteira de sabores na página")
-    } else if (andou < 5) {
-      failures.push(
-        `em aparelho fraco a esteira andou ${andou.toFixed(1)}px em 1,5s — está ` +
-          "parada, desligada junto com o que é caro de verdade"
-      )
-    } else {
-      notes.push(`em aparelho fraco a esteira andou ${andou.toFixed(0)}px em 1,5s`)
+      const px = await page.evaluate(async () => {
+        const faixa = document.querySelector("[data-esteira]")
+        if (!faixa) return null
+        const ler = () =>
+          new DOMMatrixReadOnly(getComputedStyle(faixa).transform || "none").m41
+        const antes = ler()
+        await new Promise((r) => setTimeout(r, 2000))
+        return Math.abs(ler() - antes) / 2
+      })
+      await ctx.close()
+
+      if (px === null) {
+        failures.push("não achei a esteira de sabores na página")
+        continue
+      }
+      medidas.push({ rotulo, px })
+
+      if (px < 1) {
+        failures.push(
+          `esteira em ${rotulo}: parada (${px.toFixed(1)} px/s) — desligada junto ` +
+            "com o que é caro de verdade"
+        )
+      } else if (px < FAIXA_LEGIVEL.min || px > FAIXA_LEGIVEL.max) {
+        failures.push(
+          `esteira em ${rotulo}: ${px.toFixed(0)} px/s, fora da faixa legível de ` +
+            `${FAIXA_LEGIVEL.min} a ${FAIXA_LEGIVEL.max} px/s — ` +
+            (px > FAIXA_LEGIVEL.max ? "os sabores viram borrão" : "parece travada")
+        )
+      } else {
+        notes.push(`esteira em ${rotulo}: ${px.toFixed(0)} px/s`)
+      }
     }
-    await ctx.close()
+
+    /*
+     * E as duas têm que bater. Velocidade diferente entre telas significa que
+     * ela está saindo do tamanho do trilho em vez de ser escolhida.
+     */
+    if (medidas.length === 2) {
+      const [a, b] = medidas
+      const desvio = Math.abs(a.px - b.px) / Math.max(a.px, b.px)
+      if (desvio > 0.15) {
+        failures.push(
+          `esteira: ${a.px.toFixed(0)} px/s em ${a.rotulo} contra ` +
+            `${b.px.toFixed(0)} em ${b.rotulo} — a velocidade está saindo do ` +
+            "tamanho do trilho, não de uma decisão"
+        )
+      }
+    }
   }
 
   /**

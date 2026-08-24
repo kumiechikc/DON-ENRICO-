@@ -21,10 +21,9 @@ export function ContatoSection() {
       />
 
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 py-24 md:py-36 text-center">
-        <p className="type-label text-[0.68rem] text-amber mb-8">
-          Peça agora
-        </p>
-
+        {/* "Peça agora" saiu daqui: o título já é o pedido, e logo abaixo dele
+            há um botão que diz "Pedir no WhatsApp". Três chamados para a mesma
+            ação em cinco centímetros de tela. */}
         <h2 className="type-display text-[clamp(2.5rem,9vw,6.5rem)] text-fg">
           Sua festa
           <br />

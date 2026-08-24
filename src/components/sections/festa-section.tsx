@@ -35,8 +35,18 @@ export function FestaSection() {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        {/*
+          Sem rótulo por cima do título. Havia um "Encomendas para festa" em
+          caixa alta acima desta chamada, e o mesmo desenho se repetia em cinco
+          das sete seções: rótulo pequeno, título grande, parágrafo. É o ritmo
+          mais reconhecível de página gerada, porque o rótulo quase nunca diz
+          algo que o título já não diga.
+
+          Este dizia menos que o título: "Escolha a linha e os sabores" é a
+          instrução, e a seção se chama "Encomendas para festa" no menu e no
+          rodapé, que é onde um nome de seção serve para alguma coisa.
+        */}
         <SectionHeading
-          eyebrow="Encomendas para festa"
           title="Escolha a linha e os sabores"
           subtitle="Quatro linhas, sempre em pacote fechado de 50 ou 100 unidades. Monte a combinação aqui e ela vai junto no WhatsApp."
         />

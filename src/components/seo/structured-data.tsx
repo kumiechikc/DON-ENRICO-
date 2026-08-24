@@ -10,7 +10,14 @@ import { PHONE_TEL, INSTAGRAM_URL } from "@/lib/cart/whatsapp"
 
 /*
  * Dados estruturados para o Google entender que isto é um negócio local de
- * comida em Porto Alegre, com catálogo e preço.
+ * comida em Viamão, com catálogo e preço.
+ *
+ * Área de atendimento e prazo de encomenda entraram: os dois vieram do dono e
+ * estão no `site.ts`. O prazo viaja na `description`, porque `FoodEstablishment`
+ * não tem campo para "antecedência mínima de pedido" — o campo que existe,
+ * `deliveryLeadTime`, é de `OfferShippingDetails`, que descreve frete de
+ * e-commerce e traria junto uma promessa de prazo de transporte que não é o
+ * caso aqui.
  *
  * O que NÃO está aqui, de propósito: `address` com rua, `openingHours` e
  * coordenadas. Nenhum desses foi confirmado pelo dono, e schema com dado
@@ -62,10 +69,28 @@ export function StructuredData() {
       addressRegion: site.state,
       addressCountry: site.country,
     },
-    areaServed: {
-      "@type": "City",
-      name: site.city,
-    },
+    /*
+     * Duas entradas, porque o dono confirmou duas coisas diferentes: a base é
+     * Viamão, e o atendimento alcança a região metropolitana com entrega.
+     *
+     * A região entra como `AdministrativeArea` e NÃO como uma lista de cidades.
+     * O dono citou nomes de cidade num áudio, mas nome de cidade é dado de
+     * negócio: declarar aqui uma cidade que ele não atende faria o Google
+     * mostrar o negócio para quem ele não pode servir, que é pior do que não
+     * aparecer. A lista nominal entra quando vier confirmada por escrito.
+     */
+    areaServed: [
+      {
+        "@type": "City",
+        name: site.city,
+        addressRegion: site.state,
+        addressCountry: site.country,
+      },
+      {
+        "@type": "AdministrativeArea",
+        name: "Região Metropolitana de Porto Alegre",
+      },
+    ],
     priceRange: "R$",
     makesOffer: offers,
   }
