@@ -10,8 +10,8 @@ export const site = {
   name: "Don Enrico Lanches",
   tagline: "O sabor que impõe respeito",
   description:
-    "Salgados para festa e congelados por encomenda em Porto Alegre. Box degustação, pacotes de 50 e 100 unidades e linha de congelados. Peça pelo WhatsApp.",
-  city: "Porto Alegre",
+    "Salgados para festa e congelados por encomenda em Viamão. Box degustação, pacotes de 50 e 100 unidades e linha de congelados. Peça pelo WhatsApp.",
+  city: "Viamão",
   state: "RS",
   country: "BR",
   /*

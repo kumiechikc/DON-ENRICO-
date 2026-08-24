@@ -10,7 +10,7 @@ import { PHONE_TEL, INSTAGRAM_URL } from "@/lib/cart/whatsapp"
 
 /*
  * Dados estruturados para o Google entender que isto é um negócio local de
- * comida em Porto Alegre, com catálogo e preço.
+ * comida em Viamão, com catálogo e preço.
  *
  * O que NÃO está aqui, de propósito: `address` com rua, `openingHours` e
  * coordenadas. Nenhum desses foi confirmado pelo dono, e schema com dado

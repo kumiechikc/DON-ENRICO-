@@ -10,9 +10,9 @@ import { useMotion } from "@/lib/motion/motion-provider"
  *
  * Dois detalhes que separam isto de um marquee de template:
  *
- * 1. A direção e a velocidade respondem à rolagem. Rolando para baixo a faixa
- *    acelera para a esquerda; rolando para cima ela inverte. O olho percebe que
- *    a página reage, mesmo sem saber explicar o quê.
+ * 1. A direção responde à rolagem. Rolando para baixo a faixa corre para a
+ *    esquerda; rolando para cima ela inverte. O olho percebe que a página
+ *    reage, mesmo sem saber explicar o quê.
  * 2. O conteúdo é duplicado e a animação usa `modifiers` para embrulhar a
  *    posição, o que dá um laço infinito sem salto — a alternativa ingênua
  *    (reiniciar em 0) produz um piscar visível a cada volta.
@@ -32,6 +32,28 @@ import { useMotion } from "@/lib/motion/motion-provider"
  * espera o `motionEnabled`.
  * ─────────────────────────────────────────────────────────────────────────────
  */
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * A VELOCIDADE É UMA CONSTANTE DECLARADA, NÃO O RESTO DE UMA DIVISÃO.
+ *
+ * A primeira versão fixava a DURAÇÃO em 28 segundos, e a velocidade saía do
+ * tamanho do trilho. Medido no site publicado:
+ *
+ *     desktop ... 502 px/s   um sabor fica visível 3,6s
+ *     celular ... 336 px/s   um sabor fica visível 1,85s
+ *
+ * Duas coisas erradas aí. A primeira é o número: faixa de texto legível corre
+ * entre 40 e 90 px/s, e acima de ~150 px/s texto vira borrão. A segunda é mais
+ * séria: as duas velocidades DIFEREM, porque o trilho do desktop é maior. Ou
+ * seja, a velocidade era acidente do conteúdo — acrescentar um sabor no
+ * cardápio deixava a esteira mais rápida, sem ninguém decidir isso.
+ *
+ * Agora a velocidade é o dado e a duração é derivada. Vinte sabores ou cem, a
+ * faixa corre no mesmo passo.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+const PIXELS_POR_SEGUNDO = 70
+
 export function Marquee({ items }: { items: string[] }) {
   const trackRef = useRef<HTMLDivElement>(null)
   const { motionEnabled, lacosLeves } = useMotion()
@@ -48,7 +70,7 @@ export function Marquee({ items }: { items: string[] }) {
 
       const tween = gsap.to(track, {
         x: -half,
-        duration: 28,
+        duration: half / PIXELS_POR_SEGUNDO,
         ease: "none",
         repeat: -1,
         modifiers: { x: (value) => `${wrap(parseFloat(value))}px` },

@@ -8,6 +8,7 @@ import { useMotion } from "@/lib/motion/motion-provider"
 import { useSplitReveal } from "@/lib/motion/use-split-text"
 import { getWhatsAppDirectUrl } from "@/lib/cart/whatsapp"
 import { boxDegustacao } from "@/lib/data/menu"
+import { site } from "@/lib/site"
 import { formatPrice } from "@/lib/utils"
 import { MagneticButton } from "@/components/ui/magnetic-button"
 import { CinemaLoop } from "@/components/media/cinema-loop"
@@ -134,7 +135,7 @@ export function HeroSection() {
         */}
         <div>
             <p className="type-label text-[0.68rem] sm:text-xs text-amber mb-6 sm:mb-8">
-              Porto Alegre · O sabor que impõe respeito
+              {site.city} · {site.tagline}
             </p>
 
             <h1
