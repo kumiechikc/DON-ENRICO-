@@ -40,20 +40,38 @@ cliente escolhe 1 ou 2 sabores — que é como o site está hoje.
 Se for sortido, o site precisa parar de pedir escolha de sabor ali — é uma mudança de
 duas linhas, mas muda o que o cliente entende que está comprando.
 
-### 1.2 Prazo de encomenda
-- Com **quanto tempo de antecedência** o pedido precisa ser feito? (24h? 48h? 3 dias?)
+### 1.2 Prazo de encomenda ✅ RESPONDIDO EM PARTE
+
+**O que o senhor respondeu:** mínimo de **24 horas de antecedência**; abaixo disso o
+pedido é avaliado na hora, e até hoje sempre deu.
+
+**Já está no site:** na dobra ("Peça hoje, receba amanhã") e por extenso em "Como
+encomendar". Escrevi como *avaliação*, não como garantia: o site diz "pergunte no
+WhatsApp, a gente avalia o pedido na hora". "Sempre dá" no site viraria promessa por
+escrito, e é a única coisa que uma cozinha não pode prometer num dia cheio.
+
+**Ainda falta:**
 - O prazo muda conforme o tamanho? Ex.: 50 unidades em 1 dia, 500 unidades em 1 semana.
-- Aceita **encomenda para o mesmo dia**? Em que condições?
 - Tem **quantidade mínima** de pedido?
 - Qual o **maior pedido** que consegue produzir de uma vez? (Isso evita fechar um pedido
   que não dá para entregar.)
 
-### 1.3 Entrega ou retirada
-- **Entrega, retirada, ou os dois?**
-- Se entrega: **quais bairros/cidades**? Tem raio de km?
+### 1.3 Entrega ou retirada ✅ RESPONDIDO EM PARTE
+
+**O que o senhor respondeu:** atende **Viamão e a região metropolitana**, e **entrega**.
+
+**Já está no site:** na dobra, em "Como encomendar", no rodapé e na marcação que o Google
+lê.
+
+**Ainda falta, e uma delas é importante:**
+- **A lista de cidades.** No áudio o senhor citou nomes, mas o áudio saiu embolado na
+  transcrição e eu não vou escrever no site o nome de uma cidade que talvez o senhor não
+  atenda: o Google mostraria o negócio para quem ele não pode servir. Por isso o site hoje
+  diz "Viamão e região metropolitana", que é verdade inteira. **Me manda a lista por
+  escrito** e eu troco a frase pela lista.
 - **Cobra taxa de entrega?** Quanto? Varia por distância? Tem valor de pedido que isenta?
-- Se retirada: **qual o endereço?** Pode ser divulgado no site ou é ponto residencial que
-  o senhor prefere passar só no WhatsApp?
+- Tem **retirada** também? Se sim, **qual o endereço?** Pode ser divulgado no site ou é
+  ponto residencial que o senhor prefere passar só no WhatsApp?
 - Entrega em dia de festa tem horário combinado ou é janela?
 
 ### 1.4 Horário de atendimento
@@ -76,6 +94,12 @@ duas linhas, mas muda o que o cliente entende que está comprando.
 
 As fotos são o item de maior impacto que falta. Site de comida sem foto de comida
 converte muito menos, e hoje todos os espaços estão com um bloco reservado da marca.
+
+> **Pendente:** o senhor disse que tem fotos de verdade dos salgados e pediu para eu
+> avaliar se dá para usar. **As fotos não chegaram** — a mensagem veio sem anexo. Manda as
+> que tiver, mesmo as que o senhor acha ruins: dá para salvar muita coisa em foto tremida
+> ou escura, e o que não der eu digo na hora e explico o que refazer. Foto de celular boa
+> vale mais que banco de imagem, porque é o produto de verdade.
 
 ### 2.1 O que preciso receber
 - **Foto de cada sabor**, se possível. Se não der para todos, priorize os campeões de

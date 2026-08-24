@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic"
 import { useEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
-import { ArrowDown } from "lucide-react"
 import { useMotion } from "@/lib/motion/motion-provider"
 import { useSplitReveal } from "@/lib/motion/use-split-text"
 import { getWhatsAppDirectUrl } from "@/lib/cart/whatsapp"
@@ -134,8 +133,22 @@ export function HeroSection() {
           problemas de uma vez, e a metade direita passou a ser da cena.
         */}
         <div>
+            {/*
+              A área de atendimento, e não o lema.
+
+              Aqui era "Viamão · O sabor que impõe respeito": meia linha de
+              cidade e meia de slogan, separadas por um ponto médio. O lema já
+              aparece inteiro na pausa do meio da página e no rodapé, então esta
+              linha estava repetindo o que a página diz melhor mais adiante — e
+              gastando a única linha pequena que o topo comporta.
+
+              Quem chega no site de um salgadeiro procura três coisas antes de
+              qualquer outra: se atende onde ele mora, em quanto tempo, e quanto
+              custa. As três agora estão na dobra: esta linha responde a
+              primeira, o parágrafo responde as outras duas.
+            */}
             <p className="type-label text-[0.68rem] sm:text-xs text-amber mb-6 sm:mb-8">
-              {site.city} · {site.tagline}
+              {site.deliveryArea.curta}
             </p>
 
             <h1
@@ -154,9 +167,18 @@ export function HeroSection() {
             </h1>
 
             <div ref={supportRef} className="mt-9 sm:mt-11 max-w-lg">
+              {/*
+                "Peça hoje, receba amanhã" é o prazo dito pelo lado que é boa
+                notícia. O mesmo fato aparece por extenso e sem arredondamento em
+                "Como encomendar" (mínimo de 24 horas, abaixo disso o pedido é
+                avaliado): aqui é a promessa curta, lá é o contrato.
+              */}
               <p className="text-base sm:text-lg text-fg-muted leading-relaxed">
-                Fritos, assados e folhados feitos por encomenda. Box degustação a
-                partir de{" "}
+                Fritos, assados e folhados feitos por encomenda.{" "}
+                <strong className="text-fg font-bold">
+                  {site.leadTime.titulo}.
+                </strong>{" "}
+                Box degustação a partir de{" "}
                 <strong className="text-amber font-bold">
                   {formatPrice(entryPrice)}
                 </strong>
@@ -184,13 +206,19 @@ export function HeroSection() {
             </div>
         </div>
 
-        <a
-          href="#festa"
-          className="mt-12 md:mt-16 inline-flex items-center gap-3 text-fg-muted hover:text-amber transition-colors duration-300 min-h-[2.75rem]"
-        >
-          <span className="type-label text-[0.62rem]">Ver o cardápio</span>
-          <ArrowDown className="w-4 h-4 animate-bounce" aria-hidden="true" />
-        </a>
+        {/*
+          Aqui havia um "Ver o cardápio ↓" com seta pulando. Saiu por dois
+          motivos, e o segundo é o que decide:
+
+          1. Ele apontava para #festa — o mesmo destino do botão "Montar meu
+             pedido", trinta pixels acima. Dois chamados para a mesma ação na
+             mesma tela dividem a atenção sem oferecer escolha nenhuma.
+          2. Quem ainda não rolou está olhando o topo da página. Não precisa de
+             um rótulo dizendo que dá para rolar.
+
+          O topo ficou com quatro peças: a linha da área, o título, o parágrafo
+          e os dois botões. É o que cabe em uma decisão.
+        */}
       </div>
     </section>
   )

@@ -34,15 +34,16 @@ export function CongeladosSection() {
   return (
     <section id="congelados" className="relative border-t border-border py-24 md:py-36">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
+        {/* Sem rótulo por cima, pelo mesmo motivo da seção de festa: "Linha
+            praticidade" não acrescentava nada a "Sempre no seu freezer". */}
         <SectionHeading
-          eyebrow="Linha praticidade"
           title="Sempre no seu freezer"
           subtitle={`Pacote fechado com ${CONGELADOS_PACK_SIZE} unidades de um sabor só, para preparar na hora que der vontade.`}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
           <PackList title="Para fritar" packs={congeladosFritar} />
-          <PackList title="Assados — só aquecer" packs={congeladosAssados} />
+          <PackList title="Assados, só aquecer" packs={congeladosAssados} />
         </div>
       </div>
     </section>

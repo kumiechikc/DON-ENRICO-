@@ -21,8 +21,11 @@ export function Footer() {
             <p className="mt-4 text-sm text-fg-muted italic max-w-xs">
               {site.tagline}
             </p>
-            <p className="mt-6 type-label text-[0.62rem] text-fg-muted">
-              {site.city} · {site.state}
+            {/* Era "Viamão · RS", em caixa alta e com ponto médio: dois
+                fragmentos onde cabia a informação inteira. Rodapé é onde a
+                pessoa procura de onde a empresa fala e até onde ela vai. */}
+            <p className="mt-6 text-sm text-fg-muted max-w-xs leading-relaxed">
+              {site.deliveryArea.longa}
             </p>
           </div>
 
