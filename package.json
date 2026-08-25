@@ -18,6 +18,7 @@
     "check:midia": "node scripts/check-midia.mjs",
     "check:export": "node scripts/check-export.mjs",
     "clipe": "node scripts/comprimir-clipe.mjs",
+    "foto": "node scripts/tratar-foto.mjs",
     "sequencia": "node scripts/preparar-sequencia.mjs"
   },
   "dependencies": {

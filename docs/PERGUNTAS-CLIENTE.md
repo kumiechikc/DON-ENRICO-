@@ -95,11 +95,37 @@ lê.
 As fotos são o item de maior impacto que falta. Site de comida sem foto de comida
 converte muito menos, e hoje todos os espaços estão com um bloco reservado da marca.
 
-> **Pendente:** o senhor disse que tem fotos de verdade dos salgados e pediu para eu
-> avaliar se dá para usar. **As fotos não chegaram** — a mensagem veio sem anexo. Manda as
-> que tiver, mesmo as que o senhor acha ruins: dá para salvar muita coisa em foto tremida
-> ou escura, e o que não der eu digo na hora e explico o que refazer. Foto de celular boa
-> vale mais que banco de imagem, porque é o produto de verdade.
+### ✅ Cinco fotos chegaram. Três entraram no site.
+
+**No ar:**
+
+| Foto | Onde entrou | Por quê |
+|---|---|---|
+| Salgados fritos de perto | Box Degustação | O box é "sortido dos clássicos fritos", e é isso que a cena mostra |
+| Caixas de coxinha e croquete | Clássicos Fritos | Coxinha e croquete são dois sabores dessa linha |
+| Onze caixas na mesa | Como encomendar | Prova a capacidade de produzir, e não um sabor |
+
+**Fora, e o motivo:**
+
+- **Bandeja redonda sortida.** Chegou com 550x355 pixels, contra 1080 a 1600 das outras;
+  a cor está em R193 G105 B52, laranja saturado com o brilho estourado, tratamento de
+  banco de imagem. As outras quatro estão entre R117 e R156, que é comida de verdade sob
+  lâmpada de cozinha. **De onde veio essa foto?** Se for de banco, não pode ir para o site
+  como se fosse do produto.
+- **Mini sanduíches (bauruzinhos).** É a melhor foto do lote: nítida, luz frontal, alface
+  viva. Mas **não existe esse item no cardápio**. Vocês vendem? Se sim, me diga o nome, os
+  tamanhos e o preço, que ele entra no cardápio e a foto entra junto.
+
+### Duas coisas que aumentam MUITO a qualidade, e são de graça
+
+1. **Mande o arquivo original, como "documento" e não como "foto".** As cinco chegaram
+   pelo WhatsApp, que recomprime: vieram com 0,11 a 0,16 byte por pixel, quando o celular
+   grava com dez vezes isso. Nenhum tratamento devolve o que foi jogado fora ali. No
+   WhatsApp: clipe → Documento → Procurar → escolher a foto na galeria.
+2. **Faltam três fotos**, uma para cada linha sem imagem: **Assados Especiais**,
+   **Folhados Premium** e **Seleção Don Enrico** (mini pizzas, croissants, empadinhas,
+   tortinhas). Uma bandeja cheia de cada, de cima, perto da janela, sem flash. O guia de
+   como tirar está no item 2.2 logo abaixo.
 
 ### 2.1 O que preciso receber
 - **Foto de cada sabor**, se possível. Se não der para todos, priorize os campeões de

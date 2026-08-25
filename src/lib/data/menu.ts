@@ -13,9 +13,13 @@ export interface Tier {
   maxFlavors: number
 }
 
-// `image` fica vazio até o cliente enviar a foto: o componente ProductImage cai
-// num fallback da marca. Para publicar uma foto, salve o arquivo em
-// public/produtos/<id>.jpg e aponte image: "/produtos/<id>.jpg" aqui.
+// `image` é o id de uma foto registrada em src/lib/media/fotos.ts. Enquanto a
+// linha não tiver foto, fica vazio e o ProductImage cai no espaço reservado da
+// marca. Para publicar uma foto: trate o original com scripts/tratar-foto.mjs,
+// registre em fotos.ts, e aponte o id aqui.
+//
+// A foto só entra na linha em que a cena BATE com o produto. Trocar de linha
+// para preencher um espaço vazio é prometer um salgado e entregar outro.
 export interface AssortedCategory {
   id: string
   name: string
@@ -60,6 +64,8 @@ export const boxDegustacao: AssortedCategory = {
   id: "box-degustacao",
   name: "Box Degustação",
   description: "Sortido dos clássicos fritos, para provar.",
+  // A cena é literalmente um sortido de clássicos fritos, de perto.
+  image: "box-degustacao",
   flavors: [
     "Coxinha de frango",
     "Bolinha de queijo",
@@ -84,6 +90,8 @@ export const festaCategories: AssortedCategory[] = [
     id: "classicos-fritos",
     name: "Clássicos Fritos",
     description: "Fritos na hora. Os sabores tradicionais.",
+    // Coxinha e croquete, que são dois dos sabores desta linha.
+    image: "classicos-fritos",
     flavors: [
       "Coxinha de frango",
       "Bolinha de queijo",

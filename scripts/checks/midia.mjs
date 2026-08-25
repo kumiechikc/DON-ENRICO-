@@ -23,6 +23,13 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), "..", "..")
 
 const ORCAMENTO_KB = { hero: 600, secao: 350, total: 2048, sequencia: 250 }
 
+/*
+ * Teto por foto e no conjunto. As fotos entram na mesma página que já carrega
+ * quase um megabyte de vídeo, e uma foto de produto que chega em 300 KB come o
+ * orçamento inteiro sozinha.
+ */
+const ORCAMENTO_FOTO_KB = { grande: 200, estreita: 100, total: 700 }
+
 /** Lê o manifesto sem precisar compilar TypeScript. */
 async function lerManifesto() {
   const mod = await import(join(raiz, "src", "lib", "media", "clipes.ts"))
@@ -32,6 +39,11 @@ async function lerManifesto() {
 async function lerSequencias() {
   const mod = await import(join(raiz, "src", "lib", "media", "sequencias.ts"))
   return mod.sequencias
+}
+
+async function lerFotos() {
+  const mod = await import(join(raiz, "src", "lib", "media", "fotos.ts"))
+  return mod.fotos
 }
 
 /**
@@ -192,6 +204,125 @@ export async function checkSequenciasEstatica() {
 }
 
 /* ────────────────────────────── navegador ───────────────────────────── */
+
+/* ────────────────────────── fotos (estática) ─────────────────────────── */
+
+/**
+ * As fotos de produto: os dois arquivos existem, cabem no orçamento, e as
+ * dimensões anotadas são as do arquivo.
+ *
+ * A medida sai do ARQUIVO, pelo mesmo motivo da tira de quadros. A altura
+ * anotada no manifesto vira o atributo `height` da tag, e é ela que reserva o
+ * espaço antes de a imagem chegar. Anotar 675 numa imagem de 600 não quebra
+ * nada visível no meu monitor — só faz a página pular um pouco quando a foto
+ * carrega, num celular, na casa de outra pessoa. É o CLS voltando pela porta
+ * dos fundos, e o jeito de pegar é comparar com o arquivo, não com a anotação.
+ */
+export async function checkFotosEstatica() {
+  const failures = []
+  const notes = []
+  const fotos = await lerFotos()
+
+  if (fotos.length === 0) {
+    notes.push("nenhuma foto registrada — os cards caem no espaço da marca")
+    return { failures, notes }
+  }
+
+  let totalKb = 0
+
+  for (const foto of fotos) {
+    /*
+     * O tamanho de cada parte é guardado enquanto ela é medida, e o resumo é
+     * montado no fim a partir daqui.
+     *
+     * A primeira versão remedia o arquivo para escrever a linha do resumo, e
+     * quando o arquivo não existia o `statSync` do resumo levantava erro e
+     * derrubava a conferência INTEIRA — engolindo a própria reprovação que ela
+     * tinha acabado de registrar. A mutação "apaga o arquivo estreito" passou
+     * em silêncio por causa disso, que é o pior resultado possível: uma
+     * conferência que morre parece uma conferência que não achou nada.
+     */
+    const medidos = new Map()
+    const partes = [
+      { rotulo: "grande", caminho: foto.arquivo, largura: foto.largura, teto: ORCAMENTO_FOTO_KB.grande },
+      { rotulo: "estreita", caminho: foto.arquivoEstreito, largura: foto.larguraEstreita, teto: ORCAMENTO_FOTO_KB.estreita },
+    ]
+
+    for (const parte of partes) {
+      const arquivo = join(raiz, "public", parte.caminho.replace(/^\//, ""))
+      if (!existsSync(arquivo)) {
+        failures.push(`${foto.id}: falta ${parte.caminho}`)
+        continue
+      }
+
+      const kb = statSync(arquivo).size / 1024
+      medidos.set(parte.rotulo, kb)
+      totalKb += kb
+      if (kb > parte.teto) {
+        failures.push(
+          `${foto.id} (${parte.rotulo}): ${kb.toFixed(0)} KB acima do teto de ${parte.teto} KB`
+        )
+      }
+
+      const medida = medirWebp(arquivo)
+      if (medida.largura !== parte.largura) {
+        failures.push(
+          `${foto.id} (${parte.rotulo}): o arquivo tem ${medida.largura} px de largura, ` +
+            `o manifesto diz ${parte.largura}`
+        )
+      }
+
+      /*
+       * A altura só é conferida na grande, que é a que o manifesto declara. A
+       * estreita é derivada pelo mesmo recorte, então basta que a PROPORÇÃO
+       * bata: se as duas discordassem, o navegador trocaria de arquivo no meio
+       * do carregamento e a imagem mudaria de formato na tela.
+       */
+      if (parte.rotulo === "grande" && medida.altura !== foto.altura) {
+        failures.push(
+          `${foto.id}: o arquivo tem ${medida.altura} px de altura, ` +
+            `o manifesto diz ${foto.altura} — é o CLS que isso deixa passar`
+        )
+      }
+      if (parte.rotulo === "estreita") {
+        const proporcaoGrande = foto.largura / foto.altura
+        const proporcaoEstreita = medida.largura / medida.altura
+        if (Math.abs(proporcaoGrande - proporcaoEstreita) > 0.02) {
+          failures.push(
+            `${foto.id}: a versão estreita tem proporção ${proporcaoEstreita.toFixed(3)} ` +
+              `e a grande ${proporcaoGrande.toFixed(3)} — a imagem mudaria de formato ` +
+              `quando o navegador trocasse de arquivo`
+          )
+        }
+      }
+    }
+
+    if (!foto.descricao || foto.descricao.trim().length < 15) {
+      failures.push(
+        `${foto.id}: descrição vazia ou curta demais. Foto de produto não é ` +
+          `decoração: quem usa leitor de tela também está decidindo o que pedir`
+      )
+    }
+
+    const grande = medidos.get("grande")
+    const estreita = medidos.get("estreita")
+    notes.push(
+      `${foto.id}: ${foto.largura}x${foto.altura}, ` +
+        `${grande === undefined ? "sem arquivo" : `${grande.toFixed(0)} KB`} ` +
+        `+ ${estreita === undefined ? "sem arquivo" : `${estreita.toFixed(0)} KB`} estreita`
+    )
+  }
+
+  if (totalKb > ORCAMENTO_FOTO_KB.total) {
+    failures.push(
+      `soma das fotos: ${totalKb.toFixed(0)} KB acima do teto de ${ORCAMENTO_FOTO_KB.total} KB`
+    )
+  } else {
+    notes.push(`soma: ${totalKb.toFixed(0)} KB de ${ORCAMENTO_FOTO_KB.total} KB`)
+  }
+
+  return { failures, notes }
+}
 
 export async function checkMidia(browser, url) {
   const { failures, notes } = await checkMidiaEstatica()

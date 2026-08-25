@@ -65,7 +65,7 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
             className="relative inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] lg:px-3 text-fg hover:text-red transition-colors duration-150"
             aria-label={
               totalItems > 0
-                ? `Abrir pedido — ${totalItems} ${totalItems === 1 ? "item" : "itens"}`
+                ? `Abrir pedido, ${totalItems} ${totalItems === 1 ? "item" : "itens"}`
                 : "Abrir pedido, vazio"
             }
           >

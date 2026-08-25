@@ -1,27 +1,41 @@
-import Image from "next/image"
+import { acharFoto } from "@/lib/media/fotos"
+import { arquivoPublico } from "@/lib/caminho-publico"
 import { cn } from "@/lib/utils"
 
 interface ProductImageProps {
   /**
-   * Caminho da foto em public/. Enquanto o cliente não envia as fotos, fica
-   * indefinido e o bloco cai no espaço reservado da marca — em vez de fingir
-   * que há uma foto ali.
+   * Id no manifesto de `fotos.ts`. Enquanto a linha não tiver foto registrada,
+   * fica indefinido e o bloco cai no espaço reservado da marca — em vez de
+   * fingir que há uma foto ali.
    */
-  src?: string
-  alt: string
+  foto?: string
   className?: string
   sizes?: string
   /** Marca a imagem do topo da página, que não deve ser adiada. */
   priority?: boolean
 }
 
+/*
+ * `<img>` cru, e não `next/image`.
+ *
+ * O site é exportado estático com `images: { unoptimized: true }`, e nesse modo
+ * o `next/image` não gera `srcset` nenhum: ele emite uma tag com uma única
+ * origem, do tamanho grande, e o celular baixa o arquivo de desktop inteiro.
+ * Aqui isso custava o dobro — 116 KB contra 58 KB na foto do box.
+ *
+ * Escrevendo a tag à mão, as duas larguras entram no `srcset` e o navegador
+ * escolhe. O que se perde do `next/image` é o `basePath` automático, e para
+ * isso já existe o `arquivoPublico()`, que é o mesmo caminho que os clipes
+ * usam.
+ */
 export function ProductImage({
-  src,
-  alt,
+  foto: id,
   className,
-  sizes = "(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw",
+  sizes = "(min-width: 1024px) 45vw, 92vw",
   priority = false,
 }: ProductImageProps) {
+  const foto = id ? acharFoto(id) : undefined
+
   return (
     <div
       className={cn(
@@ -29,15 +43,22 @@ export function ProductImage({
         className
       )}
     >
-      {src ? (
-        <Image
-          src={src}
-          alt={alt}
-          fill
+      {foto ? (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          src={arquivoPublico(foto.arquivo)}
+          srcSet={
+            `${arquivoPublico(foto.arquivoEstreito)} ${foto.larguraEstreita}w, ` +
+            `${arquivoPublico(foto.arquivo)} ${foto.largura}w`
+          }
           sizes={sizes}
-          priority={priority}
-          loading={priority ? undefined : "lazy"}
-          className="object-cover"
+          alt={foto.descricao}
+          width={foto.largura}
+          height={foto.altura}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : undefined}
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
         /*
