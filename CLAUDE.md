@@ -111,8 +111,15 @@ trabalho neste repositório:
 3. **Espere o `audit` do GitHub Actions ficar verde.** Ele é a única barreira: roda
    `npm run check` inteiro (navegador, contraste no pixel, teclado, performance),
    `check:midia`, `check:export`, lint e os dois builds.
-4. Com o `audit` verde e o PR sem conflito, tire o rascunho e **dê o merge**, sem
-   perguntar. O Vercel e o GitHub Pages republicam sozinhos a partir do `main`.
+
+   **Ele nem sempre roda, e isso é de propósito.** O `design-review.yml` tem filtro de
+   caminhos: PR que só mexe em `docs/`, `README` ou neste arquivo não dispara o
+   `audit`, porque nada nesse diff alcança o site. Nesse caso a regra é *nenhum check
+   reprovando*, e não *o audit verde* — esperar por um check que não vai existir
+   trava a entrega sem proteger nada. Antes de concluir que é esse o caso, confirme
+   nos `paths` do workflow que o diff realmente não toca em nada coberto.
+4. Com isso e o PR sem conflito, tire o rascunho e **dê o merge**, sem perguntar. O
+   Vercel e o GitHub Pages republicam sozinhos a partir do `main`.
 5. Se o `audit` reprovar, conserte e faça push de novo. Nunca mergear vermelho, e
    nunca contornar a conferência para conseguir mergear.
 
