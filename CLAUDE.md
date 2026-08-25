@@ -100,3 +100,37 @@ See `docs/STACK.md` for why each tool is here, `docs/SETUP.md` to install, and
   `.mcp.json` under `env.API_KEY_21ST`, or in your shell environment. See `docs/SETUP.md`.
 - The **frontend-design** skill is an Anthropic plugin. Install it inside Claude Code with:
   `/plugin install frontend-design@anthropics/claude-code`
+
+## Entrega: merge automático quando o CI passar
+
+O dono do projeto autorizou merge sem pedir confirmação. Ao terminar uma rodada de
+trabalho neste repositório:
+
+1. Commite e faça push na branch `claude/site-quality-design-improvement-ho71kc`.
+2. Abra o PR como rascunho, como sempre.
+3. **Espere o `audit` do GitHub Actions ficar verde.** Ele é a única barreira: roda
+   `npm run check` inteiro (navegador, contraste no pixel, teclado, performance),
+   `check:midia`, `check:export`, lint e os dois builds.
+
+   **Ele nem sempre roda, e isso é de propósito.** O `design-review.yml` tem filtro de
+   caminhos: PR que só mexe em `docs/`, `README` ou neste arquivo não dispara o
+   `audit`, porque nada nesse diff alcança o site. Nesse caso a regra é *nenhum check
+   reprovando*, e não *o audit verde* — esperar por um check que não vai existir
+   trava a entrega sem proteger nada. Antes de concluir que é esse o caso, confirme
+   nos `paths` do workflow que o diff realmente não toca em nada coberto.
+4. Com isso e o PR sem conflito, tire o rascunho e **dê o merge**, sem perguntar. O
+   Vercel e o GitHub Pages republicam sozinhos a partir do `main`.
+5. Se o `audit` reprovar, conserte e faça push de novo. Nunca mergear vermelho, e
+   nunca contornar a conferência para conseguir mergear.
+
+### As duas exceções, e elas não são negociáveis
+
+**Dado de negócio que o dono não confirmou não entra, e portanto não é mergeado.**
+Cidade atendida, taxa de entrega, horário, endereço, prazo, chave Pix, regra de
+sabores, número de estoque, depoimento. Se uma mudança depende de um desses e ele
+não veio por escrito, o PR fica aberto esperando a resposta em vez de ser mergeado.
+Merge automático acelera a entrega; ele não vira licença para publicar palpite.
+
+**Mudança que altera o que o site PROMETE ao cliente é avisada antes.** Preço, prazo,
+o que está incluso num pacote. O merge pode seguir, mas o recado ao dono vai junto,
+porque quem responde por uma promessa errada no WhatsApp é ele.
