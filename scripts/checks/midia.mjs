@@ -15,11 +15,23 @@
  *    não deveria existir só aparece quando a página rola de verdade.
  */
 import { existsSync, statSync } from "node:fs"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath, pathToFileURL } from "node:url"
 import { dirname, join } from "node:path"
 import { medirWebp } from "../lib/webp.mjs"
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), "..", "..")
+
+/*
+ * `import()` de caminho absoluto não funciona no Windows: o carregador de
+ * módulos lê `c:\...` como se `c:` fosse um esquema de URL e recusa. No Linux
+ * do CI o caminho começa com barra e passa por acaso, então a suíte de mídia
+ * ficava quebrada só na máquina de quem desenvolve — que é onde ela precisa
+ * rodar antes de abrir PR.
+ *
+ * `pathToFileURL` resolve nos dois: devolve `file:///c:/...` no Windows e
+ * `file:///...` no resto. É o mesmo caminho que `design-audit.mjs` já usa.
+ */
+const moduloDaRaiz = (...partes) => import(pathToFileURL(join(raiz, ...partes)).href)
 
 const ORCAMENTO_KB = { hero: 600, secao: 350, total: 2048, sequencia: 250 }
 
@@ -32,17 +44,17 @@ const ORCAMENTO_FOTO_KB = { grande: 200, estreita: 100, total: 700 }
 
 /** Lê o manifesto sem precisar compilar TypeScript. */
 async function lerManifesto() {
-  const mod = await import(join(raiz, "src", "lib", "media", "clipes.ts"))
+  const mod = await moduloDaRaiz("src", "lib", "media", "clipes.ts")
   return mod.clipes
 }
 
 async function lerSequencias() {
-  const mod = await import(join(raiz, "src", "lib", "media", "sequencias.ts"))
+  const mod = await moduloDaRaiz("src", "lib", "media", "sequencias.ts")
   return mod.sequencias
 }
 
 async function lerFotos() {
-  const mod = await import(join(raiz, "src", "lib", "media", "fotos.ts"))
+  const mod = await moduloDaRaiz("src", "lib", "media", "fotos.ts")
   return mod.fotos
 }
 

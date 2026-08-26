@@ -11,6 +11,7 @@
 import { chromium } from "playwright"
 import { spawn } from "node:child_process"
 import { mkdirSync, globSync } from "node:fs"
+import { fileURLToPath } from "node:url"
 import { setTimeout as sleep } from "node:timers/promises"
 
 import { checkViewports } from "./checks/viewport.mjs"
@@ -43,7 +44,26 @@ async function startDevServer() {
    * deixa o next-server filho vivo segurando a porta, e a rodada seguinte sobe
    * noutra porta ou não sobe — foi exatamente o que aconteceu aqui.
    */
-  const proc = spawn("npm", ["run", "dev"], {
+  /*
+   * Chama o binário local do Next pelo Node, e não `npm run dev`.
+   *
+   * `spawn("npm", ...)` morre no Windows com ENOENT: lá o npm é `npm.cmd`, e o
+   * `spawn` do Node só resolve extensão do PATHEXT com `shell: true`. O CI roda
+   * em ubuntu, onde `npm` é executável direto — então a suíte inteira ficava
+   * quebrada só na máquina de quem desenvolve, que é justamente onde ela
+   * precisa rodar antes de abrir PR.
+   *
+   * `shell: true` resolveria o ENOENT e traria problema pior: o cmd.exe entra
+   * como intermediário, e matar o shell deixa o next-server vivo segurando a
+   * porta. Chamando o binário direto, o next-server é filho de primeiro grau e
+   * o `proc.kill()` do encerramento alcança ele sem depender de grupo de
+   * processos, que o Windows não tem do mesmo jeito.
+   */
+  const binarioNext = fileURLToPath(
+    new URL("../node_modules/next/dist/bin/next", import.meta.url),
+  )
+
+  const proc = spawn(process.execPath, [binarioNext, "dev"], {
     stdio: ["ignore", "pipe", "pipe"],
     detached: true,
     /*

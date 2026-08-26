@@ -47,10 +47,41 @@ Escopo: **apenas Don Enrico**. A gráfica fica para depois.
       transição para aberto, durante a renderização (não em efeito), porque o código
       precisa estar certo no primeiro quadro pintado — ele vai dentro do href do WhatsApp.
 
+- [x] **A suíte de verificação estava inteiramente morta no Windows.** Duas falhas de
+      portabilidade, ambas invisíveis no CI porque ele roda em `ubuntu-latest`:
+      1. `scripts/check-site.mjs` chamava `spawn("npm", ["run", "dev"])`. No Windows o npm
+         é `npm.cmd` e o `spawn` do Node só resolve o `PATHEXT` com `shell: true` — dava
+         `ENOENT` e **nenhuma das 8 suítes chegava a rodar**. Passou a chamar o binário
+         local do Next pelo Node (`process.execPath` + `node_modules/next/dist/bin/next`).
+         `shell: true` não serviria: o cmd.exe entraria como intermediário e matar o shell
+         deixaria o next-server vivo segurando a porta. Chamando direto, ele é filho de
+         primeiro grau e o `proc.kill()` alcança.
+      2. `scripts/checks/midia.mjs` fazia `import()` de caminho absoluto. O carregador de
+         módulos lê `c:\...` como esquema de URL e recusa. Passou a usar `pathToFileURL`,
+         que é o mesmo padrão que `scripts/design-audit.mjs` já usava.
+      Varredura feita no resto de `scripts/` — não há mais nenhum caso do mesmo tipo.
+- [x] `npm install` na branch nova (`node_modules` é gitignored e não veio junto).
+
+## Baseline medido (servidor de desenvolvimento, após as correções)
+
+| Suíte | Resultado |
+|---|---|
+| Responsividade e console | 375/768/1024/1440 sem estouro horizontal, console limpo |
+| Fluxo do pedido | passa — código sorteado, sem preço no envio, pedido misto confere |
+| Contraste WCAG AA | 0 reprovações |
+| Contraste sobre vídeo | 12 textos medidos no pixel, celular e desktop |
+| Acessibilidade e teclado | 87 paradas, sem laço, todas visíveis com anel de 3px |
+| Performance | LCP 1672ms (orçamento 4000), CLS 0 (orçamento 0.1) |
+| Site sem JavaScript | 8390px, preços e WhatsApp presentes, 0 elemento invisível |
+| Clipes de vídeo | 867 KB de 2048; fotos 591 KB de 700 |
+
+O número de JavaScript (899 KB) é do servidor de desenvolvimento e **não vale** — o
+orçamento de 320 KB só se mede contra `npm run build` + `npm start`. Fazer isso antes de
+declarar qualquer coisa sobre peso.
+
 ## Em andamento
 
-- [ ] `npm install` na branch nova (`node_modules` não veio, é gitignored).
-- [ ] Verificar a correção com `npm run check` (a suíte `order-flow.mjs` cobre este caminho).
+- [ ] Auditoria dos 5 sites de referência e brief de movimento.
 
 ## Próximos passos, em ordem
 
