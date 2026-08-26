@@ -27,8 +27,26 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
    *
    * Clicar duas vezes reenvia o mesmo código; a planilha reconhece e não abre
    * um segundo pedido.
+   *
+   * O sorteio acontece na TRANSIÇÃO para aberto, não na montagem. Este
+   * componente é renderizado pelo SiteShell o tempo todo — fechado ele devolve
+   * null, mas nunca desmonta. Com `useState(gerarCodigoPedido)` o inicializador
+   * rodava uma vez por CARREGAMENTO DE PÁGINA, e não por abertura: quem mandava
+   * um pedido, voltava, botava mais coisa e mandava de novo reenviava o mesmo
+   * código, e a planilha descartava o segundo pedido como clique repetido.
+   * Venda perdida sem ninguém ver.
+   *
+   * O ajuste é feito durante a renderização, e não num efeito, porque o código
+   * precisa estar certo já no primeiro quadro pintado: ele vai dentro do href
+   * do WhatsApp, que nasce clicável.
    */
-  const [codigo] = useState(gerarCodigoPedido)
+  const [codigo, setCodigo] = useState("")
+  const [abertoAntes, setAbertoAntes] = useState(open)
+
+  if (open !== abertoAntes) {
+    setAbertoAntes(open)
+    if (open) setCodigo(gerarCodigoPedido())
+  }
 
   if (!open) return null
 
