@@ -14,6 +14,12 @@ A coluna `Fonte` é obrigatória e conferida por máquina (`npm run check:cerebr
 | Cidade base | Viamão, RS | Dono, por áudio |
 | WhatsApp | (51) 99015-6798 | Impresso na caixa e nos encartes |
 | Instagram | @donenricolanches | Impresso na caixa |
+| Lema | O sabor que impõe respeito | O dono confirmou que a frase é dele |
+| Personagem da marca | Um "Don" italiano: terno azul-petróleo, gravata vermelha, "GRATIZIE!!!" | Logo impressa na caixa de entrega |
+
+O nome, o terno, o "Gratizie" e o lema vêm todos do dono e apontam para a mesma
+coisa: um chefão italiano, com afeto e não com medo. O retrato completo da marca está
+em `CONTEXTO.md`, na raiz.
 
 ## Atendimento
 

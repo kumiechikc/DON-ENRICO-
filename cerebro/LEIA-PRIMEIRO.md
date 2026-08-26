@@ -13,6 +13,10 @@ está nos comentários dele. Aqui mora o que o código **não** consegue guardar
 | [`BECOS.md`](BECOS.md) | O que já foi tentado e não deu certo, com o número que provou | Antes de tentar um caminho que parece óbvio |
 | [`TRAVADO.md`](TRAVADO.md) | O que espera resposta do dono, em ordem de valor | No começo de toda rodada |
 
+Fora daqui, na raiz, mora o [`CONTEXTO.md`](../CONTEXTO.md): o retrato da marca por
+extenso, para briefar quem chegar de fora. Ele não decide nada — quem decide é o
+`DECISOES.md`. Ele conta.
+
 ## Por que isto existe
 
 Sessão de IA perde memória. O contexto antigo é resumido para caber, e o resumo joga
