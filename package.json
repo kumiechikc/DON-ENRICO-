@@ -13,6 +13,7 @@
     "audit:file": "node scripts/design-audit.mjs --file ./index.html",
     "check": "node scripts/check-site.mjs",
     "catalogo": "node scripts/gerar-catalogo.mjs",
+    "contexto": "node scripts/exportar-contexto.mjs",
     "check:planilha": "node scripts/check-planilha.mjs",
     "check:pix": "node scripts/check-pix.mjs",
     "check:midia": "node scripts/check-midia.mjs",
