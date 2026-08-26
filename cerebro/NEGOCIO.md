@@ -49,6 +49,8 @@ festas a cozinha não pode cumprir a garantia que a frase daria.
 | Box degustação | 25 e 50 unidades, a partir de R$ 19,90 | Encartes |
 | Congelados | Vendidos em pacote | Encartes |
 | Regra de sabores, 100 unidades | "Máximo dois sabores por cento" | Encarte, texto literal |
+| Regra de sabores, todas as faixas | 1 sabor em 25, 2 em 50, 2 em 100 | O sócio, em 26/08/2026 |
+| Box Degustação | Sortido: a casa monta. Pedido específico se resolve na conversa | O sócio, em 26/08/2026 |
 
 A tabela completa de preço e sabor vive em `src/lib/data/menu.ts`, que é a **fonte
 única**. Nada de preço é copiado para cá: duas cópias de um preço viram duas verdades

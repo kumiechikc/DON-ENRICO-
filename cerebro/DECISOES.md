@@ -12,6 +12,72 @@ Entrada nova vai no topo. Toda entrada precisa de data.
 
 ---
 
+## 2026-08-26 — O Box Degustação é sortido, e o card para de perguntar sabor
+
+**Decidido.** A casa monta a combinação do Box. O cliente não escolhe, e se fizer
+questão de um sabor, resolve na conversa do WhatsApp.
+
+**Por quê.** O sócio confirmou. E o site estava dizendo as duas coisas ao mesmo tempo:
+a descrição do card já dizia "sortido dos clássicos fritos" e logo abaixo havia nove
+sabores para marcar, com um aviso de "escolha 1 sabor". As duas não podem ser verdade,
+e quem lê acredita na que está mais perto do dedo — a errada. O cliente marcava
+"coxinha", recebia sortido, e a culpa caía na cozinha.
+
+**Descartado: tirar a palavra "sortido" e manter a escolha.** Era a outra saída para a
+mesma contradição, e teria sido escolher a interface em vez do produto. O produto é o
+que a cozinha faz.
+
+**Descartado: esconder a lista de sabores.** Sem escolha, os nove nomes ainda são a
+resposta para "o que eu vou comer", que é a pergunta que decide a compra. Viraram uma
+frase corrida, num `<p>` e não num `<ul>`: um leitor de tela anunciando "lista de nove
+itens" prometeria uma escolha que não existe.
+
+**Revisitar se.** A cozinha passar a aceitar escolha no Box. O campo `sortido` no
+`menu.ts` liga e desliga isso sozinho.
+
+---
+
+## 2026-08-26 — A caixa e o site convivem como dois registros da mesma marca
+
+**Decidido.** A logo impressa (terno azul-petróleo, gravata vermelha, "GRATIZIE!!!")
+continua sendo o lado alegre; o site continua sendo o lado sério, em chiaroscuro. Nem
+o site puxa para a logo, nem a logo é redesenhada.
+
+**Por quê.** O sócio escolheu. E é a saída que não joga fora nada: o personagem do Don
+é o mesmo nos dois, e material impresso já pago não precisa ser refeito.
+
+**Descartado: o site puxar para a logo.** Mais cor e piada explícita aproximariam o
+site da caixa, mas custariam a única coisa que hoje diferencia o site de qualquer
+página de salgados gerada por template.
+
+**Descartado: redesenhar a logo.** Mexe em material impresso, que custa dinheiro e não
+resolve nada que esteja quebrado.
+
+**O que ficou pendente, e não é pequeno.** Sem um elemento em comum, quem recebe a
+caixa depois de comprar pelo site lê "erro", não "dois lados". A ponte visual está no
+`TRAVADO.md` e precisa do arquivo vetorial da logo.
+
+---
+
+## 2026-08-26 — A regra de sabores deixa de ser palpite
+
+**Decidido.** 1 sabor em 25 unidades, 2 em 50, 2 em 100. Sem mudança no código: os
+números já eram esses.
+
+**Por quê.** O sócio confirmou que a leitura conservadora era a certa. O encarte só
+dizia "máximo dois sabores por cento", claro para 100 e ambíguo para as faixas
+menores, e o site vinha adivinhando desde o começo.
+
+**O que muda de verdade.** O comentário no `menu.ts` mandava confirmar com o dono e
+avisava que aquilo era chute. Um comentário desses envelhece mal: seis meses depois
+alguém lê, pensa que ainda é chute, e "conserta" uma regra que estava certa. Agora ele
+diz que é regra confirmada, com a data.
+
+**Revisitar se.** A cozinha mudar a regra. É o único número do cardápio que descreve o
+que a cozinha aceita, e não o que ela cobra.
+
+---
+
 ## 2026-08-26 — O lema é do dono, e o personagem da marca também
 
 **Decidido.** "O sabor que impõe respeito" fica, e passa a constar como fato de marca

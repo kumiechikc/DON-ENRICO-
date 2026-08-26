@@ -203,9 +203,33 @@ export async function checkOrderFlow(browser, url, { screenshotDir } = {}) {
   await primeiraFesta.locator("[data-adicionar]").click()
   await page.waitForTimeout(250)
 
+  /*
+   * O Box é SORTIDO: a casa monta e o cliente não escolhe sabor.
+   *
+   * Esta parte clicava num sabor do Box antes de adicionar, e passava. Passava
+   * porque o card mostrava sabores para marcar ao mesmo tempo que a descrição
+   * dizia "sortido" — a interface contradizia o produto, e a conferência
+   * ratificava a contradição em vez de acusá-la.
+   *
+   * Agora ela cobra o contrário: no Box existem os botões de faixa e mais
+   * nenhum `aria-pressed`. Se um dia alguém devolver a escolha de sabor sem
+   * mudar a regra da cozinha, isto reprova.
+   */
   const boxCard = page.locator("#box .bg-surface").first()
   const chipsBox = await boxCard.locator("button[aria-pressed]").all()
-  await chipsBox[TIER_BUTTONS].click()
+  if (chipsBox.length !== TIER_BUTTONS) {
+    failures.push(
+      `Box Degustação é sortido, mas o card tem ${chipsBox.length} botões de ` +
+        `escolha em vez dos ${TIER_BUTTONS} de faixa — está oferecendo sabor ` +
+        `para marcar num produto que a casa monta`
+    )
+  }
+  notes.push(
+    chipsBox.length === TIER_BUTTONS
+      ? `box sortido: ${TIER_BUTTONS} botões de faixa, nenhum sabor para marcar`
+      : `box sortido: ${chipsBox.length} botões com aria-pressed (esperado ${TIER_BUTTONS})`
+  )
+  // E adiciona direto, sem escolher nada: numa linha sortida o botão não cobra.
   await boxCard.locator("[data-adicionar]").click()
   await page.waitForTimeout(250)
 
