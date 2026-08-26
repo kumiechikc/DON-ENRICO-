@@ -28,6 +28,11 @@ on:
       # O cérebro: fato sem fonte e decisão sem data apodrecem em silêncio, e
       # um cérebro frouxo é pior que nenhum porque mente com cara de autoridade.
       - 'cerebro/**'
+      # O retrato da marca e a costura dele: se um muda e a outra não, o arquivo
+      # que alguém levou embora passa a discordar da fonte sem ninguém ver.
+      - 'CONTEXTO.md'
+      - 'CONTEXTO-COMPLETO.md'
+      - 'CLAUDE.md'
       - 'package.json'
       - 'next.config.ts'
       - '.github/workflows/design-review.yml'
@@ -58,6 +63,13 @@ jobs:
           # cairia lá com valor de outro mês. Falhar aqui é barato; descobrir
           # pela planilha, não.
           git diff --exit-code apps-script/Catalogo.gs
+          npm run contexto
+          # Mesma disciplina do Catalogo.gs: o CONTEXTO-COMPLETO.md é costurado
+          # de seis arquivos e existe para ser levado embora. Se alguém editar a
+          # cópia em vez da fonte, ou mexer na fonte sem regerar, o arquivo que
+          # foi parar noutro repositório passa a mentir — e ele tem cara de
+          # autoridade justamente por ser completo.
+          git diff --exit-code CONTEXTO-COMPLETO.md
           npm run check:planilha
           npm run check:pix
           npm run check:midia
