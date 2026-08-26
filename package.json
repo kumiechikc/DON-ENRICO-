@@ -16,6 +16,7 @@
     "check:planilha": "node scripts/check-planilha.mjs",
     "check:pix": "node scripts/check-pix.mjs",
     "check:midia": "node scripts/check-midia.mjs",
+    "check:cerebro": "node scripts/check-cerebro.mjs",
     "check:export": "node scripts/check-export.mjs",
     "clipe": "node scripts/comprimir-clipe.mjs",
     "foto": "node scripts/tratar-foto.mjs",

@@ -25,6 +25,9 @@ on:
       - 'src/lib/**'
       # Os próprios verificadores e o que muda o build.
       - 'scripts/**'
+      # O cérebro: fato sem fonte e decisão sem data apodrecem em silêncio, e
+      # um cérebro frouxo é pior que nenhum porque mente com cara de autoridade.
+      - 'cerebro/**'
       - 'package.json'
       - 'next.config.ts'
       - '.github/workflows/design-review.yml'
@@ -58,6 +61,7 @@ jobs:
           npm run check:planilha
           npm run check:pix
           npm run check:midia
+          npm run check:cerebro
 
       # O export estático do GitHub Pages tem restrições que o build comum não
       # expõe (rotas de imagem precisam ser force-static, por exemplo). Validar
