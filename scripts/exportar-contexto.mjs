@@ -17,11 +17,24 @@
  * sentido ler, e o `npm run contexto` regera. Mesma disciplina do
  * `apps-script/Catalogo.gs`, que sai do `menu.ts`: uma fonte, um gerador, e o
  * CI reprovando se alguém editar a saída à mão.
+ *
+ * A SAÍDA É FUNÇÃO PURA DAS FONTES, E ISSO CUSTOU UM CI VERMELHO
+ *
+ * A primeira versão carimbava `git rev-parse --short HEAD` dentro do documento,
+ * para dar para saber de quando aquele retrato era. Parecia gentileza e era um
+ * defeito: no CI o HEAD é o commit de MERGE do pull request, não o commit de
+ * onde alguém gerou. O arquivo saía diferente lá e o `git diff --exit-code`
+ * reprovava sempre — a conferência que existe para provar que o arquivo está em
+ * dia tinha virado impossível de passar.
+ *
+ * Localmente ela passava, porque ali o HEAD e a origem da geração são o mesmo
+ * commit. Foi o CI que expôs, e por isso a regra fica escrita aqui: nada que
+ * dependa de ONDE o gerador roda entra na saída. Só as seis fontes. De quando é
+ * o retrato, o histórico do arquivo responde.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { execSync } from "node:child_process"
 
 const RAIZ = join(import.meta.dirname, "..")
 const SAIDA = join(RAIZ, "CONTEXTO-COMPLETO.md")
@@ -110,8 +123,6 @@ function religar(texto) {
   return saida
 }
 
-const commit = execSync("git rev-parse --short HEAD", { cwd: RAIZ }).toString().trim()
-
 const indice = PARTES.map(
   (p, i) => `${i + 1}. [${p.titulo}](#${p.ancora}) — ${p.nota}`
 ).join("\n")
@@ -157,7 +168,10 @@ const documento = `# Don Enrico Lanches — contexto completo
 > some na próxima vez que alguém rodar \`npm run contexto\`, e até lá as duas
 > versões discordam em silêncio.
 >
-> Gerado do commit \`${commit}\`.
+> Para saber de quando é este retrato, veja o histórico do arquivo no repositório.
+> Ele não carimba data nem commit aqui dentro, e isso é de propósito: a saída
+> precisa ser uma função pura das seis fontes, senão a conferência que garante que
+> ela está em dia não teria como passar.
 
 ## Para que serve
 
@@ -186,4 +200,4 @@ ${corpo}
 writeFileSync(SAIDA, documento)
 
 const linhas = documento.split("\n").length
-console.log(`\nCONTEXTO-COMPLETO.md: ${PARTES.length} partes, ${linhas} linhas, do commit ${commit}.\n`)
+console.log(`\nCONTEXTO-COMPLETO.md: ${PARTES.length} partes, ${linhas} linhas.\n`)

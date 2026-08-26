@@ -7,7 +7,10 @@
 > some na próxima vez que alguém rodar `npm run contexto`, e até lá as duas
 > versões discordam em silêncio.
 >
-> Gerado do commit `274f492`.
+> Para saber de quando é este retrato, veja o histórico do arquivo no repositório.
+> Ele não carimba data nem commit aqui dentro, e isso é de propósito: a saída
+> precisa ser uma função pura das seis fontes, senão a conferência que garante que
+> ela está em dia não teria como passar.
 
 ## Para que serve
 
