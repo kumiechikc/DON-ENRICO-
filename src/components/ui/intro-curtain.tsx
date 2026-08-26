@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
 import { useMotion } from "@/lib/motion/motion-provider"
 
@@ -22,6 +22,20 @@ export function IntroCurtain() {
   const curtainRef = useRef<HTMLDivElement>(null)
   const { motionEnabled } = useMotion()
 
+  /*
+   * Quem tira a cortina da tela é o React, e não `curtain.remove()`.
+   *
+   * Chamar `remove()` desanexa um nó que o React ainda considera seu. O
+   * `motionEnabled` é reativo — o MotionProvider assina `prefers-reduced-motion`
+   * ao vivo —, então quem ligasse "reduzir movimento" depois da cortina ter
+   * saído fazia o componente renderizar `null`, e o React tentava remover um
+   * filho que já não estava lá: `NotFoundError: Failed to execute 'removeChild'`.
+   *
+   * Com um estado, a saída passa a ser uma renderização normal, e a árvore do
+   * React nunca discorda do DOM.
+   */
+  const [terminou, setTerminou] = useState(false)
+
   useEffect(() => {
     const curtain = curtainRef.current
     if (!curtain || !motionEnabled) return
@@ -33,7 +47,7 @@ export function IntroCurtain() {
     const tl = gsap.timeline({
       onComplete: () => {
         document.body.style.overflow = previousOverflow
-        curtain.remove()
+        setTerminou(true)
       },
     })
 
@@ -61,7 +75,12 @@ export function IntroCurtain() {
     }
   }, [motionEnabled])
 
-  if (!motionEnabled) return null
+  /*
+   * `terminou` também garante que ela não volte: se a pessoa desligar e religar
+   * o movimento na mesma visita, o efeito reencontra a ref vazia e sai cedo, em
+   * vez de reencenar a cortina no meio da leitura.
+   */
+  if (!motionEnabled || terminou) return null
 
   return (
     <div

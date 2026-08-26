@@ -61,6 +61,13 @@ Escopo: **apenas Don Enrico**. A gráfica fica para depois.
          que é o mesmo padrão que `scripts/design-audit.mjs` já usava.
       Varredura feita no resto de `scripts/` — não há mais nenhum caso do mesmo tipo.
 - [x] `npm install` na branch nova (`node_modules` é gitignored e não veio junto).
+- [x] **Crash latente do `IntroCurtain` corrigido.** O `onComplete` da timeline chamava
+      `curtain.remove()`, desanexando um nó que o React ainda considerava seu. Como
+      `motionEnabled` é reativo (o `MotionProvider` assina `prefers-reduced-motion` ao
+      vivo), quem ligasse "reduzir movimento" depois da cortina ter saído fazia o
+      componente renderizar `null` e o React tentar remover um filho que já não estava
+      lá — `NotFoundError: Failed to execute 'removeChild'`. A saída passou a ser uma
+      renderização normal, via estado, então a árvore do React nunca discorda do DOM.
 
 ## Baseline medido (servidor de desenvolvimento, após as correções)
 
@@ -115,8 +122,16 @@ Todas as 8 verificações passam contra produção, não só contra desenvolvime
 
 ## Dívida conhecida (auditada, não corrigida ainda)
 
-- `intro-curtain.tsx` chama `curtain.remove()` num nó que o React ainda possui → `NotFoundError`
-  se o usuário ligar reduced-motion depois que a cortina saiu.
+- **Âncoras vs. Lenis — cuidado, tem armadilha.** O Lenis é criado sem a opção `anchors`,
+  então clicar num link de seção faz salto nativo enquanto o Lenis interpola. A correção
+  óbvia (`anchors: true`) **quebraria a acessibilidade**: o Lenis dá `preventDefault` no
+  clique, e o link "Pular para o conteúdo" (`href="#conteudo"`, `site-shell.tsx:25`)
+  depende do comportamento nativo para **mover o foco**, não só para rolar. A suíte
+  `checks/a11y.mjs` verifica exatamente isso — que o primeiro Tab cai no skip link e que
+  ele funciona. Âncoras existentes: `#conteudo` (skip link, precisa de foco), `#festa`
+  (`hero-section.tsx:191` e `cart-drawer.tsx:96`) e `#` (logo, `navbar.tsx:44`).
+  A correção certa roteia só as âncoras de seção pelo `lenis.scrollTo`, exclui o skip link,
+  e move o foco no fim da rolagem. Fica para a rodada de movimento, não antes.
 - **Código morto:** `heat-shader.tsx` (~260 linhas) é inalcançável — `hero-section.tsx` só o
   renderiza se não houver clipe, e `lampada` está sempre no manifesto. `sequencia.tsx` +
   `sequencias.ts` nunca são importados. `src/lib/pix/br-code.ts` (completo e testado) não
