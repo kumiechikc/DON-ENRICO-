@@ -75,9 +75,28 @@ Escopo: **apenas Don Enrico**. A gráfica fica para depois.
 | Site sem JavaScript | 8390px, preços e WhatsApp presentes, 0 elemento invisível |
 | Clipes de vídeo | 867 KB de 2048; fotos 591 KB de 700 |
 
-O número de JavaScript (899 KB) é do servidor de desenvolvimento e **não vale** — o
-orçamento de 320 KB só se mede contra `npm run build` + `npm start`. Fazer isso antes de
-declarar qualquer coisa sobre peso.
+## Orçamento real, medido contra produção
+
+O número de JavaScript do servidor de desenvolvimento (899 KB) não vale nada — ele serve
+módulos sem empacotar. Medido de verdade, com `npm run build` seguido de
+`node node_modules/next/dist/bin/next start` e a suíte apontada para `http://localhost:3000`:
+
+| Métrica | Medido | Orçamento | Folga |
+|---|---|---|---|
+| JavaScript transferido | **217 KB** | 320 KB | **103 KB** |
+| LCP (CPU 4x lenta, 4G) | 1640 ms | 4000 ms | — |
+| CLS | 0 | 0.1 | — |
+| Mídia (clipes) | 867 KB | 2048 KB | 1181 KB |
+| Fotos | 591 KB | 700 KB | 109 KB |
+
+**103 KB é o teto de tudo que a camada de movimento pode custar.** GSAP e Lenis já estão
+dentro dos 217 KB, então usar mais recursos deles custa quase zero — é onde está o ganho
+barato. Qualquer biblioteca nova precisa justificar cada KB contra esse número.
+
+Para referência do que já foi rejeitado por peso: three.js + R3F para desenhar um único
+quad custava 1594 KB. Não cabe, e não é perto de caber.
+
+Todas as 8 verificações passam contra produção, não só contra desenvolvimento.
 
 ## Em andamento
 
