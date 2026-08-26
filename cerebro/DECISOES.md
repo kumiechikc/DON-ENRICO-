@@ -12,6 +12,28 @@ Entrada nova vai no topo. Toda entrada precisa de data.
 
 ---
 
+## 2026-08-26 — O lema é do dono, e o personagem da marca também
+
+**Decidido.** "O sabor que impõe respeito" fica, e passa a constar como fato de marca
+com fonte, não como texto de origem incerta.
+
+**Por quê.** O dono confirmou que a frase é dele. Isso resolve a única dúvida que
+havia sobre a peça de texto mais visível do site.
+
+**O que isso destravou junto.** O lema deixa de ser uma frase solta e passa a ser a
+quarta perna de um personagem que o dono construiu antes de existir site: o nome
+"Don", o terno com gravata da logo, o "GRATIZIE!!!" impresso na caixa, e o respeito do
+lema. São cinco elementos, todos dele, todos apontando para o mesmo chefão italiano.
+O retrato inteiro ficou em `CONTEXTO.md`.
+
+**Continua em aberto, e é outra coisa.** A logo impressa é azul-petróleo com vermelho;
+o site é quase preto com âmbar. O personagem é o mesmo, o vestuário visual não. Está
+no `TRAVADO.md`.
+
+**Revisitar se.** O dono quiser trocar o lema. A marca é dele.
+
+---
+
 ## 2026-08-25 — Merge sem pedir confirmação, com o CI como única barreira
 
 **Decidido.** Terminada uma rodada: commit, PR em rascunho, espera o `audit`, tira o

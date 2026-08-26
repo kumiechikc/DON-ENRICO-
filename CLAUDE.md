@@ -7,6 +7,9 @@
 > com a fonte de cada um, as decisões com o que foi descartado junto, os becos que
 > já foram tentados e não deram certo, e o que está esperando resposta do dono.
 >
+> Para o retrato da marca inteiro (o personagem, o cardápio, a tensão entre a logo
+> impressa e a paleta do site), leia `CONTEXTO.md`, na raiz.
+>
 > Uma sessão que pula essa leitura refaz trabalho e desfaz decisão. Já aconteceu.
 >
 > Terminou uma rodada que tomou decisão, esbarrou em beco ou destravou pergunta?

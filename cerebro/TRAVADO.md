@@ -79,14 +79,6 @@ E: o cliente paga tudo adiantado ou dá sinal? Essa segunda decide o valor do QR
 **Destrava:** o QR e o copia-e-cola do Pix, que já estão implementados e testados
 contra a especificação do Banco Central, esperando só os dados.
 
-## 🟡 De onde veio o lema "O sabor que impõe respeito"
-
-Está no hero, na pausa do meio da página e no rodapé, e eu **não sei se foi o dono que
-escreveu ou se fui eu**. É a frase mais visível do site inteiro.
-
-**Destrava:** saber se é da marca ou se é minha. Se for minha, o dono precisa aprovar
-ou trocar, porque a marca é dele.
-
 ## 🟡 A logo impressa não conversa com a paleta do site
 
 A logo nas caixas de entrega é um terno azul-petróleo com gravata vermelha. O site é
