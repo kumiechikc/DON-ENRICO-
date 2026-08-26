@@ -766,6 +766,15 @@ resumo lia o arquivo, o erro derrubava a conferência inteira, e a reprovação 
 tinha acabado de registrar sumia junto. **Uma conferência que morre parece uma
 conferência que não achou nada.**
 
+**2026-08-26 — Carimbar o commit dentro de um arquivo gerado.**
+O `CONTEXTO-COMPLETO.md` trazia `Gerado do commit <sha>`, para dar para saber de
+quando o retrato era. No CI o HEAD é o commit de MERGE do pull request, não o commit
+de onde alguém gerou: o arquivo saía diferente lá e o `git diff --exit-code`
+reprovava sempre. **A conferência que existe para provar que o arquivo está em dia
+tinha virado impossível de passar** — e localmente ela passava por coincidência,
+porque ali o HEAD e a origem da geração são o mesmo commit. Regra que ficou: saída de
+gerador é função pura das fontes, e nada que dependa de ONDE ele roda entra nela.
+
 **2026-08-25 — Esperar o `audit` num PR só de documentação.**
 O `design-review.yml` tem filtro de caminhos e não roda em `docs/`, `README` nem
 `CLAUDE.md`. Não existe verde para esperar, e a regra escrita mandava esperar. Uma
