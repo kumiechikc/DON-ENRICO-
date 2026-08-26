@@ -1,5 +1,17 @@
 # CLAUDE.md — DON ENRICO Website Design Stack
 
+> ## Antes de trabalhar, leia `cerebro/LEIA-PRIMEIRO.md`
+>
+> São cinco minutos. Este arquivo aqui é carregado sozinho em toda sessão; o
+> `cerebro/` não é, e é onde mora o que este arquivo não cabe: os fatos do negócio
+> com a fonte de cada um, as decisões com o que foi descartado junto, os becos que
+> já foram tentados e não deram certo, e o que está esperando resposta do dono.
+>
+> Uma sessão que pula essa leitura refaz trabalho e desfaz decisão. Já aconteceu.
+>
+> Terminou uma rodada que tomou decisão, esbarrou em beco ou destravou pergunta?
+> Atualize o `cerebro/` **no mesmo commit**. `npm run check:cerebro` cobra a forma.
+
 This repository is a **ready-to-use environment that makes Claude Code good at website
 design**. When you (Claude) do any UI, web page, landing page, component, or visual-polish
 work in a project that uses this stack, follow the workflow below. It combines a *knowledge*
