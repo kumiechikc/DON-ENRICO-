@@ -11,22 +11,6 @@ sai no mesmo commit.
 
 ---
 
-## 🔴 A regra de sabores por faixa
-
-O encarte diz "máximo dois sabores por cento". Isso é claro para 100 unidades e
-**ambíguo para 25 e 50**. O `menu.ts` hoje usa a leitura conservadora: 1 sabor em 25,
-2 em 50. É palpite meu, marcado como tal no código.
-
-**Destrava:** o site parar de prometer combinação que a cozinha talvez não aceite. É o
-único lugar onde o site pode estar errado sobre o produto neste momento.
-**Onde muda:** `maxFlavors` em `src/lib/data/menu.ts`, depois `npm run catalogo`.
-
-## 🔴 Box Degustação é sortido ou o cliente escolhe?
-
-Hoje o site deixa escolher. Se for sortido da casa, a tela de escolha está errada.
-
-**Destrava:** a tela do box, e o que o pedido manda no WhatsApp.
-
 ## 🔴 A lista nominal das cidades
 
 O site diz "Viamão e toda a região metropolitana de Porto Alegre", que é verdade
@@ -72,21 +56,31 @@ Qual o maior pedido que a cozinha produz de uma vez?
 
 **Destrava:** o site parar de aceitar um pedido que não dá para entregar.
 
-## 🟡 Pagamento: chave Pix, titular e cidade
+## 🟡 Pagamento: o modelo inteiro, antes da chave Pix
 
-E: o cliente paga tudo adiantado ou dá sinal? Essa segunda decide o valor do QR Code.
+Perguntado ao sócio em 26/08/2026. A resposta foi **"sistema de pagamento a pensar"**:
+não é que ele não saiba, é que a decisão ainda não foi tomada. Adiantado, sinal, ou
+tudo na entrega muda o que o site mostra e o valor que o QR Code carrega.
+
+Enquanto não decidir, nada de pagamento aparece no site, e a chave Pix não é nem
+perguntada — ela é a última pergunta, não a primeira.
 
 **Destrava:** o QR e o copia-e-cola do Pix, que já estão implementados e testados
-contra a especificação do Banco Central, esperando só os dados.
+contra a especificação do Banco Central, esperando só a decisão e os dados.
 
-## 🟡 A logo impressa não conversa com a paleta do site
+## 🟡 A ponte visual entre a caixa e o site
 
-A logo nas caixas de entrega é um terno azul-petróleo com gravata vermelha. O site é
-quase preto quente com âmbar. São duas identidades diferentes, e hoje o site escreve
-"Don Enrico" em tipografia em vez de usar a logo.
+A direção já foi decidida em 26/08/2026: as duas identidades **convivem de propósito**.
+A caixa é o lado alegre da marca (terno azul-petróleo, gravata vermelha, "GRATIZIE!!!")
+e o site é o lado sério (quase preto, âmbar, luz de interrogatório). Mesmo personagem,
+dois registros.
 
-**Destrava:** a decisão de qual das duas é a marca. E o arquivo da logo em vetor, ou o
-contato de quem fez os encartes.
+O que falta é a **ponte**: sem algum elemento em comum, quem recebe a caixa depois de
+comprar pelo site não vai ler "dois lados da mesma marca", vai ler "erro". Ainda não
+existe proposta, e ela precisa do arquivo da logo em vetor para ser feita.
+
+**Destrava:** o site poder finalmente usar a logo em vez de escrever "Don Enrico" em
+tipografia. Precisa do arquivo vetorial, ou do contato de quem fez os encartes.
 
 ## ⚪ Números de estoque
 

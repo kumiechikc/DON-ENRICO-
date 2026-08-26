@@ -4,11 +4,15 @@ export interface Tier {
   /*
    * Quantos sabores o cliente pode combinar nesta faixa.
    *
-   * CONFIRMAR COM O DONO: o encarte diz "máximo dois sabores por cento", o que
-   * é claro para 100 unidades mas ambíguo para 25 e 50. Os valores abaixo são a
-   * leitura conservadora (1 sabor em 25, 2 em 50 e 100). Se a regra real for
-   * outra, é só trocar o número aqui — nenhuma outra parte do código presume
-   * esses valores.
+   * CONFIRMADO pelo sócio em 26/08/2026: 1 sabor em 25 unidades, 2 em 50 e 2 em
+   * 100. O encarte só dizia "máximo dois sabores por cento", que era claro para
+   * 100 e ambíguo para as faixas menores; a leitura conservadora que estava aqui
+   * era a certa, e agora é regra, não mais palpite.
+   *
+   * Nenhuma outra parte do código presume esses valores: trocar o número aqui
+   * muda a interface, a validação e a mensagem do WhatsApp juntas.
+   *
+   * Ignorado quando a linha é `sortido`, porque aí não há escolha nenhuma.
    */
   maxFlavors: number
 }
@@ -24,10 +28,26 @@ export interface AssortedCategory {
   id: string
   name: string
   description: string
+  /*
+   * Quando a linha é `sortido`, esta lista deixa de ser um menu de escolha e
+   * passa a ser informação: é o que costuma vir na caixa. Continua valendo a
+   * pena mostrar, porque é ela que responde "o que eu vou comer".
+   */
   flavors: string[]
   tiers: Tier[]
   image?: string
   maxFlavorsNote?: string
+  /*
+   * A casa monta a combinação; o cliente não escolhe sabor.
+   *
+   * Confirmado pelo sócio em 26/08/2026 para o Box Degustação. Antes o site
+   * dizia "sortido" na descrição E mostrava os nove sabores para marcar, ao
+   * mesmo tempo — as duas coisas não podem ser verdade, e a que estava errada
+   * era a interface.
+   */
+  sortido?: boolean
+  /** Explica o sortido dentro do card. Só aparece quando `sortido` é verdadeiro. */
+  sortidoNote?: string
 }
 
 /*
@@ -66,6 +86,9 @@ export const boxDegustacao: AssortedCategory = {
   description: "Sortido dos clássicos fritos, para provar.",
   // A cena é literalmente um sortido de clássicos fritos, de perto.
   image: "box-degustacao",
+  sortido: true,
+  sortidoNote:
+    "A casa monta a combinação. Tem um sabor que você faz questão? Peça na conversa que a gente vê.",
   flavors: [
     "Coxinha de frango",
     "Bolinha de queijo",

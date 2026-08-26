@@ -15,6 +15,21 @@ import type { AssortedCategory } from "@/lib/data/menu"
  * festa). O cliente escolhe a faixa de quantidade e os sabores antes de
  * adicionar: sem isso o pedido chega no WhatsApp incompleto e o dono precisa
  * perguntar os sabores de novo.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * LINHA SORTIDA: A CASA MONTA, E O CARD PARA DE PERGUNTAR
+ *
+ * O Box Degustação é sortido, confirmado pelo sócio. Aqui isso não é um detalhe
+ * de texto: a lista de sabores deixa de ser um menu de botões e vira uma frase
+ * do que costuma vir, o botão adiciona na hora, e o item vai para o pedido sem
+ * sabor nenhum.
+ *
+ * Antes o site fazia as duas coisas ao mesmo tempo: a descrição dizia "sortido"
+ * e logo abaixo havia nove sabores para marcar, com um aviso de "escolha 1
+ * sabor". As duas não podem ser verdade, e quem lia acreditava na que estava
+ * mais perto do dedo — a errada. Um cliente marcava "coxinha", recebia sortido,
+ * e a culpa caía na cozinha.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 export function PackageCard({ category }: { category: AssortedCategory }) {
   const { addItem } = useCart()
@@ -27,6 +42,7 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
   const cardRef = useReveal<HTMLDivElement>("rise")
 
   const tier = category.tiers[tierIndex]
+  const sortido = category.sortido === true
   const atLimit = selected.length >= tier.maxFlavors
 
   const chooseTier = (index: number) => {
@@ -52,7 +68,11 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
      * escolha que falta. Um botão desabilitado aqui deixaria todos os cards com
      * cara de página quebrada, já que nenhum começa com sabor marcado.
      */
-    if (selected.length === 0) {
+    /*
+     * A cobrança de sabor só existe onde há escolha. Numa linha sortida ela
+     * travaria o botão para sempre, já que nunca vai haver sabor marcado.
+     */
+    if (!sortido && selected.length === 0) {
       setShowHint(true)
       firstFlavorRef.current?.focus()
       return
@@ -142,6 +162,27 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
           </div>
         </fieldset>
 
+        {sortido ? (
+          /*
+             Sortido: os sabores viram uma frase, não uma fila de botões.
+             `<p>` e não `<ul>` de propósito — é uma enumeração corrida, e um
+             leitor de tela anunciando "lista de nove itens" prometeria uma
+             escolha que não existe.
+          */
+          <div>
+            <p className="type-label text-[0.62rem] text-fg-muted mb-1.5">
+              O que costuma vir
+            </p>
+            <p className="text-sm text-fg-muted leading-relaxed">
+              {category.flavors.join(", ")}.
+            </p>
+            {category.sortidoNote && (
+              <p className="mt-3.5 text-xs font-semibold text-amber">
+                {category.sortidoNote}
+              </p>
+            )}
+          </div>
+        ) : (
         <fieldset>
           <legend className="type-label text-[0.62rem] text-fg-muted mb-1.5">
             {flavorLimitLabel}
@@ -179,6 +220,7 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
             })}
           </div>
         </fieldset>
+        )}
 
         <div>
           <button

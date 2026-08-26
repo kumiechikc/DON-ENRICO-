@@ -50,14 +50,15 @@ O personagem dá à marca uma coisa que quase nenhuma casa de salgados de bairro
 Sempre em **pacote fechado**, nunca unidade avulsa. Três formas.
 
 ### Box Degustação
-Para provar. Sortido dos clássicos fritos.
+Para provar. **Sortido: a casa monta a combinação**, o cliente não escolhe sabor. Quem
+faz questão de um sabor resolve na conversa do WhatsApp.
 
 | Quantidade | Preço |
 |---|---|
 | 25 unidades | R$ 19,90 |
 | 50 unidades | R$ 39,90 |
 
-Nove sabores no rol: coxinha de frango, bolinha de queijo, risoles presunto e queijo,
+O que costuma vir: coxinha de frango, bolinha de queijo, risoles presunto e queijo,
 calabresinha com cheddar, croquete com requeijão, enroladinho de salsicha, pastelzinho
 de carne, pastelzinho de queijo, mini churros.
 
@@ -69,6 +70,9 @@ de carne, pastelzinho de queijo, mini churros.
 | **Assados Especiais** | Assados no forno, sem fritura | R$ 44,90 | R$ 79,90 | 6 |
 | **Folhados Premium** | Massa folhada, assada | R$ 44,90 | R$ 79,90 | 3 |
 | **Seleção Don Enrico** | Mini pizzas, croissants, empadinhas, tortinhas | R$ 59,90 | R$ 109,90 | 11 |
+
+**Quantos sabores dá para combinar:** 1 em 25 unidades, 2 em 50, 2 em 100. O encarte
+só dizia "máximo dois sabores por cento"; o sócio confirmou o resto em 26/08/2026.
 
 A **Seleção Don Enrico** é a linha que leva o nome do personagem, é a mais cara, e é a
 que tem mais variedade. É o topo da casa, e o cardápio já diz isso sozinho.
@@ -109,9 +113,10 @@ compromisso. Num sábado com três festas, a cozinha não cumpre essa garantia.
 
 ---
 
-## 4. A tensão visual que existe hoje, e ela é real
+## 4. Duas identidades, e isso é de propósito
 
-**São duas identidades, e elas não conversam.**
+A caixa e o site não se parecem, e a diferença é grande o bastante para alguém achar
+que é erro. Não é: foi decidido.
 
 | | A logo impressa | O site |
 |---|---|---|
@@ -128,14 +133,16 @@ piada que a caixa faz.**
 Hoje o site escreve "Don Enrico" em tipografia, **não usa a logo**, porque o arquivo
 vetorial nunca chegou.
 
-Isso não está errado nem certo ainda. Está **por decidir**, e é a decisão de marca mais
-importante em aberto. As saídas possíveis, sem ordem de preferência:
+**Decidido em 26/08/2026: as duas convivem de propósito.** A caixa é o lado alegre da
+marca, o site é o lado sério. Mesmo personagem, dois registros. Nem o site puxa para a
+logo, nem a logo é redesenhada: material impresso já pago não precisa ser refeito, e o
+chiaroscuro é a única coisa que hoje separa o site de qualquer página de salgados
+saída de template.
 
-1. o site se aproxima da logo (mais cor, mais piada explícita);
-2. a logo se aproxima do site (redesenho, mantendo o personagem);
-3. as duas convivem de propósito — a caixa é o lado alegre, o site é o lado sério.
-
-Nenhuma dá para escolher sem o dono.
+O que falta é a **ponte**. Sem algum elemento em comum entre as duas, quem recebe a
+caixa depois de comprar pelo site não vai ler "dois lados da mesma marca", vai ler
+"erro". A proposta ainda não existe, e ela precisa do arquivo da logo em vetor, que
+nunca chegou.
 
 ---
 
@@ -187,12 +194,12 @@ chave), e não nomeia as cidades atendidas.
 Está em `cerebro/TRAVADO.md`, em ordem de valor, com o que cada resposta destrava. Os
 três primeiros, que são os que mais custam:
 
-1. **A regra de sabores por faixa.** O encarte diz "máximo dois sabores por cento",
-   claro para 100 e ambíguo para 25 e 50. O site hoje usa a leitura conservadora, que
-   é palpite. É o único lugar onde o site pode estar errado sobre o produto.
-2. **Se o Box Degustação é sortido pela casa ou de escolher sabor.** Hoje o site deixa
-   escolher, e a descrição diz "sortido". As duas coisas não podem ser verdade.
-3. **As fotos das três linhas sem imagem**, e os arquivos originais das que já vieram.
+1. **As fotos das três linhas sem imagem**, e os arquivos originais das que já vieram.
+2. **A lista nominal das cidades atendidas**, para trocar "região metropolitana" pelos
+   nomes, no site e na marcação que o Google lê.
+3. **O modelo de pagamento.** Perguntado, e a resposta foi "a pensar": adiantado,
+   sinal ou tudo na entrega ainda não está decidido. A chave Pix é a última pergunta
+   dessa sequência, não a primeira.
 
 ---
 
@@ -205,5 +212,7 @@ três primeiros, que são os que mais custam:
 | Cardápio, preços, sabores | Encartes da empresa, transcritos em `src/lib/data/menu.ts` |
 | "Máximo dois sabores por cento" | Texto literal do encarte |
 | Cidade, área, entrega, prazo | O dono, por áudio |
+| Regra de sabores por faixa | O sócio, em 26/08/2026 |
+| Box sortido, e a convivência das duas identidades | O sócio, em 26/08/2026 |
 | Medições das fotos | `src/lib/media/fotos.ts` |
 | Leitura do personagem (seção 1) | **Interpretação minha**, a partir dos cinco elementos acima |
