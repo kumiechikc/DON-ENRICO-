@@ -109,22 +109,45 @@ export const DURACAO = {
 
 /**
  * Curvas por intenção. Duas intenções podem apontar para a mesma curva — é
- * exatamente para isso que a camada semântica existe. `entrada` e
- * `acompanhamento` são as duas `power3.out`, mas trocar uma delas amanhã não
- * deve arrastar a outra junto.
+ * exatamente para isso que a camada semântica existe: `entrada` e `estado`
+ * hoje valem a mesma coisa, mas trocar uma delas amanhã não deve arrastar a
+ * outra junto.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * M3 — A UNIFICAÇÃO DE CURVA (2026-08-28, `docs/BRIEF-MOVIMENTO.md` §3.2)
+ *
+ * Três intenções convergiram para `expo.out`: `entrada` e `acompanhamento`
+ * vinham de `power3.out`, e `estado` vinha de `power1.out` — que era o default
+ * do GSAP, herdado por omissão em quatro tweens.
+ *
+ * O motivo veio medido, não de gosto. A auditoria das cinco referências (§2.6,
+ * lição 1) achou o contrário do que se esperava: COERÊNCIA É TER MENOS CURVAS,
+ * NÃO MAIS. lenis.dev move 421 elementos com uma curva só. O site tinha oito
+ * para quinze tweens, e metade delas ninguém escolheu.
+ *
+ * `expo.out` foi a escolhida porque o site JÁ FALA ESSA LÍNGUA em dois lugares
+ * que ninguém questiona: é a curva do título do hero (`carimbo`) e é, escrita à
+ * mão como função, a curva do próprio Lenis (`LENIS.easing` — a exponencial
+ * `1.001 − 2^(−10t)` é `expo.out`). Ou seja, a rolagem inteira do site já
+ * desacelera assim. Alinhar o resto a ela é fazer as peças concordarem com o
+ * gesto que já governa tudo, em vez de eleger uma curva nova.
+ *
+ * O que NÃO mudou: nenhuma duração. M3 troca curva e só.
+ *
+ * `power1Out`, `power2Out`, `power2In` e `power3Out` continuam declarados na
+ * camada primitiva de propósito. Três deles ainda sustentam a cortina de
+ * entrada, e apagar `power1Out` apagaria junto o registro de que ele era o
+ * default herdado — que é a metade da história que explica por que M3 existiu.
  */
 export const EASE = {
   /** Conteúdo aparecendo: revelação por rolagem, bloco de apoio. */
-  entrada: CURVA.power3Out,
+  entrada: CURVA.expoOut,
   /** Elemento seguindo o ponteiro em tempo real. */
-  acompanhamento: CURVA.power3Out,
+  acompanhamento: CURVA.expoOut,
   /** Volta ao repouso depois que o ponteiro sai. */
   retorno: CURVA.elasticSuave,
-  /**
-   * Troca de estado discreta. É o default do GSAP, e agora está escrito: os
-   * quatro tweens que caíam nele por omissão passam a declará-lo.
-   */
-  estado: CURVA.power1Out,
+  /** Troca de estado discreta: opacidade, escala, cor. */
+  estado: CURVA.expoOut,
   /** Tipografia cinética. */
   carimbo: CURVA.expoOut,
   /** Laço infinito. */
@@ -226,6 +249,22 @@ export const HERO = {
   deslocamentoApoio: 26,
   /** Espera antes de montar o shader, em milissegundos. Não disputa CPU com a hidratação. */
   esperaShaderMs: 450,
+  /*
+   * A taxa da camada de fundo do hero contra a rolagem da página (M2).
+   *
+   * 0,5 é "meia taxa": a camada anda na tela com metade da velocidade do
+   * conteúdo, então ela desce 0,5px dentro da seção para cada 1px que a página
+   * sobe. Não é gosto — é o número que separa profundidade de distração. Acima
+   * disso o olho passa a perseguir o fundo em vez de ler o título; abaixo, o
+   * efeito não se lê como camada e vira só um tremor.
+   *
+   * Este é o único token de RELAÇÃO do arquivo: os outros são tempos e
+   * distâncias, e este é uma proporção entre dois movimentos. Ele mora aqui e
+   * não em `hero-section.tsx` porque a folga de escala que impede a camada de
+   * revelar borda é calculada a partir dele — separar os dois deixaria alguém
+   * mexer na taxa sem saber que a folga depende dela.
+   */
+  taxaParallax: 0.5,
 } as const
 
 /**

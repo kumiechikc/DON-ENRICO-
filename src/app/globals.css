@@ -69,8 +69,21 @@
   /*
     Uma curva só, porque hoje o site tem uma curva só. Inventar uma segunda
     "para o caso de precisar" seria mobiliar um cômodo que ninguém habita.
+
+    M3 (2026-08-28) trocou o VALOR dela, não a quantidade. Era
+    `cubic-bezier(0.4, 0, 0.2, 1)` — a curva padrão do Tailwind, que estava aqui
+    porque ninguém tinha declarado nada, exatamente como os quatro tweens de
+    GSAP que caíam no default dele.
+
+    Agora é a escrita em bézier de `expo.out`, que é o que `EASE.estado` passou
+    a valer do lado do JavaScript. As duas são A MESMA INTENÇÃO em duas
+    linguagens — "troca de estado discreta" —, e deixar o GSAP em expo enquanto
+    o CSS ficasse na curva do Tailwind seria terminar M3 pela metade: o site
+    passaria a ter duas noções de "reagir ao ponteiro", uma para o que o React
+    anima e outra para o que o hover anima. `scripts/check-movimento.mjs` agora
+    confere as duas uma contra a outra e reprova se andarem separadas.
   */
-  --curva-suave: cubic-bezier(0.4, 0, 0.2, 1);
+  --curva-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Camada 2 — semânticos. É daqui que os componentes consomem. */
 
@@ -78,8 +91,8 @@
   --duration-controle: var(--dur-150);
   /** Superfície grande ou texto de leitura reagindo ao ponteiro. */
   --duration-superficie: var(--dur-300);
-  /** A única curva de transição do site. */
-  --ease-estado: var(--curva-suave);
+  /** A única curva de transição do site. Par de `EASE.estado` em tokens.ts. */
+  --ease-estado: var(--curva-expo);
 
   /*
     Camada 3 — componentes. Só o que é exclusivo de uma peça, onde um nome de

@@ -101,27 +101,34 @@ O número de JavaScript do servidor de desenvolvimento (899 KB) não vale nada �
 módulos sem empacotar. Medido de verdade, com `npm run build` seguido de
 `node node_modules/next/dist/bin/next start` e a suíte apontada para `http://localhost:3000`:
 
-| Métrica | Medido | Orçamento | Folga |
+| Métrica | Antes da rodada | Com M1+M2+M3 | Orçamento |
 |---|---|---|---|
-| JavaScript transferido | **217 KB** | 320 KB | **103 KB** |
-| LCP (CPU 4x lenta, 4G) | 1640 ms | 4000 ms | — |
-| CLS | 0 | 0.1 | — |
-| Mídia (clipes) | 867 KB | 2048 KB | 1181 KB |
-| Fotos | 591 KB | 700 KB | 109 KB |
+| JavaScript transferido | 217 KB | **218 KB** | 320 KB |
+| LCP (CPU 4x lenta, 4G) | 1640 ms | **1556 ms** | 4000 ms |
+| CLS | 0 | **0** | 0.1 |
+| Mídia (clipes) | 867 KB | 867 KB | 2048 KB |
+| Fotos | 591 KB | 591 KB | 700 KB |
 
-**103 KB é o teto de tudo que a camada de movimento pode custar.** GSAP e Lenis já estão
+**As três peças custaram 1 KB.** Era o esperado e é o argumento inteiro de D1: GSAP e Lenis
+já estavam pagos dentro dos 217 KB, então usar mais recursos deles é o ganho barato. O LCP
+melhorou 84 ms, o que está dentro do ruído entre medições — o que a linha prova é que M2
+**não piorou** o elemento de LCP, que era o risco escrito.
+
+**102 KB é o teto de tudo que a camada de movimento ainda pode custar.** GSAP e Lenis já estão
 dentro dos 217 KB, então usar mais recursos deles custa quase zero — é onde está o ganho
 barato. Qualquer biblioteca nova precisa justificar cada KB contra esse número.
 
 Para referência do que já foi rejeitado por peso: three.js + R3F para desenhar um único
 quad custava 1594 KB. Não cabe, e não é perto de caber.
 
-Todas as 8 verificações passam contra produção, não só contra desenvolvimento.
+Todas as **9** verificações passam contra produção, não só contra desenvolvimento. A nona
+(`Movimento preso à rolagem`) nasceu nesta rodada.
 
 ## A rodada de movimento, até aqui
 
-Preparação e diagnóstico fechados. O que falta é escrever movimento novo — nenhuma linha
-de `scrub` foi escrita ainda.
+**As três peças (M1, M2, M3) estão implementadas, medidas e verdes em 2026-08-28.** O
+`scrub` deixou de ser ausência: são duas peças presas ao progresso da rolagem, e uma nona
+suíte que as cobra.
 
 - [x] **Baseline reconferido nesta árvore (2026-08-27):** as 8 verificações passam.
       LCP 2692ms de 4000, CLS 0, 87 paradas de teclado sem laço, esteira a 70 px/s.
@@ -144,22 +151,42 @@ de `scrub` foi escrita ainda.
 - [x] **§3 fechada**: três peças entram (M1 barra de progresso, M2 profundidade no hero,
       M3 unificação de curva), seis recusadas com o motivo escrito, e uma mandada para o
       `TRAVADO.md` porque é decisão de produto e não técnica.
+- [x] **M1 — barra de progresso** (`src/components/layout/scroll-progress.tsx`, montada
+      pelo `navbar.tsx`). `scaleX` no compositor, `scrub: true` sem número (o site já tem a
+      suavização do Lenis; empilhar duas atrasa a barra visivelmente), e nada renderizado
+      quando o movimento está desligado — ausente é honesto, travada em zero seria falso.
+      **Custou uma medição:** a primeira versão ficou morta, e o porquê está no
+      `cerebro/BECOS.md` (2026-08-28, o `documentElement` que mede 900px).
+- [x] **M2 — profundidade no hero** (`src/components/hero/hero-section.tsx`). Só a camada
+      de fundo translada, a meio da rolagem (`HERO.taxaParallax`); os dois véus ficam
+      parados, porque são eles que sustentam a garantia de contraste medida no pixel. A
+      folga de escala saiu de uma derivação, não de um chute — está em `cerebro/DECISOES.md`.
+      `will-change` só entra no primeiro evento de rolagem, para não tocar no elemento de
+      LCP antes do primeiro quadro pintado. **LCP não piorou: 1556 ms contra 1640 ms.**
+- [x] **M3 — unificação de curva**, nos dois lados. `EASE.entrada`, `.acompanhamento` e
+      `.estado` viraram `expo.out` em `tokens.ts`, e `--ease-estado` virou o mesmo valor em
+      bézier no `globals.css`. `check-movimento.mjs` teve o inventário congelado atualizado
+      de propósito (é assim que a decisão fica registrada no diff) e ganhou a ponte
+      `PONTES_CURVA`, que compara a curva do CSS contra a do GSAP. A ponte foi quebrada de
+      propósito antes de ser confiada.
+- [x] **Nona suíte: `scripts/checks/scrub.mjs`.** Mede a `scaleX` da barra contra o
+      progresso real do documento e a cobertura da camada do hero, em 11 paradas, no celular
+      e no desktop. Existe porque `scrub` falha calado e as oito suítes passaram inteiras
+      por cima do defeito real de M1. Quebrada de propósito com as tolerâncias invertidas —
+      e o teste achou um defeito dela mesma, registrado no `BECOS.md`.
 
 ## Próximos passos, em ordem
 
 1. ~~Rodar `npm run check` inteiro e registrar o baseline.~~ Feito, verde.
 2. ~~Auditar os 5 sites de referência e fechar §2 e §3.~~ Feito.
 3. ~~Sistema de tokens de movimento.~~ Feito, conferido por `check:movimento`.
-4. **Implementar M1 e M2** (`docs/BRIEF-MOVIMENTO.md` §3.2) — é a primeira vez que `scrub`
-   entra no código; hoje ele não aparece em uma linha sequer. Pequenas de propósito.
-   As duas armadilhas já levantadas, para não redescobrir: **o pôster do hero é o elemento
-   de LCP**, então M2 mede LCP antes e depois e não liga `will-change` antes do primeiro
-   quadro; e transladar a camada do hero revela a borda de baixo, então a folga de escala
-   se calcula a partir do deslocamento máximo, não se chuta.
-5. **M3, a unificação de curva** — é a única das três que muda comportamento, então ela
-   também muda o levantamento congelado de `check-movimento.mjs`, e essa mudança nos dois
-   lados é o que registra a decisão no diff.
-6. Corrigir os bugs menores levantados na auditoria (ver "Dívida conhecida").
+4. ~~Implementar M1 e M2.~~ Feito e medido. As duas armadilhas previstas eram reais: a de
+   LCP foi evitada (1556 ms, melhor que o baseline), a da borda de baixo foi resolvida por
+   derivação. A terceira, que ninguém previu, custou a tarde — está no `BECOS.md`.
+5. ~~M3, a unificação de curva.~~ Feito nos dois lados, com ponte conferindo.
+6. **Corrigir os bugs menores levantados na auditoria** (ver "Dívida conhecida"). É daqui
+   que a próxima sessão continua. O item das âncoras é o único com armadilha de
+   acessibilidade descrita; os outros são faxina e um componente `Button` que não existe.
 7. Só depois do site: Apps Script pronto para o Hermes, e a apresentação da proposta.
 
 ## Dívida conhecida (auditada, não corrigida ainda)
@@ -180,7 +207,10 @@ de `scrub` foi escrita ainda.
     `package.json` (`^2.1.2`) e não é importada em nenhum arquivo de `src/`. Todo o código
     usa `useEffect` + `gsap.context()` ou limpeza manual. Ou a camada de movimento nova
     adota o `useGSAP` (que resolve limpeza sozinho), ou a dependência sai. Ficar como está,
-    não.
+    não. **A rodada de movimento passou e não adotou:** M1 e M2 seguiram o padrão da casa
+    (`useEffect` + `gsap.context()` + `revert()` na limpeza), porque misturar dois padrões
+    de limpeza em peças que registram `ScrollTrigger` é como se vaza gatilho. Então a
+    decisão pendente virou uma só: **a dependência sai** no passo 6.
   - `heat-shader.tsx` (~260 linhas) está **inativo, não inalcançável**: `hero-section.tsx:94`
     só o monta se não houver clipe, e `lampada` está no manifesto hoje. É o plano B do fundo
     do hero. Remover é decisão de produto, não faxina.
@@ -188,6 +218,10 @@ de `scrub` foi escrita ainda.
     vazio **de propósito** ("a tira do corte ainda não chegou em arquivo"). É a única
     infraestrutura de scrub por quadros que já existe pronta — decidir na rodada de
     movimento se ela vira a base do scrub ou some. Não apagar antes disso.
+    **A rodada passou e não a usou:** M1 e M2 são scrub de `transform`, não de quadros, e
+    forçar a sequência a servir de base teria sido inventar uso para código existente. Ela
+    continua bloqueada pela mesma coisa de sempre — a tira do corte em arquivo —, então
+    segue sem apagar, e a decisão continua sendo do dono.
   - `src/lib/pix/br-code.ts` (completo e testado) não tem consumidor de UI — está esperando
     os dados do Pix, que estão no `TRAVADO.md`. Não é morto, é bloqueado.
 - `SplitText` é registrado dinamicamente (`use-split-text.ts:47`) e sustenta o título do

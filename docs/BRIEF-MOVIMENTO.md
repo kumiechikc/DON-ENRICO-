@@ -293,6 +293,33 @@ Duas notas de implementação que a auditoria produziu e que não podem se perde
   (§2.2); aqui o equivalente é escala de folga na camada, calculada a partir do deslocamento
   máximo — não um `1.15` chutado.
 
+### 3.2.1 O que a implementação corrigiu no plano (2026-08-28)
+
+As três peças estão no ar. Duas das notas acima se confirmaram e uma terceira armadilha,
+que ninguém previu, foi a que custou a tarde.
+
+- **A folga de M2 não precisava ser chutada — ela sai por conta.** Com `y = p·H·taxa`, a
+  base da camada nunca sobe acima da base da seção **enquanto H ≥ V**: a folga necessária é
+  **zero**. O único caso de falha é H < V, o celular com a barra de endereço recolhida
+  passando do `100svh`, e aí ela vale exatamente `V/H`. Ficou `max(1, V/H)`, que dá 1 no
+  desktop — sem escala, sem borrar o clipe. O `1.15` que este documento mandou não chutar
+  teria sobrado no desktop e ainda assim poderia faltar no celular.
+- **A nota do LCP estava certa em prever risco e errada em prever o sinal.** `will-change`
+  só entra no primeiro evento de rolagem, e o LCP medido foi **1556 ms contra 1640 ms** do
+  baseline. A diferença é ruído entre medições; o que a medida prova é que M2 não piorou o
+  elemento de LCP.
+- **A armadilha real não era nenhuma das duas: era `scrub` falhar calado.** M1 nasceu morta
+  — barra parada em zero, GSAP escrevendo `scale(0, 1)` a cada quadro — e **as oito suítes
+  passaram inteiras por cima**. A causa está no `cerebro/BECOS.md` (o `documentElement` que
+  mede 900px de 8390). O conserto foi trocar o intervalo do gatilho por números
+  (`start: 0`, `end: () => ScrollTrigger.maxScroll(window)`), e a lição virou a nona suíte:
+  `scripts/checks/scrub.mjs` compara a `scaleX` da barra com o progresso real do documento e
+  a cobertura da camada do hero, em 11 paradas, no celular e no desktop.
+- **M3 atravessou para o CSS.** O plano falava só de `tokens.ts`; parar ali deixaria o hover
+  na curva do Tailwind e o React em `expo.out`, duas noções de "reagir ao ponteiro" no mesmo
+  site. `--ease-estado` mudou junto, e `check-movimento.mjs` ganhou uma ponte que cobra os
+  dois lados. O raciocínio inteiro está em `cerebro/DECISOES.md`.
+
 ### 3.3 O que fica de fora, e por quê
 
 | Recusado | Vem de | Por que não |

@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic"
 import { useEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useMotion } from "@/lib/motion/motion-provider"
 import { useSplitReveal } from "@/lib/motion/use-split-text"
 import { EASE, HERO } from "@/lib/motion/tokens"
@@ -24,6 +25,37 @@ const HeatShader = dynamic(() => import("./heat-shader"), {
   loading: () => null,
 })
 
+/*
+ * Registro no nível do módulo, pelo mesmo motivo escrito em `use-reveal.ts`:
+ * React roda os efeitos de baixo para cima, então registrar dentro de um
+ * provider deixaria os primeiros gatilhos chamando um plugin ausente.
+ */
+gsap.registerPlugin(ScrollTrigger)
+
+/*
+ * A altura MÁXIMA que a janela pode assumir, e por que ela não é `innerHeight`.
+ *
+ * O hero é `min-h-[100svh]` — `svh` é o viewport PEQUENO, medido com a barra de
+ * endereço do celular aberta. Quando ela se recolhe, a área visível cresce e
+ * passa a ser maior que a seção. É exatamente nesse instante que uma camada
+ * transladada revelaria vazio embaixo, e é por isso que a folga se calcula
+ * contra `lvh` (o viewport GRANDE) e não contra a altura de agora: medir o
+ * estado atual daria folga zero no desktop e folga insuficiente no celular
+ * justamente quando ela é necessária.
+ *
+ * Se o navegador não conhecer `lvh`, a altura declarada é inválida, o elemento
+ * mede zero, e a conta cai em `innerHeight` — que é o melhor palpite disponível.
+ */
+function alturaMaximaDaJanela(): number {
+  const sonda = document.createElement("div")
+  sonda.style.cssText =
+    "position:absolute;top:0;left:0;width:0;height:100lvh;visibility:hidden;pointer-events:none"
+  document.body.appendChild(sonda)
+  const altura = sonda.getBoundingClientRect().height
+  sonda.remove()
+  return altura || window.innerHeight
+}
+
 export function HeroSection() {
   const { motionEnabled } = useMotion()
   /*
@@ -43,6 +75,8 @@ export function HeroSection() {
     label: "Salgados para festa",
   })
   const supportRef = useRef<HTMLDivElement>(null)
+  const secaoRef = useRef<HTMLElement>(null)
+  const camadaFundoRef = useRef<HTMLDivElement>(null)
 
   /*
    * O shader só monta depois que a página assentou. Disputar CPU com a
@@ -70,14 +104,129 @@ export function HeroSection() {
     return () => ctx.revert()
   }, [motionEnabled])
 
+  /*
+   * M2 — profundidade no hero (`docs/BRIEF-MOVIMENTO.md` §3.2).
+   * ───────────────────────────────────────────────────────────────────────────
+   * A camada da luz anda a meia taxa da rolagem. Junto com a barra de progresso,
+   * é a segunda peça do site presa ao PROGRESSO da rolagem em vez de disparada
+   * por ela.
+   *
+   * O QUE ELA RESOLVE: o hero é a única tela com mídia sangrando, e ela saía de
+   * cena rígida, como um cartaz sendo puxado. Meia taxa dá o afastamento sem que
+   * o olho persiga o fundo em vez de ler o título.
+   *
+   * SÓ A CAMADA 1 SE MEXE, e isso é deliberado. Os dois véus (camadas 2 e 3)
+   * ficam parados, porque são eles que sustentam o contraste medido no pixel —
+   * o véu de baixo existe por causa de quatro textos que reprovavam, o pior em
+   * 1,08:1. Se ele viajasse junto com o clipe, a garantia viajaria com ele.
+   *
+   * ───────────────────────────────────────────────────────────────────────────
+   * A CONTA DA FOLGA, QUE É O ÚNICO JEITO DE NÃO REVELAR BORDA
+   *
+   * Com H = altura da seção e V = altura máxima da janela, a camada percorre
+   * `y = p·H·taxa` enquanto a seção atravessa a tela (p de 0 a 1). O fundo dela
+   * fica em `H − p·H·taxa`, que nunca sobe acima do fundo da própria seção — ou
+   * seja, ENQUANTO H ≥ V A FOLGA NECESSÁRIA É ZERO. A seção encolhe para fora da
+   * tela na mesma conta em que a camada sobe.
+   *
+   * O caso que quebra é H < V: acontece no celular quando a barra de endereço se
+   * recolhe e a janela fica maior que os `100svh` da seção. Aí falta `(V−H)/2`
+   * embaixo, e uma escala a partir do centro que resolva isso é
+   *
+   *     s = 1 + 2·((V−H)/2)/H = V/H
+   *
+   * Daí `Math.max(1, V/H)`: no desktop dá exatamente 1 (nenhuma escala, nenhuma
+   * perda de nitidez no clipe) e no celular dá o mínimo que cobre. É a folga
+   * calculada a partir do deslocamento, que era o que o brief exigia em vez de
+   * um `1.15` chutado.
+   *
+   * As duas medidas entram como FUNÇÃO, e o gatilho tem `invalidateOnRefresh`:
+   * girar o aparelho muda H e V, e um número capturado no primeiro quadro
+   * ficaria mentindo pelo resto da sessão.
+   */
+  useEffect(() => {
+    const secao = secaoRef.current
+    const camada = camadaFundoRef.current
+    if (!secao || !camada || !motionEnabled) return
+
+    /*
+     * `will-change` só depois da primeira rolagem, e não na montagem.
+     *
+     * O pôster do hero É o elemento de LCP (decisão de 2026-08-22), e o LCP tem
+     * orçamento conferido por máquina. Promover a camada a compositor antes do
+     * primeiro quadro pintado é mexer no caminho crítico da métrica para ganhar
+     * suavidade num movimento que ainda nem começou — ninguém rolou. Depois do
+     * primeiro gesto de rolagem, o LCP já aconteceu e a promoção é de graça.
+     */
+    const promover = () => {
+      camada.style.willChange = "transform"
+    }
+    window.addEventListener("scroll", promover, { once: true, passive: true })
+
+    const ctx = gsap.context(() => {
+      const deslocamentoMaximo = () => secao.offsetHeight * HERO.taxaParallax
+      const folga = () =>
+        Math.max(1, alturaMaximaDaJanela() / Math.max(1, secao.offsetHeight))
+
+      gsap.fromTo(
+        camada,
+        { y: 0, scale: folga },
+        {
+          y: deslocamentoMaximo,
+          /*
+           * A escala é a mesma nas duas pontas: ela não anima, ela só precisa
+           * estar aplicada durante a travessia. Declarar nos dois lados é o que
+           * mantém a folga sob o mesmo `invalidateOnRefresh` do deslocamento,
+           * em vez de virar um `gsap.set` solto que ninguém recalcula.
+           */
+          scale: folga,
+          /*
+           * Sem curva: com `scrub`, a curva é a rolagem do usuário. Qualquer
+           * easing aqui descolaria a camada do dedo dele.
+           */
+          ease: EASE.continuo,
+          scrollTrigger: {
+            trigger: secao,
+            start: "top top",
+            end: "bottom top",
+            /*
+             * `scrub: true`, sem número, pelo mesmo motivo escrito em
+             * `scroll-progress.tsx`: um número empilha suavização própria em
+             * cima da do Lenis, e as duas juntas atrasam a camada de um jeito
+             * que se lê como travamento, não como peso.
+             */
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        }
+      )
+    }, secao)
+
+    return () => {
+      window.removeEventListener("scroll", promover)
+      camada.style.willChange = ""
+      ctx.revert()
+    }
+  }, [motionEnabled])
+
   const entryPrice = Math.min(...boxDegustacao.tiers.map((t) => t.price))
 
   return (
-    <section className="relative min-h-[100svh] flex flex-col justify-end overflow-hidden">
+    <section
+      ref={secaoRef}
+      className="relative min-h-[100svh] flex flex-col justify-end overflow-hidden"
+    >
       {/* Camada 1 — a luz. O gradiente é o estado base: se o shader não rodar
           (aparelho fraco, movimento desligado), a cena continua sendo uma
-          fritadeira acesa na sombra, não um retângulo preto. */}
-      <div className="absolute inset-0 z-0 bg-[radial-gradient(125%_90%_at_50%_118%,#8A4318_0%,#3A1809_42%,#120B08_76%)]">
+          fritadeira acesa na sombra, não um retângulo preto.
+
+          É esta camada, e só ela, que anda a meia taxa da rolagem (M2). O
+          `overflow-hidden` da seção acima é o que recorta o que sobra; sem ele,
+          a camada deslocada empurraria a página. */}
+      <div
+        ref={camadaFundoRef}
+        className="absolute inset-0 z-0 bg-[radial-gradient(125%_90%_at_50%_118%,#8A4318_0%,#3A1809_42%,#120B08_76%)]"
+      >
         {clipeDoHero ? (
           <CinemaLoop
             clipe="lampada"

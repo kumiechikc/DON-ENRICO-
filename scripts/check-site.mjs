@@ -22,6 +22,7 @@ import { checkA11y } from "./checks/a11y.mjs"
 import { checkPerformance } from "./checks/performance.mjs"
 import { checkNoJs } from "./checks/no-js.mjs"
 import { checkMidia } from "./checks/midia.mjs"
+import { checkScrub } from "./checks/scrub.mjs"
 
 const args = process.argv.slice(2)
 const urlArg = args.indexOf("--url")
@@ -181,6 +182,7 @@ try {
     ["Orçamento de performance", () => checkPerformance(browser, target, { isDev })],
     ["Site sem JavaScript", () => checkNoJs(browser, target)],
     ["Clipes de vídeo", () => checkMidia(browser, target)],
+    ["Movimento preso à rolagem", () => checkScrub(browser, target)],
   ]
 
   const allFailures = []

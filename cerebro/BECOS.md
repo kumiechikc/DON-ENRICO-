@@ -109,6 +109,31 @@ O `design-review.yml` tem filtro de caminhos e não roda em `docs/`, `README` ne
 `CLAUDE.md`. Não existe verde para esperar, e a regra escrita mandava esperar. Uma
 sessão seguindo a regra ao pé da letra ficaria parada para sempre.
 
+**2026-08-28 — `trigger: document.documentElement` para a barra de progresso da página.**
+É o que a intuição pede para "a página inteira", e a barra ficou parada em zero com o
+GSAP escrevendo `scale(0, 1)` a cada quadro: viva, atualizando, sempre no mesmo valor.
+Medido: `<html>` tem `scrollHeight` **8390** mas `getBoundingClientRect().height` e
+`offsetHeight` de **900** — quem rola é o `<body>` (8389,7px). O ScrollTrigger posiciona
+por rect, então `start: "top top"` e `end: "bottom bottom"` caíram os dois no scroll 0:
+intervalo de comprimento zero, progresso sem para onde andar. `trigger: document.body`
+funcionaria e continuaria errado de origem — mede geometria de elemento para responder
+uma pergunta que não é sobre elemento nenhum. Conserto: intervalo numérico, `start: 0` e
+`end: () => ScrollTrigger.maxScroll(window)`.
+
+**2026-08-28 — As oito suítes passando por cima de uma peça de movimento morta.**
+O beco acima passou inteiro pelas oito conferências. `scrub` falha CALADO: o elemento
+continua no DOM, com o tamanho certo, sem erro no console, sem estouro horizontal, sem
+mexer no contraste, no LCP nem no CLS. Só para de responder à rolagem. Quem achou foi um
+olho medindo a página rolada, e um olho não roda no CI. Virou a nona suíte,
+`scripts/checks/scrub.mjs`, que mede VALOR (a `scaleX` da barra contra o progresso real
+do documento) e não movimento — porque "andou" também passaria numa barra que anda errado.
+
+**2026-08-28 — `pkill -f "next/dist/bin/next start"` nesta máquina.**
+É no-op no Windows. O rebuild subiu com a porta 3000 ainda presa (`EADDRINUSE`), o
+servidor velho continuou servindo pedaços de outro build, e a página inteira mediu como
+morta (`barra=null`, `transladou=0`). Quase virou "regressão". Nesta máquina o encerramento
+é `Get-NetTCPConnection -LocalPort 3000 -State Listen | ... Stop-Process -Force`.
+
 ---
 
 ## Método
@@ -117,3 +142,9 @@ sessão seguindo a regra ao pé da letra ficaria parada para sempre.
 confiada, e várias reprovaram nesse teste.** A de contraste pintado tinha dois
 defeitos próprios, a da esteira era fraca, a de foto engolia o próprio erro. Teste que
 nunca falhou não prova nada: ele é indistinguível de um teste que não testa.
+
+A de `scrub` (2026-08-28) manteve a série: quebrada de propósito com as tolerâncias
+invertidas, apareceu um defeito dela mesma. Uma reprovação no celular fazia o desktop
+pular a medição inteira, porque a guarda de "elemento não encontrado" olhava o contador
+global de falhas em vez de um sinal da própria tela. O relatório sairia falando de uma
+tela só, escondendo se o defeito era das duas ou de uma.

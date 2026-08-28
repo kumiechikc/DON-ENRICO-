@@ -5,6 +5,7 @@ import { ShoppingBag, Menu, X } from "lucide-react"
 import { useCart } from "@/lib/cart/cart-context"
 import { useDialog } from "@/lib/hooks/use-dialog"
 import { cn } from "@/lib/utils"
+import { ScrollProgress } from "./scroll-progress"
 
 const navLinks = [
   { label: "Festa", href: "#festa" },
@@ -92,6 +93,10 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
           </button>
         </div>
       </nav>
+
+      {/* Assenta na borda de baixo do cabeçalho, que já é `fixed` — logo já é o
+          bloco de contenção do `absolute` dela, sem precisar de `relative`. */}
+      <ScrollProgress />
 
       {menuOpen && (
         <div

@@ -64,12 +64,28 @@ const CONGELADO = {
     revelacao: 0.8,
     carimbo: 1.0,
   },
+  /*
+   * As curvas são a ÚNICA linha deste levantamento que já foi mexida de
+   * propósito, e o gesto de mexer aqui é o que registra a decisão.
+   *
+   * M3, em 2026-08-28 (`docs/BRIEF-MOVIMENTO.md` §3.2): `entrada` e
+   * `acompanhamento` saíram de `power3.out` e `estado` saiu de `power1.out`;
+   * as três passaram a `expo.out`, que é a curva que o título do hero e o
+   * próprio Lenis já usavam. Nenhuma duração mudou junto — por isso o bloco
+   * `DURACAO` acima continua intocado desde a migração.
+   *
+   * Deixar os valores antigos escritos aqui embaixo não é nostalgia: é o que
+   * permite ler, daqui a um ano, que a mudança foi decidida e não sofrida.
+   *
+   *   entrada        power3.out  →  expo.out
+   *   acompanhamento power3.out  →  expo.out
+   *   estado         power1.out  →  expo.out   (era o default do GSAP, herdado)
+   */
   EASE: {
-    entrada: "power3.out",
-    acompanhamento: "power3.out",
+    entrada: "expo.out",
+    acompanhamento: "expo.out",
     retorno: "elastic.out(1, 0.35)",
-    // Os quatro tweens que caíam aqui por omissão agora declaram. Mesmo valor.
-    estado: "power1.out",
+    estado: "expo.out",
     carimbo: "expo.out",
     continuo: "none",
   },
@@ -130,6 +146,27 @@ const CONGELADO = {
  * outra, o site passa a ter duas noções de "rápido" para a mesma coisa.
  */
 const PONTES = [{ css: "--duration-superficie", ts: ["DURACAO", "reacao"] }]
+
+/*
+ * A mesma ideia de ponte, para CURVA em vez de tempo.
+ *
+ * M3 unificou `EASE.entrada`, `EASE.acompanhamento` e `EASE.estado` em
+ * `expo.out`, e a metade CSS disso é `--ease-estado`. As duas descrevem a mesma
+ * intenção — "troca de estado discreta" — em duas linguagens, então a partir de
+ * agora elas não podem andar separadas sem que alguém seja avisado.
+ *
+ * Comparar exige uma tradução, e a tradução é uma AFIRMAÇÃO NOSSA, não um fato
+ * da matemática: `expo.out` é uma exponencial e uma bézier cúbica não consegue
+ * ser exatamente isso. `cubic-bezier(0.16, 1, 0.3, 1)` é a aproximação que a
+ * web usa há anos com o nome de easeOutExpo, e é a que escolhemos. Fica escrita
+ * aqui, em um lugar só, para que trocar de aproximação seja um gesto visível em
+ * vez de dois arquivos discordando de fininho.
+ */
+const CURVA_EM_CSS = {
+  "expo.out": "cubic-bezier(0.16, 1, 0.3, 1)",
+}
+
+const PONTES_CURVA = [{ css: "--ease-estado", ts: ["EASE", "estado"] }]
 
 // ─── Leitura de tokens.ts ────────────────────────────────────────────────────
 //
@@ -355,6 +392,39 @@ export function checkMovimento() {
     }
   }
   notes.push(`${PONTES.length} tempo(s) conferido(s) entre CSS e GSAP`)
+
+  // Espaço não conta: `cubic-bezier(0.16,1,0.3,1)` e a mesma coisa espaçada são
+  // o mesmo valor, e reprovar por um espaço seria ruído.
+  const semEspaco = (v) => String(v).replace(/\s+/g, "")
+
+  for (const ponte of PONTES_CURVA) {
+    const bruto = css.resolver(ponte.css)
+    const [grupo, chave] = ponte.ts
+    const doTs = tokens[grupo]?.get(chave)?.valor
+    if (bruto === null) {
+      failures.push(`globals.css não declara ${ponte.css}`)
+      continue
+    }
+    if (doTs === undefined) {
+      failures.push(`tokens.ts não exporta ${grupo}.${chave}`)
+      continue
+    }
+    const esperado = CURVA_EM_CSS[doTs]
+    if (esperado === undefined) {
+      failures.push(
+        `${grupo}.${chave} vale "${doTs}", e não há tradução dela para CSS em ` +
+          `CURVA_EM_CSS — acrescente a bézier equivalente lá antes de usar essa curva`
+      )
+      continue
+    }
+    if (semEspaco(bruto) !== semEspaco(esperado)) {
+      failures.push(
+        `${ponte.css} (${bruto}) e ${grupo}.${chave} ("${doTs}" = ${esperado}) ` +
+          `divergem — são a mesma intenção em duas linguagens e precisam concordar`
+      )
+    }
+  }
+  notes.push(`${PONTES_CURVA.length} curva(s) conferida(s) entre CSS e GSAP`)
 
   // ── 3. nenhum literal de tempo solto ──────────────────────────────────────
   //

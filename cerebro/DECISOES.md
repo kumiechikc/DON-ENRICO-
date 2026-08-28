@@ -12,6 +12,48 @@ Entrada nova vai no topo. Toda entrada precisa de data.
 
 ---
 
+## 2026-08-28 — A unificação de curva (M3) atravessou para o CSS, e a folga do hero foi derivada
+
+**Decidido.** Três coisas nesta rodada, e as três são escolha, não execução do que já
+estava escrito.
+
+**1. M3 mudou o CSS junto, e não só o GSAP.** O brief pedia unificar as curvas do
+JavaScript: `EASE.entrada`, `.acompanhamento` e `.estado` passaram de `power3.out` e
+`power1.out` para `expo.out`. Mas `--ease-estado` do `globals.css` continuaria no
+`cubic-bezier(0.4, 0, 0.2, 1)` do Tailwind, e o site terminaria com **duas noções de
+"reagir ao ponteiro"** — uma para o que o React anima, outra para o que o hover anima.
+São a mesma intenção em duas linguagens. Trocado para `cubic-bezier(0.16, 1, 0.3, 1)`,
+que é `expo.out` escrito em bézier, e `check-movimento.mjs` ganhou a ponte `PONTES_CURVA`
+que compara os dois lados e reprova se andarem separados.
+
+**Descartado: deixar o CSS na curva do Tailwind e anotar a dívida.** Seria terminar M3
+pela metade, e a metade que sobra é justamente a que ninguém vê no diff.
+
+**2. A folga de escala da camada do hero (M2) foi derivada, não chutada.** O brief avisou
+por escrito que transladar a camada revela a borda de baixo, e que a folga sai do
+deslocamento máximo. Com `y = p·H·taxa`, a base da camada nunca sobe acima da base da
+seção **enquanto H ≥ V**: a folga necessária é zero. O único caso de falha é H < V, que é
+o celular com a barra de endereço recolhida passando do `100svh`, e aí ela vale `V/H`.
+Ficou `Math.max(1, V/H)` — exatamente 1 no desktop, sem escala e sem perder nitidez de
+clipe. `alturaMaximaDaJanela()` mede `100lvh` com uma sonda, porque é a janela máxima que
+importa, não a atual.
+
+**Descartado: um número fixo tipo 1.15.** É o chute que o brief mandou não dar, e ele
+falha nas duas pontas: sobra no desktop (borra o clipe de graça) e pode faltar no celular.
+
+**3. A nona suíte existe porque as oito não pegariam.** `scripts/checks/scrub.mjs` mede a
+`scaleX` da barra contra o progresso real do documento e a cobertura da camada do hero em
+11 paradas, no celular e no desktop. O motivo está no `BECOS.md` da mesma data: `scrub`
+falha calado, e o defeito real de M1 passou pelas oito conferências inteiras.
+
+**Revisitar se.** Aparecer no site um movimento que precise de curva diferente de
+`expo.out` — aí a decisão não é "adicionar uma curva", é **escrever por que aquela peça
+não é a mesma intenção das outras**. Hoje o site inteiro tem uma curva de estado só, e é
+isso que a auditoria dos cinco sites de referência achou (`docs/BRIEF-MOVIMENTO.md` §2.6):
+coerência é ter menos curvas, não mais.
+
+---
+
 ## 2026-08-26 — O lema é do dono, e o personagem da marca também
 
 **Decidido.** "O sabor que impõe respeito" fica, e passa a constar como fato de marca
