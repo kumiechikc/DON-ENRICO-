@@ -36,7 +36,7 @@ export function Footer() {
                 <li key={link.href}>
                   <a
                     href={link.href}
-                    className="inline-flex items-center min-h-[2.75rem] text-sm text-fg-muted hover:text-fg transition-colors duration-300"
+                    className="inline-flex items-center min-h-[2.75rem] text-sm text-fg-muted hover:text-fg transition-colors duration-[var(--duration-superficie)] ease-[var(--ease-estado)]"
                   >
                     {link.label}
                   </a>
@@ -51,7 +51,7 @@ export function Footer() {
               <li>
                 <a
                   href={`tel:${PHONE_TEL}`}
-                  className="inline-flex items-center min-h-[2.75rem] text-sm text-fg-muted hover:text-fg transition-colors duration-300"
+                  className="inline-flex items-center min-h-[2.75rem] text-sm text-fg-muted hover:text-fg transition-colors duration-[var(--duration-superficie)] ease-[var(--ease-estado)]"
                 >
                   {PHONE_DISPLAY}
                 </a>
@@ -61,7 +61,7 @@ export function Footer() {
                   href={INSTAGRAM_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center min-h-[2.75rem] text-sm text-fg-muted hover:text-fg transition-colors duration-300"
+                  className="inline-flex items-center min-h-[2.75rem] text-sm text-fg-muted hover:text-fg transition-colors duration-[var(--duration-superficie)] ease-[var(--ease-estado)]"
                 >
                   {INSTAGRAM_HANDLE}
                 </a>

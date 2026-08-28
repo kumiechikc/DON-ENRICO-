@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
 import { SplitText } from "gsap/SplitText"
 import { useMotion } from "./motion-provider"
+import { CASCATA, DURACAO, EASE } from "./tokens"
 
 /*
  * Tipografia cinética no título principal.
@@ -80,11 +81,11 @@ export function useSplitReveal<T extends HTMLElement = HTMLHeadingElement>(
       gsap.from(split.chars, {
         yPercent: 118,
         opacity: 0,
-        duration: 1.0,
+        duration: DURACAO.carimbo,
         // Cascata bem curta por caractere: dá a sensação de carimbo caindo,
         // não de letra por letra sendo digitada.
-        stagger: 0.022,
-        ease: "expo.out",
+        stagger: CASCATA.caracteres,
+        ease: EASE.carimbo,
         delay,
       })
     }

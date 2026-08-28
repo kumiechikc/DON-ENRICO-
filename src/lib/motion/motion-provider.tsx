@@ -10,6 +10,7 @@ import {
 import Lenis from "lenis"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { LENIS } from "./tokens"
 
 /*
  * Fundação de movimento do site.
@@ -113,8 +114,8 @@ export function MotionProvider({ children }: { children: ReactNode }) {
      * relógios não desencontrarem.
      */
     const lenis = new Lenis({
-      duration: 1.1,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      duration: LENIS.duracao,
+      easing: LENIS.easing,
       smoothWheel: true,
       // No toque a rolagem nativa é melhor que qualquer interpolação: mexer
       // nela quebra o "flick" que o sistema já faz bem.

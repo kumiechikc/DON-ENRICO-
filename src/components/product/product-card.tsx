@@ -40,14 +40,14 @@ export function ProductCard({ pack }: { pack: FlavorPack }) {
 
   return (
     <li className="group flex items-baseline gap-3 py-1">
-      <h4 className="shrink-0 text-sm sm:text-base text-fg leading-snug transition-colors duration-300 group-hover:text-amber">
+      <h4 className="shrink-0 text-sm sm:text-base text-fg leading-snug transition-colors duration-[var(--duration-superficie)] ease-[var(--ease-estado)] group-hover:text-amber">
         {pack.name}
       </h4>
 
       {/* Condutor pontilhado: puramente decorativo. */}
       <span
         aria-hidden="true"
-        className="flex-1 min-w-4 translate-y-[-0.28em] border-b border-dotted border-border-strong/60 transition-colors duration-300 group-hover:border-amber/70"
+        className="flex-1 min-w-4 translate-y-[-0.28em] border-b border-dotted border-border-strong/60 transition-colors duration-[var(--duration-superficie)] ease-[var(--ease-estado)] group-hover:border-amber/70"
       />
 
       <span className="shrink-0 text-sm sm:text-base font-bold text-fg tabular-nums">
@@ -58,7 +58,7 @@ export function ProductCard({ pack }: { pack: FlavorPack }) {
         type="button"
         onClick={handleAdd}
         className={cn(
-          "shrink-0 inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] border transition-[color,background-color,border-color,opacity] duration-300 self-center",
+          "shrink-0 inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] border transition-[color,background-color,border-color,opacity] duration-[var(--duration-superficie)] ease-[var(--ease-estado)] self-center",
           added
             ? "bg-amber border-amber text-bg"
             : "border-border-strong/60 text-fg-muted hover:border-amber hover:text-amber"

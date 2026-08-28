@@ -9,6 +9,7 @@ import {
 } from "react"
 import { gsap } from "gsap"
 import { useMotion } from "@/lib/motion/motion-provider"
+import { EASE, MAGNETICO } from "@/lib/motion/tokens"
 
 /*
  * Botão magnético: o elemento se inclina na direção do cursor quando ele chega
@@ -40,8 +41,12 @@ function useMagnet(strength: number) {
     if (!el || !motionEnabled) return
     if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return
 
-    const quickX = gsap.quickTo(el, "x", { duration: 0.5, ease: "power3.out" })
-    const quickY = gsap.quickTo(el, "y", { duration: 0.5, ease: "power3.out" })
+    const seguir = {
+      duration: MAGNETICO.duracaoSeguir,
+      ease: EASE.acompanhamento,
+    }
+    const quickX = gsap.quickTo(el, "x", seguir)
+    const quickY = gsap.quickTo(el, "y", seguir)
 
     const onMove = (event: MouseEvent) => {
       const rect = el.getBoundingClientRect()
@@ -51,7 +56,12 @@ function useMagnet(strength: number) {
       quickY((dy / rect.height) * strength * 2)
     }
     const onLeave = () => {
-      gsap.to(el, { x: 0, y: 0, duration: 0.7, ease: "elastic.out(1, 0.35)" })
+      gsap.to(el, {
+        x: 0,
+        y: 0,
+        duration: MAGNETICO.duracaoRetorno,
+        ease: EASE.retorno,
+      })
     }
 
     el.addEventListener("mousemove", onMove)
@@ -67,7 +77,7 @@ function useMagnet(strength: number) {
 }
 
 export function MagneticButton(props: Props) {
-  const { children, strength = 10 } = props
+  const { children, strength = MAGNETICO.forcaPadrao } = props
   const ref = useMagnet(strength)
 
   if (props.as === "a") {

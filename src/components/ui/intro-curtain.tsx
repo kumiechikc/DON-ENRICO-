@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
 import { useMotion } from "@/lib/motion/motion-provider"
+import { CORTINA } from "@/lib/motion/tokens"
 
 /*
  * Cortina de entrada.
@@ -53,20 +54,20 @@ export function IntroCurtain() {
 
     tl.to(curtain.querySelector("[data-curtain-mark]"), {
       opacity: 1,
-      duration: 0.35,
-      ease: "power2.out",
+      duration: CORTINA.duracaoMarcaEntra,
+      ease: CORTINA.easeMarcaEntra,
     })
       .to(curtain.querySelector("[data-curtain-mark]"), {
         opacity: 0,
-        duration: 0.25,
-        ease: "power2.in",
+        duration: CORTINA.duracaoMarcaSai,
+        ease: CORTINA.easeMarcaSai,
       })
       // Sobe como uma persiana em vez de simplesmente sumir: o gesto vertical
       // conversa com a rolagem que vem logo depois.
       .to(curtain, {
         yPercent: -100,
-        duration: 0.62,
-        ease: "expo.inOut",
+        duration: CORTINA.duracaoSubida,
+        ease: CORTINA.easeSubida,
       })
 
     return () => {

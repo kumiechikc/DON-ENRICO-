@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useMotion } from "./motion-provider"
+import { CASCATA, DESLOCAMENTO, DURACAO, EASE } from "./tokens"
 
 /*
  * Registro no nível do módulo, não dentro do provider.
@@ -58,15 +59,21 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(
       if (kind === "stagger") {
         gsap.fromTo(
           el.children,
-          { opacity: 0, y: 28 },
+          { opacity: 0, y: DESLOCAMENTO.revelacaoCascata },
           {
             opacity: 1,
             y: 0,
-            duration: 0.7,
+            duration: DURACAO.revelacaoCascata,
             // Acima de ~8 filhos o último item parece atrasado; o teto mantém a
             // cascata legível mesmo em listas longas.
-            stagger: { each: 0.06, amount: Math.min(0.48, el.children.length * 0.06) },
-            ease: "power3.out",
+            stagger: {
+              each: CASCATA.irmaos,
+              amount: Math.min(
+                CASCATA.irmaosTeto,
+                el.children.length * CASCATA.irmaos
+              ),
+            },
+            ease: EASE.entrada,
             ...common,
           }
         )
@@ -76,8 +83,14 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(
 
       gsap.fromTo(
         el,
-        { opacity: 0, y: 24 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", ...common }
+        { opacity: 0, y: DESLOCAMENTO.revelacao },
+        {
+          opacity: 1,
+          y: 0,
+          duration: DURACAO.revelacao,
+          ease: EASE.entrada,
+          ...common,
+        }
       )
     }, el)
 

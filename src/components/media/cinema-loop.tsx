@@ -181,7 +181,7 @@ export function CinemaLoop({
           preload="auto"
           onPlaying={() => setTocando(true)}
           className={cn(
-            "absolute inset-0 h-full w-full object-cover transition-opacity duration-700",
+            "absolute inset-0 h-full w-full object-cover transition-opacity duration-[var(--cinema-duration-troca)] ease-[var(--ease-estado)]",
             enquadramento,
             tocando ? "opacity-100" : "opacity-0"
           )}

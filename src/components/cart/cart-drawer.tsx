@@ -78,7 +78,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] text-fg hover:text-red transition-colors duration-150"
+            className="inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] text-fg hover:text-red transition-colors duration-[var(--duration-controle)] ease-[var(--ease-estado)]"
             aria-label="Fechar pedido"
           >
             <X className="w-5 h-5" aria-hidden="true" />
@@ -95,7 +95,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             <a
               href="#festa"
               onClick={onClose}
-              className="mt-2 inline-flex items-center justify-center min-h-[3rem] px-6 bg-amber text-bg font-bold text-sm uppercase tracking-wider hover:bg-amber-bright transition-colors duration-150"
+              className="mt-2 inline-flex items-center justify-center min-h-[3rem] px-6 bg-amber text-bg font-bold text-sm uppercase tracking-wider hover:bg-amber-bright transition-colors duration-[var(--duration-controle)] ease-[var(--ease-estado)]"
             >
               Ver cardápio
             </a>
@@ -121,7 +121,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => registrarPedido(items, codigo)}
-                className="inline-flex items-center justify-center gap-2.5 w-full min-h-[3.25rem] bg-amber text-bg font-bold text-sm uppercase tracking-wider hover:bg-amber-bright transition-colors duration-150"
+                className="inline-flex items-center justify-center gap-2.5 w-full min-h-[3.25rem] bg-amber text-bg font-bold text-sm uppercase tracking-wider hover:bg-amber-bright transition-colors duration-[var(--duration-controle)] ease-[var(--ease-estado)]"
               >
                 <WhatsAppIcon className="w-5 h-5" />
                 Enviar pelo WhatsApp
@@ -135,7 +135,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               <button
                 type="button"
                 onClick={clearCart}
-                className="text-xs text-fg-muted hover:text-red underline underline-offset-2 transition-colors duration-150 self-center min-h-[2.25rem]"
+                className="text-xs text-fg-muted hover:text-red underline underline-offset-2 transition-colors duration-[var(--duration-controle)] ease-[var(--ease-estado)] self-center min-h-[2.25rem]"
               >
                 Limpar pedido
               </button>

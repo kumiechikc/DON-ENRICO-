@@ -44,6 +44,56 @@
   --focus-ring: #ffb93d;
 }
 
+/*
+  Tokens de movimento — o lado CSS.
+  ─────────────────────────────────────────────────────────────────────────────
+  O irmão deste bloco é `src/lib/motion/tokens.ts`, que cuida do GSAP e do Lenis.
+  São dois arquivos porque são duas linguagens: GSAP fala segundos, CSS fala
+  milissegundos. Uma fonte só teria de converter em tempo de execução, e o preço
+  seria depender de JavaScript para pintar um hover. `scripts/check-movimento.mjs`
+  confere os dois um contra o outro e reprova se divergirem.
+
+  O que este bloco corrige: as 26 transições do site declaravam duração e NENHUMA
+  declarava curva. Todas caíam no `cubic-bezier(0.4, 0, 0.2, 1)` que o Tailwind
+  aplica por omissão. O valor não muda aqui — muda quem decidiu. Curva herdada
+  vira curva escolhida, e a próxima rodada pode trocá-la em um lugar só.
+*/
+:root {
+  /* Camada 1 — primitivos. Nomeados pelo valor, como as cores acima. */
+  --dur-150: 150ms;
+  --dur-200: 200ms;
+  --dur-300: 300ms;
+  --dur-500: 500ms;
+  --dur-700: 700ms;
+
+  /*
+    Uma curva só, porque hoje o site tem uma curva só. Inventar uma segunda
+    "para o caso de precisar" seria mobiliar um cômodo que ninguém habita.
+  */
+  --curva-suave: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Camada 2 — semânticos. É daqui que os componentes consomem. */
+
+  /** Controle pequeno reagindo ao ponteiro: link de menu, linha do carrinho. */
+  --duration-controle: var(--dur-150);
+  /** Superfície grande ou texto de leitura reagindo ao ponteiro. */
+  --duration-superficie: var(--dur-300);
+  /** A única curva de transição do site. */
+  --ease-estado: var(--curva-suave);
+
+  /*
+    Camada 3 — componentes. Só o que é exclusivo de uma peça, onde um nome de
+    intenção daria a entender que o número vale para o site inteiro.
+  */
+
+  /** Fundo do cabeçalho ao sair do topo. Único no site. */
+  --navbar-duration-fundo: var(--dur-200);
+  /** Card de pacote recompondo altura e véu. Mais lento porque é uma área grande. */
+  --package-duration-composicao: var(--dur-500);
+  /** Pôster do hero cedendo lugar ao clipe. Lento de propósito: a troca não pode piscar. */
+  --cinema-duration-troca: var(--dur-700);
+}
+
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);

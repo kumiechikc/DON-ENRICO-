@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
 import { useMotion } from "@/lib/motion/motion-provider"
+import { CURSOR, DURACAO, EASE } from "@/lib/motion/tokens"
 
 /*
  * Anel que segue o ponteiro e cresce sobre o que é clicável.
@@ -27,15 +28,23 @@ export function CursorFollower() {
 
     // `quickTo` cria um setter interpolado reutilizável: bem mais barato que
     // disparar um tween novo a cada movimento do mouse.
-    const moveX = gsap.quickTo(ring, "x", { duration: 0.42, ease: "power3.out" })
-    const moveY = gsap.quickTo(ring, "y", { duration: 0.42, ease: "power3.out" })
+    const seguir = {
+      duration: CURSOR.duracaoSeguir,
+      ease: EASE.acompanhamento,
+    }
+    const moveX = gsap.quickTo(ring, "x", seguir)
+    const moveY = gsap.quickTo(ring, "y", seguir)
 
     let visible = false
 
     const onMove = (event: PointerEvent) => {
       if (!visible) {
         visible = true
-        gsap.to(ring, { opacity: 1, duration: 0.3 })
+        gsap.to(ring, {
+          opacity: 1,
+          duration: DURACAO.reacao,
+          ease: EASE.estado,
+        })
       }
       moveX(event.clientX)
       moveY(event.clientY)
@@ -45,18 +54,23 @@ export function CursorFollower() {
         'a[href], button, [role="button"], input, select, textarea'
       )
       gsap.to(ring, {
-        scale: overInteractive ? 1.9 : 1,
+        scale: overInteractive ? CURSOR.escalaSobreAlvo : 1,
         borderColor: overInteractive
           ? "rgba(245,165,36,0.9)"
           : "rgba(248,239,227,0.35)",
-        duration: 0.3,
+        duration: DURACAO.reacao,
+        ease: EASE.estado,
         overwrite: "auto",
       })
     }
 
     const onLeave = () => {
       visible = false
-      gsap.to(ring, { opacity: 0, duration: 0.25 })
+      gsap.to(ring, {
+        opacity: 0,
+        duration: DURACAO.saida,
+        ease: EASE.estado,
+      })
     }
 
     window.addEventListener("pointermove", onMove, { passive: true })

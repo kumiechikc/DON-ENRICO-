@@ -82,12 +82,12 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
     <div
       ref={cardRef}
       data-reveal
-      className="group relative flex flex-col bg-surface border border-border transition-colors duration-500 hover:border-border-strong"
+      className="group relative flex flex-col bg-surface border border-border transition-colors duration-[var(--package-duration-composicao)] ease-[var(--ease-estado)] hover:border-border-strong"
     >
       {/* Luz âmbar que acende ao passar o cursor: o card reage antes do clique. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-[var(--package-duration-composicao)] ease-[var(--ease-estado)] group-hover:opacity-100"
         style={{
           background:
             "radial-gradient(120% 60% at 50% 0%, rgba(245,165,36,0.09) 0%, transparent 70%)",
@@ -124,7 +124,7 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
                   aria-pressed={active}
                   onClick={() => chooseTier(i)}
                   className={cn(
-                    "flex-1 min-w-[8.5rem] min-h-[3.5rem] px-4 py-2.5 border text-left transition-[color,background-color,border-color,opacity] duration-300",
+                    "flex-1 min-w-[8.5rem] min-h-[3.5rem] px-4 py-2.5 border text-left transition-[color,background-color,border-color,opacity] duration-[var(--duration-superficie)] ease-[var(--ease-estado)]",
                     active
                       ? "bg-amber border-amber text-bg"
                       : "border-border-strong text-fg hover:border-amber"
@@ -165,7 +165,7 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
                   disabled={blocked}
                   onClick={() => toggleFlavor(flavor)}
                   className={cn(
-                    "inline-flex items-center gap-1.5 min-h-[2.75rem] px-3.5 py-1.5 border text-sm transition-[color,background-color,border-color,opacity] duration-300",
+                    "inline-flex items-center gap-1.5 min-h-[2.75rem] px-3.5 py-1.5 border text-sm transition-[color,background-color,border-color,opacity] duration-[var(--duration-superficie)] ease-[var(--ease-estado)]",
                     active
                       ? "bg-amber border-amber text-bg font-semibold"
                       : "border-border-strong text-fg-muted hover:border-amber hover:text-fg",
@@ -196,7 +196,7 @@ export function PackageCard({ category }: { category: AssortedCategory }) {
              */
             data-adicionar=""
             className={cn(
-              "w-full min-h-[3.5rem] px-5 font-bold text-sm uppercase tracking-[0.14em] transition-[color,background-color,border-color,opacity] duration-300",
+              "w-full min-h-[3.5rem] px-5 font-bold text-sm uppercase tracking-[0.14em] transition-[color,background-color,border-color,opacity] duration-[var(--duration-superficie)] ease-[var(--ease-estado)]",
               justAdded
                 ? "bg-amber text-bg"
                 : "bg-fg text-bg hover:bg-amber"

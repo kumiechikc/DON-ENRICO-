@@ -36,7 +36,7 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
   return (
     <header
       className={cn(
-        "fixed top-0 inset-x-0 z-50 transition-colors duration-200",
+        "fixed top-0 inset-x-0 z-50 transition-colors duration-[var(--navbar-duration-fundo)] ease-[var(--ease-estado)]",
         scrolled ? "bg-bg/95 backdrop-blur border-b border-border" : "bg-transparent"
       )}
     >
@@ -50,7 +50,7 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
             <li key={link.href}>
               <a
                 href={link.href}
-                className="inline-flex items-center min-h-[2.75rem] text-sm font-semibold text-fg-muted hover:text-fg transition-colors duration-150"
+                className="inline-flex items-center min-h-[2.75rem] text-sm font-semibold text-fg-muted hover:text-fg transition-colors duration-[var(--duration-controle)] ease-[var(--ease-estado)]"
               >
                 {link.label}
               </a>
@@ -62,7 +62,7 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
           <button
             type="button"
             onClick={onCartOpen}
-            className="relative inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] lg:px-3 text-fg hover:text-red transition-colors duration-150"
+            className="relative inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] lg:px-3 text-fg hover:text-red transition-colors duration-[var(--duration-controle)] ease-[var(--ease-estado)]"
             aria-label={
               totalItems > 0
                 ? `Abrir pedido, ${totalItems} ${totalItems === 1 ? "item" : "itens"}`
@@ -116,7 +116,7 @@ export function Navbar({ onCartOpen }: { onCartOpen: () => void }) {
               key={link.href}
               href={link.href}
               onClick={closeMenu}
-              className="type-display text-2xl text-fg hover:text-red transition-colors duration-150"
+              className="type-display text-2xl text-fg hover:text-red transition-colors duration-[var(--duration-controle)] ease-[var(--ease-estado)]"
             >
               {link.label}
             </a>

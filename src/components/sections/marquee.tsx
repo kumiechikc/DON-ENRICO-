@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useMotion } from "@/lib/motion/motion-provider"
+import { EASE, ESTEIRA } from "@/lib/motion/tokens"
 
 /*
  * Faixa de sabores correndo de ponta a ponta, quebrando o ritmo entre seções.
@@ -71,7 +72,7 @@ export function Marquee({ items }: { items: string[] }) {
       const tween = gsap.to(track, {
         x: -half,
         duration: half / PIXELS_POR_SEGUNDO,
-        ease: "none",
+        ease: EASE.continuo,
         repeat: -1,
         modifiers: { x: (value) => `${wrap(parseFloat(value))}px` },
       })
@@ -89,7 +90,8 @@ export function Marquee({ items }: { items: string[] }) {
           const direction = self.direction
           gsap.to(tween, {
             timeScale: direction === 1 ? 1 : -1,
-            duration: 0.4,
+            duration: ESTEIRA.duracaoInversao,
+            ease: EASE.estado,
             overwrite: true,
           })
         },

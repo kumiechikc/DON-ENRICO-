@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
 import { useMotion } from "@/lib/motion/motion-provider"
 import { useSplitReveal } from "@/lib/motion/use-split-text"
+import { EASE, HERO } from "@/lib/motion/tokens"
 import { getWhatsAppDirectUrl } from "@/lib/cart/whatsapp"
 import { boxDegustacao } from "@/lib/data/menu"
 import { site } from "@/lib/site"
@@ -38,7 +39,7 @@ export function HeroSection() {
    */
   const clipeDoHero = acharClipe("lampada")
   const titleRef = useSplitReveal<HTMLHeadingElement>({
-    delay: 0.35,
+    delay: HERO.atrasoTitulo,
     label: "Salgados para festa",
   })
   const supportRef = useRef<HTMLDivElement>(null)
@@ -51,7 +52,7 @@ export function HeroSection() {
   const [shaderReady, setShaderReady] = useState(false)
   useEffect(() => {
     if (!motionEnabled) return
-    const id = window.setTimeout(() => setShaderReady(true), 450)
+    const id = window.setTimeout(() => setShaderReady(true), HERO.esperaShaderMs)
     return () => window.clearTimeout(id)
   }, [motionEnabled])
 
@@ -60,10 +61,10 @@ export function HeroSection() {
     const ctx = gsap.context(() => {
       gsap.from(supportRef.current, {
         opacity: 0,
-        y: 26,
-        duration: 0.9,
-        ease: "power3.out",
-        delay: 0.85,
+        y: HERO.deslocamentoApoio,
+        duration: HERO.duracaoApoio,
+        ease: EASE.entrada,
+        delay: HERO.atrasoApoio,
       })
     })
     return () => ctx.revert()
@@ -198,7 +199,7 @@ export function HeroSection() {
                   href={getWhatsAppDirectUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center min-h-[3.5rem] px-9 border border-border-strong text-fg font-bold text-sm uppercase tracking-[0.14em] whitespace-nowrap hover:border-amber hover:text-amber transition-colors duration-300"
+                  className="inline-flex items-center justify-center min-h-[3.5rem] px-9 border border-border-strong text-fg font-bold text-sm uppercase tracking-[0.14em] whitespace-nowrap hover:border-amber hover:text-amber transition-colors duration-[var(--duration-superficie)] ease-[var(--ease-estado)]"
                 >
                   Falar no WhatsApp
                 </MagneticButton>

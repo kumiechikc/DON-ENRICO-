@@ -45,7 +45,7 @@ export function ContatoSection() {
           <MagneticButton
             as="a"
             href={`tel:${PHONE_TEL}`}
-            className="inline-flex items-center justify-center gap-3 min-h-[3.75rem] px-10 border border-border-strong text-fg font-bold text-sm uppercase tracking-[0.14em] hover:border-amber hover:text-amber transition-colors duration-300"
+            className="inline-flex items-center justify-center gap-3 min-h-[3.75rem] px-10 border border-border-strong text-fg font-bold text-sm uppercase tracking-[0.14em] hover:border-amber hover:text-amber transition-colors duration-[var(--duration-superficie)] ease-[var(--ease-estado)]"
           >
             <Phone className="w-4 h-4" aria-hidden="true" />
             {PHONE_DISPLAY}
@@ -56,7 +56,7 @@ export function ContatoSection() {
             href={INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-3 min-h-[3.75rem] px-10 border border-border-strong text-fg font-bold text-sm uppercase tracking-[0.14em] hover:border-amber hover:text-amber transition-colors duration-300"
+            className="inline-flex items-center justify-center gap-3 min-h-[3.75rem] px-10 border border-border-strong text-fg font-bold text-sm uppercase tracking-[0.14em] hover:border-amber hover:text-amber transition-colors duration-[var(--duration-superficie)] ease-[var(--ease-estado)]"
           >
             <InstagramIcon className="w-4 h-4" />
             {INSTAGRAM_HANDLE}
