@@ -37,3 +37,8 @@ Thumbs.db
 .vscode/
 *.tsbuildinfo
 .checks/
+
+# Auditoria de referência: 3 MB de capturas de tela de sites de terceiros, gerados
+# uma vez para escrever `docs/BRIEF-MOVIMENTO.md` §2. O achado ficou no documento e o
+# método está em §2.0, que basta para refazer. O material bruto não precisa de versão.
+.tmp-audit/

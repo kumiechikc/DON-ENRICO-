@@ -88,6 +88,24 @@ quase preto quente com âmbar. São duas identidades diferentes, e hoje o site e
 **Destrava:** a decisão de qual das duas é a marca. E o arquivo da logo em vetor, ou o
 contato de quem fez os encartes.
 
+## 🟡 Uma seção pode ficar parada enquanto o resto rola? A página fica mais longa.
+
+A auditoria das cinco referências (`docs/BRIEF-MOVIMENTO.md` §2.5) achou o padrão que o
+animejs.com usa: a foto grande fica **parada** ocupando a tela enquanto a lista de texto
+passa ao lado dela. Fica bonito e faz o produto parecer cuidado.
+
+O preço é altura. Se o `festa` ou o `congelados` for feito assim, a página cresce dos
+8.390px de hoje para algo entre 11k e 13k — ou seja, **mais rolagem entre o cliente e o
+preço**. Para quem está escolhendo entre o cento de 25 e o de 50, isso é custo. Para quem
+chegou passeando pelo Instagram, é o que segura.
+
+Não é decisão técnica: as duas versões passam em todas as conferências. É decisão de quem
+conhece o cliente. As cinco referências não ajudam — todas vendem biblioteca para
+programador, nenhuma vende comida para quem tem festa no sábado.
+
+**Destrava:** o passo 4 do `docs/RETOMAR.md` saber se para em duas peças pequenas (barra
+de progresso e profundidade no hero, que já estão decididas) ou se vai até a seção parada.
+
 ## ⚪ Números de estoque
 
 Mínimo por item, lote de produção.

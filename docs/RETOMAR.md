@@ -17,11 +17,24 @@ uma branch **órfã** (sem ancestral comum com `main`) que continha só o stack 
 
 ## Objetivo desta rodada
 
-Elevar a **coreografia de movimento** do site da Don Enrico. O diagnóstico do dono está
-correto e foi confirmado por medição: o site tem **uma única animação**
-(`opacity 0→1, y 24→0, 0.8s, power3.out`) repetida em 11 lugares, **zero animação com
-scrub**, nenhum parallax, nenhum pin, nenhuma timeline ligada ao progresso do scroll.
-O Lenis está instalado e só está pagando pelo feel da roda do mouse.
+Elevar a **coreografia de movimento** do site da Don Enrico.
+
+**O diagnóstico foi refeito linha a linha em 2026-08-27, e a versão anterior dele estava
+errada.** Estava escrito aqui que o site tinha "uma única animação repetida em 11 lugares".
+Isso descreve uma camada, não o site: são **15 tweens GSAP distintos** em seis famílias
+(revelação por scroll, título cinético por caractere, botão magnético, anel de cursor,
+cortina de entrada, esteira de sabores que inverte com a direção do scroll). O site não é
+pobre de movimento — ele é **incoerente**: cada peça foi decidida sozinha, com o próprio
+número, e nenhuma conversa com a rolagem.
+
+O que se confirmou, e é o buraco real: **`scrub` não aparece uma vez no código, e `pin`
+também não.** Os três arquivos que tocam `ScrollTrigger` usam-no só como detector de
+entrada em viewport. O Lenis está pagando só pelo toque da roda do mouse. E nada disso tem
+nome: 14 durações distintas e 8 curvas de easing, sendo que **4 curvas foram herdadas por
+omissão** (tween sem `ease` cai no default do GSAP) e as 26 transições CSS usam a curva do
+Tailwind porque ninguém declarou nada.
+
+O inventário completo, com arquivo:linha, está em [`docs/BRIEF-MOVIMENTO.md`](BRIEF-MOVIMENTO.md) §1.
 
 Escopo: **apenas Don Enrico**. A gráfica fica para depois.
 
@@ -105,20 +118,49 @@ quad custava 1594 KB. Não cabe, e não é perto de caber.
 
 Todas as 8 verificações passam contra produção, não só contra desenvolvimento.
 
-## Em andamento
+## A rodada de movimento, até aqui
 
-- [ ] Auditoria dos 5 sites de referência e brief de movimento.
+Preparação e diagnóstico fechados. O que falta é escrever movimento novo — nenhuma linha
+de `scrub` foi escrita ainda.
+
+- [x] **Baseline reconferido nesta árvore (2026-08-27):** as 8 verificações passam.
+      LCP 2692ms de 4000, CLS 0, 87 paradas de teclado sem laço, esteira a 70 px/s.
+      (O número de JS do servidor de desenvolvimento, 899 KB, não vale — o real é 217 KB,
+      medido contra `build` + `start`.)
+- [x] **Inventário de movimento completo**, com arquivo:linha → `docs/BRIEF-MOVIMENTO.md` §1.
+- [x] **Sistema de tokens de movimento** (`src/lib/motion/tokens.ts` + o bloco de
+      `globals.css`), com as 14 durações e 8 curvas migradas para dois arquivos com nome, em
+      três camadas (primitivo → semântico → componente). **Nenhum milissegundo mudou** — a
+      migração só tirou os números de dentro dos componentes e transformou as quatro curvas
+      herdadas por omissão em curvas declaradas. Conferido por `npm run check:movimento`,
+      que compara `tokens.ts` contra o levantamento congelado de antes da migração e reprova
+      se um tempo mudar sem que alguém atualize os dois lados de propósito. Verde: 34 tokens
+      batem, 26 de 26 transições CSS declaram duração e curva, nenhum tempo solto no código.
+- [x] **Auditoria dos 5 sites de referência** → `docs/BRIEF-MOVIMENTO.md` §2. Playwright,
+      1440x900, 7 paradas de rolagem por site, com captura e levantamento de DOM em cada.
+      Os três achados que mudaram o plano estão em §2.6; o maior é que **coerência é ter
+      menos curvas, não mais** — lenis.dev move 421 elementos com uma curva só, e essa curva
+      (easeOutExpo) já é a que o nosso Lenis e o nosso título do hero usam.
+- [x] **§3 fechada**: três peças entram (M1 barra de progresso, M2 profundidade no hero,
+      M3 unificação de curva), seis recusadas com o motivo escrito, e uma mandada para o
+      `TRAVADO.md` porque é decisão de produto e não técnica.
 
 ## Próximos passos, em ordem
 
-1. **Rodar `npm run check` inteiro** e registrar o baseline antes de mexer em movimento.
-2. **Auditar os 5 sites de referência** e escrever `docs/BRIEF-MOVIMENTO.md`: cada animação
-   mapeada a um elemento do site e a uma justificativa. Nada entra por ser bonito.
-3. **Sistema de tokens de movimento.** Hoje as durações estão soltas: 150, 200, 250, 300,
-   400, 420, 500, 620, 700, 800, 900, 1000ms, com seis eases diferentes e nenhum nome.
-4. **Camada de scrub**: parallax, pin, timeline ligada ao progresso. É o que falta de fato.
-5. Corrigir os bugs menores levantados na auditoria (ver "Dívida conhecida").
-6. Só depois do site: Apps Script pronto para o Hermes, e a apresentação da proposta.
+1. ~~Rodar `npm run check` inteiro e registrar o baseline.~~ Feito, verde.
+2. ~~Auditar os 5 sites de referência e fechar §2 e §3.~~ Feito.
+3. ~~Sistema de tokens de movimento.~~ Feito, conferido por `check:movimento`.
+4. **Implementar M1 e M2** (`docs/BRIEF-MOVIMENTO.md` §3.2) — é a primeira vez que `scrub`
+   entra no código; hoje ele não aparece em uma linha sequer. Pequenas de propósito.
+   As duas armadilhas já levantadas, para não redescobrir: **o pôster do hero é o elemento
+   de LCP**, então M2 mede LCP antes e depois e não liga `will-change` antes do primeiro
+   quadro; e transladar a camada do hero revela a borda de baixo, então a folga de escala
+   se calcula a partir do deslocamento máximo, não se chuta.
+5. **M3, a unificação de curva** — é a única das três que muda comportamento, então ela
+   também muda o levantamento congelado de `check-movimento.mjs`, e essa mudança nos dois
+   lados é o que registra a decisão no diff.
+6. Corrigir os bugs menores levantados na auditoria (ver "Dívida conhecida").
+7. Só depois do site: Apps Script pronto para o Hermes, e a apresentação da proposta.
 
 ## Dívida conhecida (auditada, não corrigida ainda)
 
@@ -132,10 +174,24 @@ Todas as 8 verificações passam contra produção, não só contra desenvolvime
   (`hero-section.tsx:191` e `cart-drawer.tsx:96`) e `#` (logo, `navbar.tsx:44`).
   A correção certa roteia só as âncoras de seção pelo `lenis.scrollTo`, exclui o skip link,
   e move o foco no fim da rolagem. Fica para a rodada de movimento, não antes.
-- **Código morto:** `heat-shader.tsx` (~260 linhas) é inalcançável — `hero-section.tsx` só o
-  renderiza se não houver clipe, e `lampada` está sempre no manifesto. `sequencia.tsx` +
-  `sequencias.ts` nunca são importados. `src/lib/pix/br-code.ts` (completo e testado) não
-  tem nenhum consumidor de UI. `class-variance-authority` é dependência com zero uso.
+- **Código morto, com as distinções que importam:**
+  - `class-variance-authority` — dependência com zero uso. Morta de verdade.
+  - **`@gsap/react` (`useGSAP`) — segunda dependência morta**, achada em 2026-08-27: está no
+    `package.json` (`^2.1.2`) e não é importada em nenhum arquivo de `src/`. Todo o código
+    usa `useEffect` + `gsap.context()` ou limpeza manual. Ou a camada de movimento nova
+    adota o `useGSAP` (que resolve limpeza sozinho), ou a dependência sai. Ficar como está,
+    não.
+  - `heat-shader.tsx` (~260 linhas) está **inativo, não inalcançável**: `hero-section.tsx:94`
+    só o monta se não houver clipe, e `lampada` está no manifesto hoje. É o plano B do fundo
+    do hero. Remover é decisão de produto, não faxina.
+  - `sequencia.tsx` + `sequencias.ts` nunca são importados, mas `sequencias.ts:45` é um array
+    vazio **de propósito** ("a tira do corte ainda não chegou em arquivo"). É a única
+    infraestrutura de scrub por quadros que já existe pronta — decidir na rodada de
+    movimento se ela vira a base do scrub ou some. Não apagar antes disso.
+  - `src/lib/pix/br-code.ts` (completo e testado) não tem consumidor de UI — está esperando
+    os dados do Pix, que estão no `TRAVADO.md`. Não é morto, é bloqueado.
+- `SplitText` é registrado dinamicamente (`use-split-text.ts:47`) e sustenta o título do
+  hero. Vale declarar a dependência explicitamente antes de apoiar mais coisa nele.
 - Âncoras (`href="#festa"`) fazem salto nativo enquanto o Lenis interpola — o Lenis foi
   criado sem a opção `anchors`.
 - `marquee.tsx` mede `scrollWidth` antes de a fonte assentar (o corpo usa `display: optional`),
@@ -145,12 +201,16 @@ Todas as 8 verificações passam contra produção, não só contra desenvolvime
   que ele mesmo cita.
 - String de botão outline duplicada verbatim 3x; botão âmbar em 4 alturas diferentes
   (3.5 / 3.75 / 3.25 / 3rem). Não existe componente `Button`.
-- `docs/INSTAGRAM.md` §3 documenta a paleta CLARA antiga (`#FDF7EF`), que contradiz a
-  decisão travada de 2026-08-21. É o único doc visual não reconciliado.
+- ~~`docs/INSTAGRAM.md` §3 documenta a paleta CLARA antiga (`#FDF7EF`).~~ **Corrigido em
+  2026-08-27:** §3 agora traz os valores reais do `globals.css` e explica por que o fundo
+  escuro é decisão e não descuido (escuro *frio e chapado* é que estraga fritura; o âmbar
+  não passava de 3:1 na paleta clara e é 9,55:1 nesta).
 
 ## O que só o dono pode destravar
 
-Além dos 11 itens de `cerebro/TRAVADO.md`, esta rodada acrescentou:
+Além dos 13 itens de `cerebro/TRAVADO.md` — um deles acrescentado por esta rodada: **se
+uma seção pode ficar parada enquanto o resto rola**, o que deixa a página entre 3k e 5k px
+mais longa e é decisão de produto, não técnica —, esta rodada acrescentou:
 
 - **`DATABASE_URL` do Neon** — criar em neon.tech ou Vercel > Storage. Depois disso não é
   preciso MCP nenhum: migrations rodam com SQL puro.
