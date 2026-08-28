@@ -70,13 +70,22 @@ nome é indexado na busca do Instagram — quem procurar "salgados festa" pode a
 Agora que o site tem identidade definida, o Instagram deve conversar com ele. Isso é o
 que faz parecer empresa e não fundo de quintal.
 
-- **Fundo creme quente** (`#FDF7EF`) nos posts de texto e preço
-- **Marrom profundo** (`#241610`) para texto
-- **Âmbar** (`#E8940C`) para destaque e barras
-- **Vermelho** (`#C1121F`) só para chamada de ação
+- **Fundo sombra quente** (`#120B08`) nos posts de texto e preço — nunca preto puro,
+  nunca cinza azulado
+- **Areia clara** (`#F8EFE3`) para texto
+- **Âmbar** (`#F5A524`) para destaque, traço e barras
+- **Vermelho claro** (`#F25C63`) só para chamada de ação
 - **Tipografia pesada em caixa alta** nos títulos (Archivo Black no site; no Canva, use
   Anton, Archivo Black ou Bebas Neue)
-- **Nada de gradiente** e nada de fundo escuro — comida frita fica feia em fundo preto
+- **Nada de gradiente**
+
+Sobre o fundo escuro, porque a versão anterior deste documento dizia o contrário: o que
+estraga fritura é fundo escuro **frio e chapado**. Escuro com luz âmbar direcional é
+exatamente como fotógrafo de comida ilumina fritura para marca premium — o dourado ganha
+contraste contra a sombra quente. E tem um ganho medido: na paleta clara anterior o âmbar
+da marca não alcançava nem 3:1 e não podia ser usado como texto. Nesta ele é 9,55:1.
+A decisão está em `cerebro/DECISOES.md` (2026-08-21) e os valores em
+`src/app/globals.css`, que é a fonte — se divergirem, o CSS vence.
 
 Regra de ouro do feed: **foto de comida sem texto por cima**. Texto vai no card ao lado
 (carrossel) ou na legenda. Cobrir o salgado com letra grande mata o que estava vendendo.
