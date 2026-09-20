@@ -12,6 +12,40 @@ Entrada nova vai no topo. Toda entrada precisa de data.
 
 ---
 
+## 2026-09-20 — O contexto sai daqui como skill, e o carimbo fica fora do arquivo gerado
+
+**Decidido.** O contexto do projeto vai para o `kumiechikc/claude-skills` como uma
+skill, a pasta `don-enrico/`: uma cópia byte a byte do `CONTEXTO-COMPLETO.md`, um
+`SKILL.md` que diz quando usar e de onde veio, e um `atualizar.sh` que renova a
+cópia a partir de um checkout daqui. A fonte continua sendo este repositório.
+
+**Por quê.** O contexto só existia aqui, e sessão que começa do zero em outro
+lugar não alcançava nada dele. Skill é o formato que chega sozinho na hora certa:
+documento solto na raiz só entra na sessão se alguém lembrar de abrir, e o preço
+de não lembrar é conhecido — decisão refeita e beco reaberto.
+
+**Descartado: levar o `cerebro/` e o gerador junto.** Seria a segunda cópia da
+mesma verdade, e a de lá não tem CI para pegar a divergência. No dia em que o
+prazo mudar, o documento grande continua dizendo o que era verdade em agosto — e
+tem cara de autoridade justamente por ser completo.
+
+**Descartado: apontar para cá com submódulo, para nunca sair do dia.** Skill com
+submódulo carrega uma pasta vazia até alguém rodar `git submodule update --init`,
+e uma skill que carrega vazia não falha: ela responde sem o contexto, que é o
+modo de errar mais caro que existe aqui.
+
+**Descartado: carimbar o commit de origem dentro do `CONTEXTO-COMPLETO.md`.** É
+exatamente o carimbo que já tornou a conferência do CI impossível de passar
+(ver `BECOS.md`). O carimbo mora no `SKILL.md`, do lado de fora, e assim as duas
+cópias continuam comparáveis byte a byte a qualquer momento.
+
+**Revisitar se.** O repositório de skills ganhar CI — aí dá para conferir a cópia
+lá também, em vez de depender de alguém rodar o `atualizar.sh`. Ou se o contexto
+começar a ser editado nos dois lugares, que é o sintoma de que a fonte única
+deixou de valer.
+
+---
+
 ## 2026-08-26 — O Box Degustação é sortido, e o card para de perguntar sabor
 
 **Decidido.** A casa monta a combinação do Box. O cliente não escolhe, e se fizer
